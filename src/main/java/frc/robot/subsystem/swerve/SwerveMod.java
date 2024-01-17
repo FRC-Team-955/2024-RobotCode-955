@@ -8,17 +8,24 @@ import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.utility.AngleUtil;
 
-public class SwerveMod extends SubsystemBase {
+public class SwerveMod{
 
     public static final SwerveMod[] instance = new SwerveMod[]{
             new SwerveMod(0), new SwerveMod(1), new SwerveMod(2),  new SwerveMod(3)
     };
+
+    public enum IdleMode {
+        Free,
+        Brake
+    }
 
     /**
      * The numerical id of the swerve module
      * <p> 0 = Front Left <p> 1 = Front Right <p> 2 = Back Right <p> 3 = Back Left
      */
     public final int modId;
+
+    public final double localizedOffset;
 
     private final SwerveModIO io;
     private final SwerveModIOInputsAutoLogged inputs;
@@ -33,21 +40,37 @@ public class SwerveMod extends SubsystemBase {
     private SwerveMod(int id) {
         modId = id;
 
-        inputs = new SwerveModIOInputsAutoLogged();
-        io = Robot.isSimulation() ? new SwerveModIOSim(inputs, id) : new SwerveModIOSparkMax(inputs, id);
+        localizedOffset = AngleUtil.unsignedRangeDegrees(-90.0 * id);
 
-        drivePid = new PIDController(0, 0, 0);
-        anglePid = new PIDController(0, 0, 0);
+        inputs = new SwerveModIOInputsAutoLogged();
+        io = Robot.isSimulation() ? new SwerveModIOSim(inputs, id) : new SwerveModIOSpark(inputs, id);
+
+        drivePid = new PIDController(0.1, 0, 0);
+        anglePid = new PIDController(0.1, 0, 0);
     }
 
 
 
     /**
-     * Set the target state of the swerve module
+     * Set the target state of the swerve module relative to the robot
      * @param state The {@link SwerveModuleState} object for the current desired state of the swerve module
      */
     public void setTargetState(SwerveModuleState state) {
+        state.angle = Rotation2d.fromDegrees(AngleUtil.unsignedRangeDegrees(state.angle.getDegrees() + localizedOffset));
         targetState = state;
+    }
+
+    /**
+     * Set the target state of the swerve module relative to itself
+     * @param state The {@link SwerveModuleState} object for the current desired state of the swerve module
+     */
+    public void setTargetStateLocalized(SwerveModuleState state) {
+        targetState = state;
+    }
+
+
+    public void setIdleMode(IdleMode mode) {
+        io.setIdleMode(mode);
     }
 
     /**
@@ -68,7 +91,10 @@ public class SwerveMod extends SubsystemBase {
 
 
 
-    @Override
+    public void updateInputs() {
+        io.updateInputs();
+    }
+
     public void periodic() {
         SwerveModuleState target = SwerveModuleState.optimize(targetState, new Rotation2d(inputs.drivePositionDeg));
 

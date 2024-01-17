@@ -2,6 +2,24 @@ package frc.robot.utility;
 
 public class AngleUtil {
     /**
+     * Transform an angle measurement in degrees to radians
+     * @param degrees The angle in degrees
+     * @return The angle in radians
+     */
+    public static double degToRad(double degrees) {
+        return 2.0 * Math.PI * degrees / 360;
+    }
+
+    /**
+     * Transform an angle measurement in radians to degrees
+     * @param radians The angle in radians
+     * @return The angle in degrees
+     */
+    public static  double radToDeg(double radians) {
+        return 360 * radians / (2 * Math.PI);
+    }
+
+    /**
      * Transforms a given angle to a 0 to 360 degree range
      * @param angle The angle to be transformed
      * @return The unsigned range of the given angle, from 0 (inclusive) to 360 (exclusive)

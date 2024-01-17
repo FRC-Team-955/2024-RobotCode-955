@@ -1,6 +1,5 @@
 package frc.robot.subsystem.swerve;
 
-import com.revrobotics.CANSparkBase;
 import org.littletonrobotics.junction.AutoLog;
 
 public abstract class SwerveModIO {
@@ -14,10 +13,12 @@ public abstract class SwerveModIO {
         public double angleVelocityDegSec;
     }
 
-    private SwerveModIOInputsAutoLogged inputs;
+    protected SwerveModIOInputsAutoLogged inputs;
+
+    public abstract void updateInputs();
 
     public abstract void setDriveVolts(double volts);
     public abstract void setAngleVolts(double volts);
     public abstract void syncEncoders();
-    public abstract void setIdleMode(CANSparkBase.IdleMode mode);
+    public abstract void setIdleMode(SwerveMod.IdleMode mode);
 }
