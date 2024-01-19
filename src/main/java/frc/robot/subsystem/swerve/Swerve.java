@@ -1,15 +1,23 @@
 package frc.robot.subsystem.swerve;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.sensor.gyro.Gyro;
+import frc.robot.sensor.pose.Gyro;
+import frc.robot.sensor.pose.Odometry;
 import frc.robot.utility.AngleUtil;
+
+import java.util.Optional;
 
 public class Swerve extends SubsystemBase {
 
@@ -28,13 +36,37 @@ public class Swerve extends SubsystemBase {
     private double driveHeadingTranslation = 0;
     private double driveHeading = 0;
     private Translation2d centerOfRot = new Translation2d();
+    private ChassisSpeeds pathSpeeds;
 
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(Constants.Swerve.modulePositions);
 
     private final PIDController headingPid = new PIDController(.1, 0, 0);
 
     private Swerve() {
+        AutoBuilder.configureHolonomic(
+                Odometry::getPose,
+                Odometry::updatePostEstimateTrustworthy,
+                Odometry::getSpeedsRelative,
+                this::followPathChassisSpeeds,
+                new HolonomicPathFollowerConfig(
+                        new PIDConstants(0, 0, 0),
+                        new PIDConstants(0, 0, 0),
+                        Constants.Swerve.maxFreeSpeed,
+                        Math.sqrt((Constants.frameX - Constants.Swerve.wheelInset) * (Constants.frameX - Constants.Swerve.wheelInset) +
+                            (Constants.frameY - Constants.Swerve.wheelInset) * (Constants.frameY - Constants.Swerve.wheelInset)),
+                        new ReplanningConfig()
+                ),
+                () -> {
+                    Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
+                    return alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red;
+                },
+                this
+        );
+    }
 
+    public void followPathChassisSpeeds(ChassisSpeeds speeds) {
+        state = State.Path;
+        pathSpeeds = speeds;
     }
 
     @Override
@@ -64,9 +96,9 @@ public class Swerve extends SubsystemBase {
                         headingPid.calculate(heading.getDegrees(), driveHeading), Rotation2d.fromDegrees(0)));
                 assignStates(states);
             }
-            // TODO - Implement Path Planner path following
             case Path -> {
-
+                SwerveModuleState[] states = kinematics.toSwerveModuleStates(pathSpeeds);
+                assignStates(states);
             }
         }
     }

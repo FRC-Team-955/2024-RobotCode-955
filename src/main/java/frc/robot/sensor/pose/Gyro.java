@@ -1,4 +1,4 @@
-package frc.robot.sensor.gyro;
+package frc.robot.sensor.pose;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.geometry.Rotation2d;
