@@ -1,54 +1,74 @@
 package frc.robot.sensor.pose;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.utility.ObjectUtil;
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 import java.util.PriorityQueue;
 
 public class Odometry {
 
-    private static final PriorityQueue<ChassisSpeeds> log = new PriorityQueue<ChassisSpeeds>();
+    private static final PriorityQueue<Double> logX = new PriorityQueue<Double>();
+    private static final PriorityQueue<Double> logY = new PriorityQueue<Double>();
+    private static final PriorityQueue<Double> logR = new PriorityQueue<Double>();
 
     private static ChassisSpeeds last;
     private static ChassisSpeeds lastRelative;
 
-    private static Pose2d estimate;
+    private static Pose2d estimate = new Pose2d();
 
     public static Field2d loggedField = new Field2d();
-    private static Pose2d targetPose;
-    private static Pose2d[] targetPath;
+    private static Pose2d targetPose = new Pose2d();
+    private static Pose2d[] targetPath = new Pose2d[0];
 
     public static void updateEstimateChassisSpeeds(ChassisSpeeds speeds, ChassisSpeeds speedsRelative) {
         lastRelative = speedsRelative;
         last = speeds;
-        log.add(speeds);
-        if (log.size() > Constants.Swerve.PoseEstimation.maxLogTicks) log.poll();
+        logX.add(speeds.vxMetersPerSecond);
+        logY.add(speeds.vyMetersPerSecond);
+        logR.add(speeds.omegaRadiansPerSecond);
+        if (logX.size() > Constants.Swerve.PoseEstimation.maxLogTicks) {
+            logX.poll();
+            logY.poll();
+            logR.poll();
+        }
         estimate.transformBy(ObjectUtil.toTransform(speeds));
     }
 
     public static void updateEstimatePose(Pose2d pose, double delay) {
-        if (delay / 20 > log.size()) return;
+        if (delay / 20 > logX.size()) return;
 
         estimate = pose;
 
         for (int i = 0; i < (delay / 20) - 1; i++) {
-            log.poll();
+            logX.poll();
+            logY.poll();
+            logR.poll();
         }
-        estimate.transformBy(ObjectUtil.toTransform(log.poll()).times(1 - ((delay / 20) % 1)));
-        for (int i = 0; i < log.size(); i++) {
-            ChassisSpeeds speeds = log.poll();
-            estimate.transformBy(ObjectUtil.toTransform(speeds));
-            log.add(speeds);
+        estimate.transformBy(new Transform2d(logX.poll(), logY.poll(), Rotation2d.fromRadians(logR.poll())).times(1 - ((delay / 20) % 1)));
+        for (int i = 0; i < logX.size(); i++) {
+            double x = logX.poll();
+            double y = logY.poll();
+            double r = logR.poll();
+            estimate.transformBy(new Transform2d(x, y, Rotation2d.fromRadians(r)));
+            logX.add(x);
+            logY.add(y);
+            logR.add(r);
         }
     }
 
     public static void updatePostEstimateTrustworthy(Pose2d pose) {
         estimate = pose;
-        log.clear();
+        logX.clear();
+        logY.clear();
+        logR.clear();
     }
 
     public static void setTargetPose(Pose2d target) {
@@ -63,6 +83,7 @@ public class Odometry {
        loggedField.setRobotPose(getPose());
        loggedField.getObject("targetPose").setPose(targetPose);
        loggedField.getObject("path").setPoses(targetPath);
+       Logger.recordOutput("Odom/Pose", getPose());
     }
 
     public static Pose2d getPose() {

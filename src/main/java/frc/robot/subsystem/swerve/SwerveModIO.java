@@ -13,7 +13,7 @@ public abstract class SwerveModIO {
         public double angleVelocityDegSec;
     }
 
-    protected SwerveModIOInputsAutoLogged inputs;
+    protected SwerveModIOInputsAutoLogged inputs = new SwerveModIOInputsAutoLogged();
 
     public abstract void updateInputs();
 

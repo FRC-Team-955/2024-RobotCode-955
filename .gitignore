@@ -172,6 +172,7 @@ out/
 *-window.json
 
 # Simulation data log directory
+.wpilog
 logs/
 
 # Folder that has CTRE Phoenix Sim device config storage

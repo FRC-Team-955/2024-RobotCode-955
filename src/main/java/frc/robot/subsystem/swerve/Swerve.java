@@ -64,6 +64,12 @@ public class Swerve extends SubsystemBase {
         );
     }
 
+    public void drive(Translation2d translation, double rotation) {
+        driveTranslation = translation;
+        driveHeadingTranslation = rotation;
+        state = State.Drive;
+    }
+
     public void followPathChassisSpeeds(ChassisSpeeds speeds) {
         state = State.Path;
         pathSpeeds = speeds;
@@ -101,6 +107,8 @@ public class Swerve extends SubsystemBase {
                 assignStates(states);
             }
         }
+
+        Odometry.updateEstimateChassisSpeeds(getSpeeds(), getSpeedsRelative());
     }
 
     private void assignStates(SwerveModuleState[] states) {
@@ -113,5 +121,29 @@ public class Swerve extends SubsystemBase {
         for (int i = 0; i < 4; i++) {
             SwerveMod.instance[i].setTargetStateLocalized(states[i]);
         }
+    }
+
+    private SwerveModuleState[] getStates() {
+        return new SwerveModuleState[] {
+                SwerveMod.instance[0].getCurrentState(),
+                SwerveMod.instance[1].getCurrentState(),
+                SwerveMod.instance[2].getCurrentState(),
+                SwerveMod.instance[3].getCurrentState()
+        };
+    }
+
+    private ChassisSpeeds getSpeeds() {
+        ChassisSpeeds speeds = kinematics.toChassisSpeeds(getStates());
+        return new ChassisSpeeds(
+                speeds.vxMetersPerSecond * Math.cos(Gyro.getHeading().getRadians()) +
+                speeds.vyMetersPerSecond * Math.sin(Gyro.getHeading().getRadians()),
+                speeds.vxMetersPerSecond * Math.sin(Gyro.getHeading().getRadians()) +
+                speeds.vyMetersPerSecond * Math.cos(Gyro.getHeading().getRadians()),
+                speeds.omegaRadiansPerSecond
+        );
+    }
+
+    private ChassisSpeeds getSpeedsRelative() {
+        return kinematics.toChassisSpeeds(getStates());
     }
 }

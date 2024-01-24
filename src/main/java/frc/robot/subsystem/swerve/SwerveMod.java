@@ -7,6 +7,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.utility.AngleUtil;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 public class SwerveMod{
 
@@ -86,13 +88,14 @@ public class SwerveMod{
      * @return The {@link SwerveModuleState} object for the current physical state of the swerve module
      */
     public SwerveModuleState getCurrentState() {
-        return new SwerveModuleState();
+        return new SwerveModuleState(getDriveVelocity(), getAnglePositionRotation2d());
     }
 
 
 
     public void updateInputs() {
         io.updateInputs();
+        Logger.processInputs("Mod " + modId, inputs);
     }
 
     public void periodic() {
@@ -126,6 +129,14 @@ public class SwerveMod{
      */
     public double getAnglePosition() {
         return inputs.anglePositionDeg;
+    }
+
+    /**
+     * Get the angular position of swerve module
+     * @return The angular position of the drive wheel heading relative to its clockwise position from the front of the robot
+     */
+    public Rotation2d getAnglePositionRotation2d() {
+        return Rotation2d.fromDegrees(inputs.anglePositionDeg);
     }
 
     /**
