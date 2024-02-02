@@ -7,8 +7,10 @@ import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -16,6 +18,7 @@ import frc.robot.Constants;
 import frc.robot.sensor.pose.Gyro;
 import frc.robot.sensor.pose.Odometry;
 import frc.robot.utility.AngleUtil;
+import org.littletonrobotics.junction.Logger;
 
 import java.util.Optional;
 
@@ -27,7 +30,8 @@ public class Swerve extends SubsystemBase {
         Lock,
         Drive,
         DriveRobotRelative,
-        Path
+        Path,
+        Test
     }
 
     private State state = State.Lock;
@@ -40,12 +44,12 @@ public class Swerve extends SubsystemBase {
 
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(Constants.Swerve.modulePositions);
 
-    private final PIDController headingPid = new PIDController(.1, 0, 0);
+    private final PIDController headingPid = new PIDController(5, 0, 0);
 
     private Swerve() {
         AutoBuilder.configureHolonomic(
                 Odometry::getPose,
-                Odometry::updatePostEstimateTrustworthy,
+                Odometry::resetPose,
                 Odometry::getSpeedsRelative,
                 this::followPathChassisSpeeds,
                 new HolonomicPathFollowerConfig(
@@ -75,12 +79,16 @@ public class Swerve extends SubsystemBase {
         pathSpeeds = speeds;
     }
 
+    public void lock() {
+        state = State.Lock;
+    }
+
+    public void TEST() {
+        state = State.Test;
+    }
+
     @Override
     public void periodic() {
-        for (SwerveMod mod : SwerveMod.instance) {
-            mod.updateInputs();
-        }
-
         switch (state) {
             case Lock -> {
                 for (SwerveMod mod : SwerveMod.instance) {
@@ -89,10 +97,15 @@ public class Swerve extends SubsystemBase {
                 }
             }
             case Drive -> {
+                for (SwerveMod mod : SwerveMod.instance) {
+                    mod.setIdleMode(SwerveMod.IdleMode.Brake);
+                }
                 driveHeading += driveHeadingTranslation * Constants.Input.headingRateOfChange * 0.02;
                 Rotation2d heading = Gyro.getHeading();
                 SwerveModuleState[] states = kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driveTranslation.getX(), driveTranslation.getY(),
-                        headingPid.calculate(heading.getRadians(), AngleUtil.degToRad(driveHeading)), heading));
+                        driveHeadingTranslation * 6, heading));
+//                SwerveModuleState[] states = kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driveTranslation.getX(), driveTranslation.getY(),
+//                        3, heading));
                 assignStates(states);
             }
             case DriveRobotRelative -> {
@@ -106,9 +119,26 @@ public class Swerve extends SubsystemBase {
                 SwerveModuleState[] states = kinematics.toSwerveModuleStates(pathSpeeds);
                 assignStates(states);
             }
+            case Test -> {
+                assignStates(new SwerveModuleState[]{
+                        new SwerveModuleState(15, Rotation2d.fromDegrees(0)),
+                        new SwerveModuleState(15, Rotation2d.fromDegrees(0)),
+                        new SwerveModuleState(15, Rotation2d.fromDegrees(0)),
+                        new SwerveModuleState(15, Rotation2d.fromDegrees(0))
+                });
+            }
         }
 
-        Odometry.updateEstimateChassisSpeeds(getSpeeds(), getSpeedsRelative());
+        SwerveModulePosition[] deltas = new SwerveModulePosition[4];
+        for (int i = 0; i < 4; i++) {
+            deltas[i] = SwerveMod.instance[i].getPositionDelta();
+        }
+
+        Gyro.updateEstimateDelta(Rotation2d.fromRadians(kinematics.toTwist2d(deltas).dtheta));
+        Odometry.updateEstimatePositions(getPositions());
+
+        Logger.recordOutput("SwerveStates/Target", getTargetStates());
+        Logger.recordOutput("SwerveStates/Current", getStates());
     }
 
     private void assignStates(SwerveModuleState[] states) {
@@ -117,13 +147,13 @@ public class Swerve extends SubsystemBase {
         }
     }
 
-    private void assignStatesLocalized(SwerveModuleState[] states) {
+    public void assignStatesLocalized(SwerveModuleState[] states) {
         for (int i = 0; i < 4; i++) {
             SwerveMod.instance[i].setTargetStateLocalized(states[i]);
         }
     }
 
-    private SwerveModuleState[] getStates() {
+    public SwerveModuleState[] getStates() {
         return new SwerveModuleState[] {
                 SwerveMod.instance[0].getCurrentState(),
                 SwerveMod.instance[1].getCurrentState(),
@@ -132,7 +162,25 @@ public class Swerve extends SubsystemBase {
         };
     }
 
-    private ChassisSpeeds getSpeeds() {
+    public SwerveModuleState[] getTargetStates() {
+        return new SwerveModuleState[] {
+                SwerveMod.instance[0].getTargetState(),
+                SwerveMod.instance[1].getTargetState(),
+                SwerveMod.instance[2].getTargetState(),
+                SwerveMod.instance[3].getTargetState()
+        };
+    }
+
+    public SwerveModulePosition[] getPositions() {
+        return new SwerveModulePosition[] {
+                SwerveMod.instance[0].getCurrentPosition(),
+                SwerveMod.instance[1].getCurrentPosition(),
+                SwerveMod.instance[2].getCurrentPosition(),
+                SwerveMod.instance[3].getCurrentPosition(),
+        };
+    }
+
+    public ChassisSpeeds getSpeeds() {
         ChassisSpeeds speeds = kinematics.toChassisSpeeds(getStates());
         return new ChassisSpeeds(
                 speeds.vxMetersPerSecond * Math.cos(Gyro.getHeading().getRadians()) +
@@ -143,7 +191,7 @@ public class Swerve extends SubsystemBase {
         );
     }
 
-    private ChassisSpeeds getSpeedsRelative() {
+    public ChassisSpeeds getSpeedsRelative() {
         return kinematics.toChassisSpeeds(getStates());
     }
 }

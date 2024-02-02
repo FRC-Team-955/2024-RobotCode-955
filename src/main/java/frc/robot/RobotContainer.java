@@ -8,6 +8,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.sensor.pose.Odometry;
 import frc.robot.subsystem.swerve.Swerve;
 
 public class RobotContainer {
@@ -21,7 +23,7 @@ public class RobotContainer {
 
   private void configureBindings() {
     Swerve.instance.setDefaultCommand(Commands.run(() -> {
-      Swerve.instance.drive(new Translation2d(controller.getLeftX(), controller.getLeftY()), controller.getRightX());
+      Swerve.instance.drive(new Translation2d(controller.getLeftY() * 15, controller.getLeftX() * 15), controller.getRightX());
     }, Swerve.instance));
   }
 

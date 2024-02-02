@@ -4,13 +4,15 @@ import edu.wpi.first.math.geometry.Translation2d;
 
 public class Constants {
 
-    public static final double frameX = 26;
-    public static final double frameY = 26;
+    public static final double frameX = 0.6858;
+    public static final double frameY = 0.6858;
 
     public static final class Swerve {
 
-        public static final double wheelRadius = 2;
-        public static final double wheelInset = 2.625;
+        // 2 Inches
+        public static final double wheelRadius = 0.0508;
+        // 2.625 inches
+        public static final double wheelInset = 0.066675;
 
         public static final Translation2d[] modulePositions = new Translation2d[] {
                 new Translation2d( ((frameX / 2) - wheelInset),  ((frameY / 2) - wheelInset)),

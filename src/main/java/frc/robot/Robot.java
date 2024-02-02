@@ -5,6 +5,7 @@
 package frc.robot;
 
 import frc.robot.sensor.pose.Odometry;
+import frc.robot.subsystem.swerve.SwerveMod;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 
@@ -14,13 +15,13 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
-  private Command m_autonomousCommand;
+  private Command autonomousCommand;
 
-  private RobotContainer m_robotContainer;
+  private RobotContainer robotContainer;
 
   @Override
   public void robotInit() {
-    m_robotContainer = new RobotContainer();
+    robotContainer = new RobotContainer();
     Logger.addDataReceiver(new WPILOGWriter(""));
     Logger.addDataReceiver(new NT4Publisher());
     Logger.start();
@@ -28,7 +29,11 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void robotPeriodic() {
+
+    // Periodic Actions
     CommandScheduler.getInstance().run();
+
+    // LOG
     Odometry.log();
   }
 
@@ -43,10 +48,10 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    autonomousCommand = robotContainer.getAutonomousCommand();
 
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.schedule();
+    if (autonomousCommand != null) {
+      autonomousCommand.schedule();
     }
   }
 
@@ -58,8 +63,8 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void teleopInit() {
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
+    if (autonomousCommand != null) {
+      autonomousCommand.cancel();
     }
   }
 

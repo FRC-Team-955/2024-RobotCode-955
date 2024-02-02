@@ -51,4 +51,15 @@ public class AngleUtil {
     public static double signedRangeDifferenceDegrees(double reference, double angle) {
         return unsignedRangeDegrees(angle - reference);
     }
+
+    public static double getUnwrappedSetpoint(double current, double setpoint) {
+        current = unsignedRangeDegrees(current);
+        setpoint = unsignedRangeDegrees(setpoint);
+        if (current > 180 && setpoint < 180 && (setpoint + 360) - current < current - setpoint)
+            return setpoint + 360;
+        else if (current < 180 && setpoint > 180 && current - (setpoint - 360) < setpoint - current)
+            return setpoint - 360;
+
+        return setpoint;
+    }
 }
