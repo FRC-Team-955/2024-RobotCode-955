@@ -1,7 +1,5 @@
 package frc.robot.subsystem.swerve;
 
-import com.revrobotics.CANSparkBase;
-import com.revrobotics.REVPhysicsSim;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -18,7 +16,7 @@ public class SwerveModIOSim extends SwerveModIO {
     private double anglePositionAbs = 0;
     private double drivePosition = 0;
 
-    private boolean brake;
+    private boolean brakeMode;
     private double driveVolts;
     private double angleVolts;
 
@@ -31,7 +29,7 @@ public class SwerveModIOSim extends SwerveModIO {
         drive.update(0.02);
         angle.update(0.02);
 
-        if ((brake && Math.abs(driveVolts) <= 0.25) || (DriverStation.isDisabled()))
+        if ((brakeMode && Math.abs(driveVolts) <= 0.25) || (DriverStation.isDisabled()))
             drive.setState(0);
 
         double driveVel = AngleUtil.radToDeg(drive.getAngularVelocityRadPerSec());
@@ -39,7 +37,7 @@ public class SwerveModIOSim extends SwerveModIO {
         inputs.driveVelocityDegSec = driveVel;
         inputs.drivePositionDeg = drivePosition;
 
-        double angleVel = (brake && Math.abs(angleVolts) <= 0.25) || (DriverStation.isDisabled()) ? 0 : AngleUtil.radToDeg(angle.getAngularVelocityRadPerSec());
+        double angleVel = (brakeMode && Math.abs(angleVolts) <= 0.25) || (DriverStation.isDisabled()) ? 0 : AngleUtil.radToDeg(angle.getAngularVelocityRadPerSec());
         anglePositionAbs = AngleUtil.unsignedRangeDegrees(anglePositionAbs + angleVel * 0.02);
         anglePositionRel = AngleUtil.unsignedRangeDegrees(anglePositionRel + angleVel * 0.02);
         inputs.anglePositionDeg = anglePositionRel;
@@ -65,7 +63,7 @@ public class SwerveModIOSim extends SwerveModIO {
     }
 
     @Override
-    public void setIdleMode(SwerveMod.IdleMode mode) {
-        brake = (mode == SwerveMod.IdleMode.Brake);
+    public void setBrakeMode(boolean brake) {
+        brakeMode = brake;
     }
 }

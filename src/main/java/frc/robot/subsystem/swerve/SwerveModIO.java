@@ -20,5 +20,5 @@ public abstract class SwerveModIO {
     public abstract void setDriveVolts(double volts);
     public abstract void setAngleVolts(double volts);
     public abstract void syncEncoders();
-    public abstract void setIdleMode(SwerveMod.IdleMode mode);
+    public abstract void setBrakeMode(boolean brake);
 }

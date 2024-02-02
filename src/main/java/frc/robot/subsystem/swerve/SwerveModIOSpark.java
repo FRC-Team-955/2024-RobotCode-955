@@ -11,20 +11,21 @@ import frc.robot.utility.AngleUtil;
 
 public class SwerveModIOSpark extends SwerveModIO {
 
-    CANSparkBase drive;
-    CANSparkBase angle;
+    private final CANSparkBase drive;
+    private final CANSparkBase angle;
 
-    RelativeEncoder driveEncoder;
-    RelativeEncoder angleEncoder;
+    private final RelativeEncoder driveEncoder;
+    private final RelativeEncoder angleEncoder;
 
-    CANcoder absoluteEncoder;
+    private final CANcoder absoluteEncoder;
 
-    public SwerveModIOSpark(SwerveModIOInputsAutoLogged input, int id) {
+    public SwerveModIOSpark(final SwerveModIOInputsAutoLogged input, final int id) {
         inputs = input;
         drive = new CANSparkMax(0, CANSparkLowLevel.MotorType.kBrushless);
         angle = new CANSparkMax(0, CANSparkLowLevel.MotorType.kBrushless);
         driveEncoder = drive.getEncoder();
         angleEncoder = angle.getEncoder();
+        absoluteEncoder = new CANcoder(0);
         driveEncoder.setPositionConversionFactor(Constants.Swerve.driveGearRatio * Constants.Swerve.relativeConversion);
         driveEncoder.setVelocityConversionFactor(Constants.Swerve.driveGearRatio * Constants.Swerve.relativeConversion);
         angleEncoder.setPositionConversionFactor(Constants.Swerve.angleGearRatio * Constants.Swerve.relativeConversion);
@@ -41,12 +42,12 @@ public class SwerveModIOSpark extends SwerveModIO {
     }
 
     @Override
-    public void setDriveVolts(double volts) {
+    public void setDriveVolts(final double volts) {
         drive.setVoltage(MathUtil.clamp(volts, -12.0, 12.0));
     }
 
     @Override
-    public void setAngleVolts(double volts) {
+    public void setAngleVolts(final double volts) {
         angle.setVoltage(MathUtil.clamp(volts, -12.0, 12.0));
     }
 
@@ -56,8 +57,8 @@ public class SwerveModIOSpark extends SwerveModIO {
     }
 
     @Override
-    public void setIdleMode(SwerveMod.IdleMode mode) {
-        CANSparkBase.IdleMode m = (mode == SwerveMod.IdleMode.Brake) ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast;
+    public void setBrakeMode(final boolean brake) {
+        final CANSparkBase.IdleMode m = brake ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast;
         drive.setIdleMode(m);
         angle.setIdleMode(m);
     }

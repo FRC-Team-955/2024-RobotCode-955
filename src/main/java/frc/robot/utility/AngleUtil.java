@@ -6,7 +6,7 @@ public class AngleUtil {
      * @param degrees The angle in degrees
      * @return The angle in radians
      */
-    public static double degToRad(double degrees) {
+    public static double degToRad(final double degrees) {
         return 2.0 * Math.PI * degrees / 360;
     }
 
@@ -15,7 +15,7 @@ public class AngleUtil {
      * @param radians The angle in radians
      * @return The angle in degrees
      */
-    public static  double radToDeg(double radians) {
+    public static double radToDeg(final double radians) {
         return 360 * radians / (2 * Math.PI);
     }
 
@@ -48,7 +48,7 @@ public class AngleUtil {
      * @param angle The angle in degrees to check for difference relative to the reference angle
      * @return The signed error in degrees from -180 (exclusive) to 180 (inclusive) between the two angles
      */
-    public static double signedRangeDifferenceDegrees(double reference, double angle) {
+    public static double signedRangeDifferenceDegrees(final double reference, final double angle) {
         return unsignedRangeDegrees(angle - reference);
     }
 
