@@ -20,8 +20,9 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    Swerve.instance.setPidHeadingControl(false);
     Swerve.instance.setDefaultCommand(Commands.run(() -> {
-      Swerve.instance.drive(new Translation2d(controller.getLeftY() * 15, controller.getLeftX() * 15), controller.getRightX());
+      Swerve.instance.drivePercents(new Translation2d(controller.getLeftY(), controller.getLeftX()), controller.getRightX(), true);
     }, Swerve.instance));
   }
 

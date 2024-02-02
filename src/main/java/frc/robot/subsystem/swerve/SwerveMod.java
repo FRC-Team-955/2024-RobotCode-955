@@ -45,7 +45,7 @@ public class SwerveMod extends SubsystemBase {
         inputs = new SwerveModIOInputsAutoLogged();
         io = Robot.isSimulation() ? new SwerveModIOSim(inputs, id) : new SwerveModIOSpark(inputs, id);
 
-        drivePid = new PIDController(5, 0, 0);
+        drivePid = new PIDController(10, 0, 0);
         anglePid = new PIDController(0.05, 0, 0.00001);
 
         io.syncEncoders();

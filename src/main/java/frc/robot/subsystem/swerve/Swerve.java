@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.sensor.pose.Gyro;
 import frc.robot.sensor.pose.Odometry;
+import frc.robot.utility.AngleUtil;
 import org.littletonrobotics.junction.Logger;
 
 import java.util.Optional;
@@ -27,17 +28,13 @@ public class Swerve extends SubsystemBase {
     private enum State {
         Lock,
         Drive,
-        DriveRobotRelative,
-        Path,
         Test
     }
 
     private State state = State.Lock;
-
-    private Translation2d driveTranslation = new Translation2d();
-    private double driveHeadingTranslation = 0;
     private double driveHeading = 0;
-    private ChassisSpeeds pathSpeeds;
+    private ChassisSpeeds controlSpeeds;
+    private boolean pidHeadingControl = true;
 
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(Constants.Swerve.modulePositions);
 
@@ -50,7 +47,7 @@ public class Swerve extends SubsystemBase {
                 Odometry::getPose,
                 Odometry::resetPose,
                 this::getSpeedsRelative,
-                this::followPathChassisSpeeds,
+                this::driveChassisSpeeds,
                 new HolonomicPathFollowerConfig(
                         new PIDConstants(0, 0, 0),
                         new PIDConstants(0, 0, 0),
@@ -77,24 +74,7 @@ public class Swerve extends SubsystemBase {
                 }
             }
             case Drive -> {
-                for (SwerveMod mod : SwerveMod.instance) {
-                    mod.setBrakeMode(true);
-                }
-                driveHeading += driveHeadingTranslation * Constants.Input.headingRateOfChange * 0.02;
-                Rotation2d heading = Gyro.getHeading();
-                SwerveModuleState[] states = kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driveTranslation.getX(), driveTranslation.getY(),
-                        driveHeadingTranslation * 6, heading));
-                assignStates(states);
-            }
-            case DriveRobotRelative -> {
-                driveHeading += driveHeadingTranslation * Constants.Input.headingRateOfChange * 0.02;
-                Rotation2d heading = Gyro.getHeading();
-                SwerveModuleState[] states = kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driveTranslation.getX(), driveTranslation.getY(),
-                        headingPid.calculate(heading.getDegrees(), driveHeading), Rotation2d.fromDegrees(0)));
-                assignStates(states);
-            }
-            case Path -> {
-                SwerveModuleState[] states = kinematics.toSwerveModuleStates(pathSpeeds);
+                SwerveModuleState[] states = kinematics.toSwerveModuleStates(controlSpeeds);
                 assignStates(states);
             }
             case Test -> {
@@ -120,16 +100,25 @@ public class Swerve extends SubsystemBase {
     }
 
 
-
-    public void drive(Translation2d translation, double rotation) {
-        driveTranslation = translation;
-        driveHeadingTranslation = rotation;
-        state = State.Drive;
+    /**
+     * Translate and rotate the swerve chassis relative to the field
+     * @param translation The desired field relative translation of the robot
+     * @param rotation The desired turn rate
+     */
+    public void drivePercents(Translation2d translation, double rotation, boolean fieldRelative) {
+        driveSpeeds(translation.times(Constants.Swerve.maxFreeSpeed), rotation * Constants.Swerve.maxRotationSpeed, fieldRelative);
     }
 
-    public void followPathChassisSpeeds(ChassisSpeeds speeds) {
-        state = State.Path;
-        pathSpeeds = speeds;
+    public void driveSpeeds(Translation2d translation, double rotation, boolean fieldRelative) {
+        driveHeading += rotation * 0.02;
+        driveChassisSpeeds(ChassisSpeeds.fromFieldRelativeSpeeds(translation.getX(), translation.getY(),
+                pidHeadingControl ? headingPid.calculate(Gyro.getHeading().getDegrees(), driveHeading) : AngleUtil.degToRad(rotation),
+                fieldRelative ? Gyro.getHeading() : Rotation2d.fromDegrees(0)));
+    }
+
+    public void driveChassisSpeeds(ChassisSpeeds speeds) {
+        controlSpeeds = speeds;
+        state = State.Drive;
     }
 
     public void lock() {
@@ -138,6 +127,10 @@ public class Swerve extends SubsystemBase {
 
     public void TEST() {
         state = State.Test;
+    }
+
+    public void setPidHeadingControl(boolean usePidControl) {
+        pidHeadingControl = usePidControl;
     }
 
 

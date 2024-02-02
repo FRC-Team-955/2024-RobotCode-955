@@ -27,6 +27,7 @@ public class Constants {
         public static final double relativeConversion = 0;
 
         public static final double maxFreeSpeed = 4.60248;
+        public static final double maxRotationSpeed = 360;
 
         public static final class Simulation {
             public static final double driveMoi = 0.025; // Might not be perfect, taken from 6328's code
