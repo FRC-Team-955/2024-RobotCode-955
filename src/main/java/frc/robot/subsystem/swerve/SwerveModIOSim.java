@@ -29,7 +29,7 @@ public class SwerveModIOSim extends SwerveModIO {
         drive.update(0.02);
         angle.update(0.02);
 
-        if ((brakeMode && Math.abs(driveVolts) <= 0.25) || (DriverStation.isDisabled()))
+        if ((brakeMode && Math.abs(driveVolts) <= 0.05) || (DriverStation.isDisabled()))
             drive.setState(0);
 
         double driveVel = AngleUtil.radToDeg(drive.getAngularVelocityRadPerSec());
@@ -37,7 +37,7 @@ public class SwerveModIOSim extends SwerveModIO {
         inputs.driveVelocityDegSec = driveVel;
         inputs.drivePositionDeg = drivePosition;
 
-        double angleVel = (brakeMode && Math.abs(angleVolts) <= 0.25) || (DriverStation.isDisabled()) ? 0 : AngleUtil.radToDeg(angle.getAngularVelocityRadPerSec());
+        double angleVel = (brakeMode && Math.abs(angleVolts) <= 0.05) || (DriverStation.isDisabled()) ? 0 : AngleUtil.radToDeg(angle.getAngularVelocityRadPerSec());
         anglePositionAbs = AngleUtil.unsignedRangeDegrees(anglePositionAbs + angleVel * 0.02);
         anglePositionRel = AngleUtil.unsignedRangeDegrees(anglePositionRel + angleVel * 0.02);
         inputs.anglePositionDeg = anglePositionRel;

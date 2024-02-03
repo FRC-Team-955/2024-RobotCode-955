@@ -30,7 +30,7 @@ public class Constants {
         public static final double maxRotationSpeed = 360;
 
         public static final class Simulation {
-            public static final double driveMoi = 0.025; // Might not be perfect, taken from 6328's code
+            public static final double driveMoi = 0.025; // Might not be perfect
             public static final double angleMoi = 0.004096955; // Might not be perfect, taken from 6328's code
         }
 
@@ -40,6 +40,5 @@ public class Constants {
     }
 
     public static final class Input {
-        public static final double headingRateOfChange = 90;
     }
 }

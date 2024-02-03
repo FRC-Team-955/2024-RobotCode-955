@@ -5,8 +5,10 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -74,7 +76,18 @@ public class Swerve extends SubsystemBase {
                 }
             }
             case Drive -> {
-                SwerveModuleState[] states = kinematics.toSwerveModuleStates(controlSpeeds);
+//                // First Order Kinematics drift fix by FRC 254
+//                // Figure out how far and in what direction we want to be by next tick
+//                Pose2d dPose = new Pose2d(controlSpeeds.vxMetersPerSecond * 0.02,
+//                        controlSpeeds.vyMetersPerSecond * 0.02,
+//                        Rotation2d.fromRadians(controlSpeeds.omegaRadiansPerSecond * 0.02));
+//                // Figure out the arc we want to travel in over the next tick
+//                Twist2d travelArc = new Pose2d(0, 0, Rotation2d.fromDegrees(0)).log(dPose);
+//                // Convert the twist to chassis speeds
+//                ChassisSpeeds updated = new ChassisSpeeds(travelArc.dx / 0.02,
+//                        travelArc.dy / 0.02, travelArc.dtheta / 0.02);
+
+                SwerveModuleState[] states = kinematics.toSwerveModuleStates(ChassisSpeeds.discretize(controlSpeeds, 0.02));
                 assignStates(states);
             }
             case Test -> {

@@ -2,6 +2,7 @@ package frc.robot.subsystem.swerve;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -31,6 +32,7 @@ public class SwerveMod extends SubsystemBase {
     private SwerveModuleState targetState;
 
     private final PIDController drivePid;
+    private final SimpleMotorFeedforward driveFeedforward;
     private final PIDController anglePid;
 
     private SwerveModulePosition positionLast = new SwerveModulePosition();
@@ -45,8 +47,9 @@ public class SwerveMod extends SubsystemBase {
         inputs = new SwerveModIOInputsAutoLogged();
         io = Robot.isSimulation() ? new SwerveModIOSim(inputs, id) : new SwerveModIOSpark(inputs, id);
 
-        drivePid = new PIDController(10, 0, 0);
-        anglePid = new PIDController(0.05, 0, 0.00001);
+        drivePid = new PIDController(3, 0, 0);
+        driveFeedforward = new SimpleMotorFeedforward(0.17, 2.3);
+        anglePid = new PIDController(0.1, 0, 0.00001);
 
         io.syncEncoders();
     }
@@ -60,10 +63,13 @@ public class SwerveMod extends SubsystemBase {
 
         SwerveModuleState target = SwerveModuleState.optimize(targetState, getAnglePositionRotation2d());
 
-        double av = MathUtil.clamp(anglePid.calculate(getAnglePosition(), AngleUtil.getUnwrappedSetpoint(getAnglePosition(), target.angle.getDegrees())), -12.0, 12.0);
+        double av = MathUtil.clamp(anglePid.calculate(getAnglePosition(),
+                AngleUtil.getUnwrappedSetpoint(getAnglePosition(), target.angle.getDegrees())), -12.0, 12.0);
         io.setAngleVolts(av);
-        target.speedMetersPerSecond *= Math.cos(AngleUtil.degToRad(AngleUtil.signedRangeDifferenceDegrees(target.angle.getDegrees(), getAnglePosition())));
-        double dv = MathUtil.clamp(drivePid.calculate(getDriveVelocity(), target.speedMetersPerSecond), -12.0, 12.0);
+        target.speedMetersPerSecond *= Math.cos(AngleUtil.degToRad(
+                AngleUtil.signedRangeDifferenceDegrees(target.angle.getDegrees(), getAnglePosition())));
+        double dv = MathUtil.clamp(driveFeedforward.calculate(target.speedMetersPerSecond) +
+                drivePid.calculate(getDriveVelocity(), target.speedMetersPerSecond), -12.0, 12.0);
         io.setDriveVolts(dv);
 
         Logger.recordOutput("Swerve/Mod" + modId + "/VoltsAngle", av);
@@ -124,7 +130,8 @@ public class SwerveMod extends SubsystemBase {
     }
 
     public SwerveModulePosition getPositionDelta() {
-        return new SwerveModulePosition(getDrivePosition() - positionLast.distanceMeters, getAnglePositionRotation2d());
+        return new SwerveModulePosition(getDrivePosition() - positionLast.distanceMeters,
+                getAnglePositionRotation2d());
     }
 
     /**
@@ -153,7 +160,8 @@ public class SwerveMod extends SubsystemBase {
 
     /**
      * Get the angular position of swerve module
-     * @return The angular position of the drive wheel heading relative to its clockwise position from the front of the robot in degrees from 0 to 360
+     * @return The angular position of the drive wheel heading relative to its clockwise position from
+     * the front of the robot in degrees from 0 to 360
      */
     public double getAnglePosition() {
             return inputs.anglePositionDeg;
@@ -161,7 +169,8 @@ public class SwerveMod extends SubsystemBase {
 
     /**
      * Get the angular position of swerve module
-     * @return The angular position of the drive wheel heading relative to its clockwise position from the front of the robot
+     * @return The angular position of the drive wheel heading relative to its clockwise position from
+     * the front of the robot
      */
     public Rotation2d getAnglePositionRotation2d() {
         return Rotation2d.fromDegrees(getAnglePosition());
@@ -169,7 +178,8 @@ public class SwerveMod extends SubsystemBase {
 
     /**
      * Get the angular velocity of the swerve module
-     * @return The angular velocity of the drive wheel heading relative to its clockwise position from the front of the robot in degrees per second
+     * @return The angular velocity of the drive wheel heading relative to its clockwise position from
+     * the front of the robot in degrees per second
      */
     public double getAngleVelocity() {
         return inputs.angleVelocityDegSec;
@@ -177,7 +187,8 @@ public class SwerveMod extends SubsystemBase {
 
     /**
      * Get the persistent angular position of the swerve module
-     * @return The persistent angular position of the drive wheel heading relative to its clockwise position from the front of the robot in degrees from 0 to 360
+     * @return The persistent angular position of the drive wheel heading relative to its clockwise position from
+     * the front of the robot in degrees from 0 to 360
      */
     public double getAnglePositionAbsolute() {
         return AngleUtil.unsignedRangeDegrees(inputs.anglePositionAbsoluteDeg - localizedOffset);
