@@ -137,7 +137,12 @@ $RECYCLE.BIN/
 
 ### Gradle ###
 .gradle
-/build/
+/build/classes/
+/build/debug/
+/build/jni/
+/build/libs/
+/build/sim/
+/build/tmp/
 
 # Ignore Gradle GUI config
 gradle-app.setting
@@ -172,6 +177,7 @@ out/
 *-window.json
 
 # Simulation data log directory
+*.wpilog
 logs/
 
 # Folder that has CTRE Phoenix Sim device config storage
