@@ -9,27 +9,27 @@ public class ClimberIOSim extends ClimberIO {
     private ClimberIOValuesAutoLogged inputs;
 
     @Override
-    public void updateInputs(ClimberIOValues values) {
+    public void updateInputs() {
 
     }
 
     @Override
-    public void moveLeft(double percent) {
+    public void setLeftVolts(double volts) {
 
     }
 
     @Override
-    public void moveRight(double percent) {
+    public void setRightVolts(double volts) {
 
     }
 
     @Override
-    public void setLeftIdle(Climber.IdleMode mode) {
+    public void setLeftBrake(boolean brake) {
 
     }
 
     @Override
-    public void setRightIdle(Climber.IdleMode mode) {
+    public void setRightBrake(boolean brake) {
 
     }
 }

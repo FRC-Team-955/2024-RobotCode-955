@@ -64,6 +64,7 @@ public class Swerve extends SubsystemBase {
                 },
                 this
         );
+        setBrakeMode(false);
     }
 
     @Override
@@ -146,6 +147,18 @@ public class Swerve extends SubsystemBase {
         pidHeadingControl = usePidControl;
     }
 
+    public void setBrakeMode(boolean brake) {
+        for (SwerveMod mod : SwerveMod.instance) {
+            mod.setBrakeMode(brake);
+        }
+    }
+
+    public void syncEncoders() {
+        for (SwerveMod mod : SwerveMod.instance) {
+            mod.syncEncoders();
+        }
+    }
+
 
 
     private void assignStates(SwerveModuleState[] states) {
@@ -154,15 +167,9 @@ public class Swerve extends SubsystemBase {
         }
     }
 
-    public void assignStatesLocalized(SwerveModuleState[] states) {
+    private void assignStatesLocalized(SwerveModuleState[] states) {
         for (int i = 0; i < 4; i++) {
             SwerveMod.instance[i].setTargetStateLocalized(states[i]);
-        }
-    }
-
-    public void setBrakeMode(boolean brake) {
-        for (SwerveMod mod : SwerveMod.instance) {
-            mod.setBrakeMode(brake);
         }
     }
 

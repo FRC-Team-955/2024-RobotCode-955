@@ -12,8 +12,6 @@ public class ClimberIOValuesAutoLogged extends ClimberIO.ClimberIOValues impleme
     table.put("ExtentionVelocityLeft", extentionVelocityLeft);
     table.put("ExtentionPositionRight", extentionPositionRight);
     table.put("ExtentionVelocityRight", extentionVelocityRight);
-    table.put("AppliedVoltsLeft", appliedVoltsLeft);
-    table.put("AppliedVoltsRight", appliedVoltsRight);
   }
 
   @Override
@@ -22,8 +20,6 @@ public class ClimberIOValuesAutoLogged extends ClimberIO.ClimberIOValues impleme
     extentionVelocityLeft = table.get("ExtentionVelocityLeft", extentionVelocityLeft);
     extentionPositionRight = table.get("ExtentionPositionRight", extentionPositionRight);
     extentionVelocityRight = table.get("ExtentionVelocityRight", extentionVelocityRight);
-    appliedVoltsLeft = table.get("AppliedVoltsLeft", appliedVoltsLeft);
-    appliedVoltsRight = table.get("AppliedVoltsRight", appliedVoltsRight);
   }
 
   public ClimberIOValuesAutoLogged clone() {
@@ -32,8 +28,6 @@ public class ClimberIOValuesAutoLogged extends ClimberIO.ClimberIOValues impleme
     copy.extentionVelocityLeft = this.extentionVelocityLeft;
     copy.extentionPositionRight = this.extentionPositionRight;
     copy.extentionVelocityRight = this.extentionVelocityRight;
-    copy.appliedVoltsLeft = this.appliedVoltsLeft;
-    copy.appliedVoltsRight = this.appliedVoltsRight;
     return copy;
   }
 }

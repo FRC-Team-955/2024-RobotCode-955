@@ -6,8 +6,11 @@ public abstract class IntakeIO {
     @AutoLog
     public static class IntakeIOInputs {
         public double position;
-        public boolean noteDetected;
+        public boolean noteCaptured;
+        public boolean noteSecured;
     }
+
+    protected IntakeIOInputsAutoLogged inputs;
 
     public abstract void updateInputs();
 

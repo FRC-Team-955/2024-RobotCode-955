@@ -21,11 +21,11 @@ public class SwerveModIOSpark extends SwerveModIO {
 
     public SwerveModIOSpark(final SwerveModIOInputsAutoLogged input, final int id) {
         inputs = input;
-        drive = new CANSparkMax(0, CANSparkLowLevel.MotorType.kBrushless);
-        angle = new CANSparkMax(0, CANSparkLowLevel.MotorType.kBrushless);
+        drive = new CANSparkMax(Constants.Swerve.driveIds[id], CANSparkLowLevel.MotorType.kBrushless);
+        angle = new CANSparkMax(Constants.Swerve.angleIds[id], CANSparkLowLevel.MotorType.kBrushless);
         driveEncoder = drive.getEncoder();
         angleEncoder = angle.getEncoder();
-        absoluteEncoder = new CANcoder(0);
+        absoluteEncoder = new CANcoder(Constants.Swerve.encoderIds[id]);
         driveEncoder.setPositionConversionFactor(Constants.Swerve.driveGearRatio * Constants.Swerve.relativeConversion);
         driveEncoder.setVelocityConversionFactor(Constants.Swerve.driveGearRatio * Constants.Swerve.relativeConversion);
         angleEncoder.setPositionConversionFactor(Constants.Swerve.angleGearRatio * Constants.Swerve.relativeConversion);
@@ -34,7 +34,7 @@ public class SwerveModIOSpark extends SwerveModIO {
 
     @Override
     public void updateInputs() {
-        inputs.anglePositionAbsoluteDeg = absoluteEncoder.getPosition().getValue() * Constants.Swerve.absoluteConversion;
+        inputs.anglePositionAbsoluteDeg = AngleUtil.unsignedRangeDegrees(absoluteEncoder.getPosition().getValue() * Constants.Swerve.absoluteConversion);
         inputs.anglePositionDeg = AngleUtil.unsignedRangeDegrees(angleEncoder.getPosition());
         inputs.angleVelocityDegSec = angleEncoder.getVelocity();
         inputs.drivePositionDeg = driveEncoder.getPosition();
@@ -53,7 +53,7 @@ public class SwerveModIOSpark extends SwerveModIO {
 
     @Override
     public void syncEncoders() {
-        angleEncoder.setPosition(inputs.anglePositionAbsoluteDeg);
+        angleEncoder.setPosition(-absoluteEncoder.getPosition().getValue() * Constants.Swerve.absoluteConversion);
     }
 
     @Override

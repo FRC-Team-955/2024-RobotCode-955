@@ -2,15 +2,12 @@ package frc.robot.subsystem.intake;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.utility.MatchUtil;
 
 public class Intake extends SubsystemBase {
-
-    public static Intake instace = new Intake();
 
     private Intake() {
         inputs = new IntakeIOInputsAutoLogged();
@@ -71,5 +68,6 @@ public class Intake extends SubsystemBase {
         }
     }
 
-    public boolean hasNote() { return inputs.noteDetected; }
+    public boolean noteCaptured() { return inputs.noteCaptured; }
+    public boolean noteSecured() { return inputs.noteSecured; }
 }

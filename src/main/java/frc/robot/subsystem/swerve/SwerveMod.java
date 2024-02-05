@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.utility.AngleUtil;
+import frc.robot.utility.InputUtil;
 import org.littletonrobotics.junction.Logger;
 
 public class SwerveMod extends SubsystemBase {
@@ -47,7 +48,7 @@ public class SwerveMod extends SubsystemBase {
         inputs = new SwerveModIOInputsAutoLogged();
         io = Robot.isSimulation() ? new SwerveModIOSim(inputs, id) : new SwerveModIOSpark(inputs, id);
 
-        drivePid = new PIDController(3, 0, 0);
+        drivePid = new PIDController(0.5, 0, 0);
         driveFeedforward = new SimpleMotorFeedforward(0.17, 2.3);
         anglePid = new PIDController(0.1, 0, 0.00001);
 
@@ -68,8 +69,9 @@ public class SwerveMod extends SubsystemBase {
         io.setAngleVolts(av);
         target.speedMetersPerSecond *= Math.cos(AngleUtil.degToRad(
                 AngleUtil.signedRangeDifferenceDegrees(target.angle.getDegrees(), getAnglePosition())));
-        double dv = MathUtil.clamp(driveFeedforward.calculate(target.speedMetersPerSecond) +
-                drivePid.calculate(getDriveVelocity(), target.speedMetersPerSecond), -12.0, 12.0);
+//        double dv = MathUtil.clamp(driveFeedforward.calculate(target.speedMetersPerSecond) +
+//                drivePid.calculate(getDriveVelocity(), target.speedMetersPerSecond), -12.0, 12.0);
+        double dv = (target.speedMetersPerSecond / Constants.Swerve.maxFreeSpeed) * 12;
         io.setDriveVolts(dv);
 
         Logger.recordOutput("Swerve/Mod" + modId + "/VoltsAngle", av);

@@ -9,15 +9,14 @@ public abstract class ClimberIO {
         public double extentionVelocityLeft;
         public double extentionPositionRight;
         public double extentionVelocityRight;
-
-        public double appliedVoltsLeft;
-        public double appliedVoltsRight;
     }
 
-    public abstract void updateInputs(ClimberIOValues values);
+    protected ClimberIOValuesAutoLogged inputs;
 
-    public abstract void moveLeft(double percent);
-    public abstract void moveRight(double percent);
-    public abstract void setLeftIdle(Climber.IdleMode mode);
-    public abstract void setRightIdle(Climber.IdleMode mode);
+    public abstract void updateInputs();
+
+    public abstract void setLeftVolts(double volts);
+    public abstract void setRightVolts(double volts);
+    public abstract void setLeftBrake(boolean brake);
+    public abstract void setRightBrake(boolean brake);
 }

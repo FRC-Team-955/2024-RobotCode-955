@@ -9,19 +9,22 @@ public class IntakeIOInputsAutoLogged extends IntakeIO.IntakeIOInputs implements
   @Override
   public void toLog(LogTable table) {
     table.put("Position", position);
-    table.put("NoteDetected", noteDetected);
+    table.put("NoteCaptured", noteCaptured);
+    table.put("NoteSecured", noteSecured);
   }
 
   @Override
   public void fromLog(LogTable table) {
     position = table.get("Position", position);
-    noteDetected = table.get("NoteDetected", noteDetected);
+    noteCaptured = table.get("NoteCaptured", noteCaptured);
+    noteSecured = table.get("NoteSecured", noteSecured);
   }
 
   public IntakeIOInputsAutoLogged clone() {
     IntakeIOInputsAutoLogged copy = new IntakeIOInputsAutoLogged();
     copy.position = this.position;
-    copy.noteDetected = this.noteDetected;
+    copy.noteCaptured = this.noteCaptured;
+    copy.noteSecured = this.noteSecured;
     return copy;
   }
 }

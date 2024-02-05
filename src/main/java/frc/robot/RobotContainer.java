@@ -8,22 +8,24 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystem.swerve.Swerve;
 
 public class RobotContainer {
 
-  CommandPS4Controller controller;
+  CommandXboxController controller;
 
   public RobotContainer() {
-    controller = new CommandPS4Controller(0);
+    controller = new CommandXboxController(0);
     configureBindings();
   }
 
   private void configureBindings() {
     Swerve.instance.setPidHeadingControl(false);
     Swerve.instance.setDefaultCommand(Commands.run(() -> {
-      Swerve.instance.drivePercents(new Translation2d(controller.getLeftY(), controller.getLeftX()), controller.getRightX(), true);
+      Swerve.instance.drivePercents(new Translation2d(controller.getLeftY(), controller.getLeftX()), controller.getRightX(), false);
     }, Swerve.instance));
+    controller.a().onTrue(Commands.runOnce(Swerve.instance::syncEncoders));
   }
 
   public Command getAutonomousCommand() {

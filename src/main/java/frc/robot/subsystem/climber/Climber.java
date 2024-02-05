@@ -1,51 +1,51 @@
 package frc.robot.subsystem.climber;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Robot;
 
 public class Climber extends SubsystemBase {
-
-    public static Climber instance = new Climber();
 
     private Climber() {
         inputs = new ClimberIOValuesAutoLogged();
         io = (Robot.isSimulation()) ? new ClimberIOSim(inputs) : new ClimberIOSparkMax(inputs);
     }
 
-    public enum IdleMode {
-        Brake,
-        Free
-    }
-
-    private ClimberIO io;
-    private ClimberIOValuesAutoLogged inputs;
+    private final ClimberIO io;
+    private final ClimberIOValuesAutoLogged inputs;
 
     private double left;
     private double right;
 
-    private PIDController pidLeft;
-    private PIDController pidRight;
-
-    public void setTargetLeft(double percent) {
-        left = percent;
+    public void setTargetLeft(double position) {
+        left = position;
     }
 
-    public void setTargetRight(double percent) {
-        right = percent;
+    public void setTargetRight(double position) {
+        right = position;
     }
 
-    public void setModeLeft(IdleMode mode) {
-        io.setLeftIdle(mode);
-    }
+    public void setLeftBrake(boolean brake) { io.setLeftBrake(brake); }
 
-    public void setModeRight(IdleMode mode) {
-        io.setRightIdle(mode);
+    public void setRightBrake(boolean brake) {
+        io.setRightBrake(brake);
     }
 
 
     @Override
     public void periodic() {
+        if (inputs.extentionPositionLeft < left)
+            io.setLeftVolts(Constants.Climber.extendVoltage);
+        else if (inputs.extentionPositionLeft > left)
+            io.setLeftVolts(Constants.Climber.climbVoltage);
+        else
+            io.setLeftVolts(0);
 
+        if (inputs.extentionPositionRight < right)
+            io.setRightVolts(Constants.Climber.extendVoltage);
+        else if (inputs.extentionPositionRight > right)
+            io.setRightVolts(Constants.Climber.climbVoltage);
+        else
+            io.setRightVolts(0);
     }
 }
