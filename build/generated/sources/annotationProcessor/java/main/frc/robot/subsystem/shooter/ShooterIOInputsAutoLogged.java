@@ -16,6 +16,7 @@ public class ShooterIOInputsAutoLogged extends ShooterIO.ShooterIOInputs impleme
     table.put("FlywheelVelocityLeft", flywheelVelocityLeft);
     table.put("FlywheelPositionRight", flywheelPositionRight);
     table.put("FlywheelVelocityRight", flywheelVelocityRight);
+    table.put("UltrasonicRange", ultrasonicRange);
   }
 
   @Override
@@ -28,6 +29,7 @@ public class ShooterIOInputsAutoLogged extends ShooterIO.ShooterIOInputs impleme
     flywheelVelocityLeft = table.get("FlywheelVelocityLeft", flywheelVelocityLeft);
     flywheelPositionRight = table.get("FlywheelPositionRight", flywheelPositionRight);
     flywheelVelocityRight = table.get("FlywheelVelocityRight", flywheelVelocityRight);
+    ultrasonicRange = table.get("UltrasonicRange", ultrasonicRange);
   }
 
   public ShooterIOInputsAutoLogged clone() {
@@ -40,6 +42,7 @@ public class ShooterIOInputsAutoLogged extends ShooterIO.ShooterIOInputs impleme
     copy.flywheelVelocityLeft = this.flywheelVelocityLeft;
     copy.flywheelPositionRight = this.flywheelPositionRight;
     copy.flywheelVelocityRight = this.flywheelVelocityRight;
+    copy.ultrasonicRange = this.ultrasonicRange;
     return copy;
   }
 }
