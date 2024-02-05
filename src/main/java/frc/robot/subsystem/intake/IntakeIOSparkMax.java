@@ -23,8 +23,8 @@ public class IntakeIOSparkMax extends IntakeIO {
     @Override
     public void updateInputs() {
         inputs.position = deploy.getEncoder().getPosition();
-        inputs.noteCaptured = ultrasonic.getRangeInches() <= Constants.Intake.noteCaptureDistance;
-        inputs.noteSecured = ultrasonic.getRangeInches() <= Constants.Intake.noteSecureDistance;
+        inputs.noteCaptured = ultrasonic.getRangeInches() <= Constants.Intake.UltrasonicRanges.noteCaptureDistance;
+        inputs.noteSecured = ultrasonic.getRangeInches() <= Constants.Intake.UltrasonicRanges.noteSecureDistance;
     }
 
     @Override

@@ -8,7 +8,7 @@ import frc.robot.utility.AngleUtil;
 public class IntakeIOSim extends IntakeIO {
 
     private final SingleJointedArmSim deploy = new SingleJointedArmSim(DCMotor.getNEO(1),
-            Constants.Intake.gearRatio, Constants.Intake.Simulation.moi, Constants.Intake.Simulation.length,
+            Constants.Intake.gearRatioDeploy, Constants.Intake.Simulation.moi, Constants.Intake.Simulation.length,
             0.0, AngleUtil.degToRad(Constants.Intake.maxAngle), true, 0.0);
 
     private boolean brakeMode = true;

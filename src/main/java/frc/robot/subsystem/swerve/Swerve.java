@@ -5,15 +5,14 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.sensor.pose.Gyro;
@@ -23,6 +22,10 @@ import org.littletonrobotics.junction.Logger;
 
 import java.util.Optional;
 
+
+/**
+ * The Swerve Drivebase {@link Subsystem} for robot movement
+ */
 public class Swerve extends SubsystemBase {
 
     public static final Swerve instance = new Swerve();
@@ -54,8 +57,8 @@ public class Swerve extends SubsystemBase {
                         new PIDConstants(0, 0, 0),
                         new PIDConstants(0, 0, 0),
                         Constants.Swerve.maxFreeSpeed,
-                        Math.sqrt((Constants.frameX - Constants.Swerve.wheelInset) * (Constants.frameX - Constants.Swerve.wheelInset) +
-                            (Constants.frameY - Constants.Swerve.wheelInset) * (Constants.frameY - Constants.Swerve.wheelInset)),
+                        Math.hypot(Constants.frameX - Constants.Swerve.wheelInset,
+                                Constants.frameY - Constants.Swerve.wheelInset),
                         new ReplanningConfig()
                 ),
                 () -> {
@@ -67,6 +70,8 @@ public class Swerve extends SubsystemBase {
         setBrakeMode(false);
     }
 
+
+
     @Override
     public void periodic() {
         switch (state) {
@@ -77,17 +82,6 @@ public class Swerve extends SubsystemBase {
                 }
             }
             case Drive -> {
-//                // First Order Kinematics drift fix by FRC 254
-//                // Figure out how far and in what direction we want to be by next tick
-//                Pose2d dPose = new Pose2d(controlSpeeds.vxMetersPerSecond * 0.02,
-//                        controlSpeeds.vyMetersPerSecond * 0.02,
-//                        Rotation2d.fromRadians(controlSpeeds.omegaRadiansPerSecond * 0.02));
-//                // Figure out the arc we want to travel in over the next tick
-//                Twist2d travelArc = new Pose2d(0, 0, Rotation2d.fromDegrees(0)).log(dPose);
-//                // Convert the twist to chassis speeds
-//                ChassisSpeeds updated = new ChassisSpeeds(travelArc.dx / 0.02,
-//                        travelArc.dy / 0.02, travelArc.dtheta / 0.02);
-
                 SwerveModuleState[] states = kinematics.toSwerveModuleStates(ChassisSpeeds.discretize(controlSpeeds, 0.02));
                 assignStates(states);
             }
@@ -115,14 +109,21 @@ public class Swerve extends SubsystemBase {
 
 
     /**
-     * Translate and rotate the swerve chassis relative to the field
-     * @param translation The desired field relative translation of the robot
-     * @param rotation The desired turn rate
+     * Translates and rotates the swerve chassis based on percentage inputs
+     * @param translation The desired translation of the robot in percentage of max speed
+     * @param rotation The desired turn rate in percentage of max turn rate
+     * @param fieldRelative Whether the translation should be relative to the field
      */
     public void drivePercents(Translation2d translation, double rotation, boolean fieldRelative) {
         driveSpeeds(translation.times(Constants.Swerve.maxFreeSpeed), rotation * Constants.Swerve.maxRotationSpeed, fieldRelative);
     }
 
+    /**
+     * Translates and rotates the swerve chassis based on velocity inputs
+     * @param translation The desired translation of the robot in meters per second
+     * @param rotation The desired turn rate in degrees per second
+     * @param fieldRelative Whether the translation should be relative to the field
+     */
     public void driveSpeeds(Translation2d translation, double rotation, boolean fieldRelative) {
         driveHeading += rotation * 0.02;
         driveChassisSpeeds(ChassisSpeeds.fromFieldRelativeSpeeds(translation.getX(), translation.getY(),
@@ -130,11 +131,19 @@ public class Swerve extends SubsystemBase {
                 fieldRelative ? Gyro.getHeading() : Rotation2d.fromDegrees(0)));
     }
 
+    /**
+     * Translates and rotates the robot based on robot relative {@link ChassisSpeeds}
+     * @param speeds The desired robot relative motion
+     */
     public void driveChassisSpeeds(ChassisSpeeds speeds) {
         controlSpeeds = speeds;
         state = State.Drive;
     }
 
+    /**
+     * Prevents the swerve drivebase from moving on the field by facing all wheels inwards and
+     * setting them to brake mode
+     */
     public void lock() {
         state = State.Lock;
     }
@@ -143,16 +152,29 @@ public class Swerve extends SubsystemBase {
         state = State.Test;
     }
 
+    /**
+     * Sets whether the {@link Swerve#drivePercents(Translation2d, double, boolean)} and
+     * {@link Swerve#driveSpeeds(Translation2d, double, boolean)} methods control the robot with
+     * PID heading control or direct angular velocity control
+     * @param usePidControl Whether to use PID heading control
+     */
     public void setPidHeadingControl(boolean usePidControl) {
         pidHeadingControl = usePidControl;
     }
 
+    /**
+     * Sets whether to use brake mode on the swerve modules
+     * @param brake Whether to use brake mode
+     */
     public void setBrakeMode(boolean brake) {
         for (SwerveMod mod : SwerveMod.instance) {
             mod.setBrakeMode(brake);
         }
     }
 
+    /**
+     * Syncs the relative encoders on the angle motors with the absolute encoders on the swerve modules
+     */
     public void syncEncoders() {
         for (SwerveMod mod : SwerveMod.instance) {
             mod.syncEncoders();
@@ -161,12 +183,22 @@ public class Swerve extends SubsystemBase {
 
 
 
+    /**
+     * Assigns the given states to the swerve modules
+     * @param states An array of {@link SwerveModuleState}s to be sent to their respective swerve modules
+     *               as described by {@link SwerveMod#modId}
+     */
     private void assignStates(SwerveModuleState[] states) {
         for (int i = 0; i < 4; i++) {
             SwerveMod.instance[i].setTargetState(states[i]);
         }
     }
 
+    /**
+     * Assigns the given states to the swerve modules based on the module's local heading, with 0 being the
+     * @param states An array of {@link SwerveModuleState}s to be sent to their respective swerve modules
+     *               as described by {@link SwerveMod#modId}
+     */
     private void assignStatesLocalized(SwerveModuleState[] states) {
         for (int i = 0; i < 4; i++) {
             SwerveMod.instance[i].setTargetStateLocalized(states[i]);
@@ -174,7 +206,11 @@ public class Swerve extends SubsystemBase {
     }
 
 
-
+    /**
+     * Gets the current swerve module states
+     * @return An array of {@link SwerveModuleState} representing the current state of each respective swerve module
+     * as described by {@link SwerveMod#modId}
+     */
     public SwerveModuleState[] getStates() {
         return new SwerveModuleState[] {
                 SwerveMod.instance[0].getCurrentState(),
@@ -184,6 +220,11 @@ public class Swerve extends SubsystemBase {
         };
     }
 
+    /**
+     * Gets the current target swerve module states
+     * @return An array of {@link SwerveModuleState} representing the current target state of each respective swerve module
+     * as described by {@link SwerveMod#modId}
+     */
     public SwerveModuleState[] getTargetStates() {
         return new SwerveModuleState[] {
                 SwerveMod.instance[0].getTargetState(),
@@ -193,6 +234,11 @@ public class Swerve extends SubsystemBase {
         };
     }
 
+    /**
+     * Gets the current swerve module states
+     * @return An array of {@link SwerveModulePosition} representing the current state of each respective swerve module
+     * as described by {@link SwerveMod#modId}
+     */
     public SwerveModulePosition[] getPositions() {
         return new SwerveModulePosition[] {
                 SwerveMod.instance[0].getCurrentPosition(),
@@ -202,6 +248,10 @@ public class Swerve extends SubsystemBase {
         };
     }
 
+    /**
+     * Gets the robot relative speeds of the swerve drivebase
+     * @return A {@link ChassisSpeeds} representing the current swerve drivebase speeds
+     */
     public ChassisSpeeds getSpeedsRelative() {
         return kinematics.toChassisSpeeds(getStates());
     }

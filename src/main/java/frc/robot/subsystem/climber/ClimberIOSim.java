@@ -2,11 +2,11 @@ package frc.robot.subsystem.climber;
 
 public class ClimberIOSim extends ClimberIO {
 
-    public ClimberIOSim(ClimberIOValuesAutoLogged input) {
+    public ClimberIOSim(ClimberIOInputsAutoLogged input) {
         inputs = input;
     }
 
-    private ClimberIOValuesAutoLogged inputs;
+    private final ClimberIOInputsAutoLogged inputs;
 
     @Override
     public void updateInputs() {

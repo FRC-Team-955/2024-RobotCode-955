@@ -7,8 +7,6 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
 import frc.robot.Constants;
 
-import java.lang.module.Configuration;
-
 public class ClimberIOSparkMax extends ClimberIO {
 
     private final CANSparkBase left;
@@ -17,7 +15,7 @@ public class ClimberIOSparkMax extends ClimberIO {
     private final RelativeEncoder encoderLeft;
     private final RelativeEncoder encoderRight;
 
-    public ClimberIOSparkMax(ClimberIOValuesAutoLogged input) {
+    public ClimberIOSparkMax(ClimberIOInputsAutoLogged input) {
         inputs = input;
         left = new CANSparkMax(Constants.Climber.leftId, CANSparkLowLevel.MotorType.kBrushless);
         right = new CANSparkMax(Constants.Climber.rightId, CANSparkLowLevel.MotorType.kBrushless);
@@ -34,10 +32,10 @@ public class ClimberIOSparkMax extends ClimberIO {
 
     @Override
     public void updateInputs() {
-        inputs.extentionPositionLeft = encoderLeft.getPosition();
-        inputs.extentionVelocityLeft = encoderLeft.getVelocity();
-        inputs.extentionPositionRight = encoderRight.getPosition();
-        inputs.extentionVelocityRight = encoderRight.getVelocity();
+        inputs.extensionPositionLeft = encoderLeft.getPosition();
+        inputs.extensionVelocityLeft = encoderLeft.getVelocity();
+        inputs.extensionPositionRight = encoderRight.getPosition();
+        inputs.extensionVelocityRight = encoderRight.getVelocity();
     }
 
     @Override

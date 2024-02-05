@@ -2,18 +2,16 @@ package frc.robot.subsystem.intake;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.utility.MatchUtil;
 
+/**
+ * The Intake {@link Subsystem} for collecting notes from the ground
+ */
 public class Intake extends SubsystemBase {
-
-    private Intake() {
-        inputs = new IntakeIOInputsAutoLogged();
-        io = Robot.isSimulation() ? new IntakeIOSim(inputs) : new IntakeIOSparkMax(inputs);
-        extendController = new PIDController(0, 0, 0);
-    }
 
     private final IntakeIO io;
     private final IntakeIOInputsAutoLogged inputs;
@@ -24,22 +22,15 @@ public class Intake extends SubsystemBase {
     private boolean slamOut = false;
     private final PIDController extendController;
 
-    public void slamPosition(double position, boolean out) {
-        slam = true;
-        slamOut = out;
-        targetPosition = position;
+
+
+    private Intake() {
+        inputs = new IntakeIOInputsAutoLogged();
+        io = Robot.isSimulation() ? new IntakeIOSim(inputs) : new IntakeIOSparkMax(inputs);
+        extendController = new PIDController(0, 0, 0);
     }
 
-    public void movePosition(double position) {
-        slam = false;
-        reached = false;
-        targetPosition = position;
-        extendController.setSetpoint(position);
-    }
 
-    public void setIntakePercent(double percent) {
-        io.setIntakeMotor(MathUtil.clamp(percent, -1, 1) * 12.0);
-    }
 
     @Override
     public void periodic() {
@@ -68,6 +59,49 @@ public class Intake extends SubsystemBase {
         }
     }
 
+
+
+    /**
+     * Slams the intake to the specified position as fast as possible
+     * @param position The position for the intake to slam to
+     * @param out Whether the intake is intended to slam outwards
+     */
+    public void slamPosition(double position, boolean out) {
+        slam = true;
+        slamOut = out;
+        targetPosition = position;
+    }
+
+    /**
+     * Moves the intake to the specified position
+     * @param position The position for the intake to move to
+     */
+    public void movePosition(double position) {
+        slam = false;
+        reached = false;
+        targetPosition = position;
+        extendController.setSetpoint(position);
+    }
+
+    /**
+     * Set the percentage speed of the intake motor (not the deploy motor)
+     * @param percent The percentage speed (-1 to 1)
+     */
+    public void setIntakePercent(double percent) {
+        io.setIntakeMotor(MathUtil.clamp(percent, -1, 1) * 12.0);
+    }
+
+
+
+    /**
+     * Gets whether a note had been grabbed by the intake
+     * @return Whether there is a note in the intake
+     */
     public boolean noteCaptured() { return inputs.noteCaptured; }
+
+    /**
+     * Gets whether a note has been secured by the intake
+     * @return Whether there is a note fully in the intake
+     */
     public boolean noteSecured() { return inputs.noteSecured; }
 }
