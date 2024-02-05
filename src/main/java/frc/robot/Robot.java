@@ -5,7 +5,6 @@
 package frc.robot;
 
 import frc.robot.sensor.pose.Odometry;
-import frc.robot.subsystem.swerve.SwerveMod;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 

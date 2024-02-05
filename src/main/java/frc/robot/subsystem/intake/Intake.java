@@ -13,6 +13,8 @@ import frc.robot.utility.MatchUtil;
  */
 public class Intake extends SubsystemBase {
 
+    public static Intake instance;
+
     private final IntakeIO io;
     private final IntakeIOInputsAutoLogged inputs;
 
@@ -25,9 +27,17 @@ public class Intake extends SubsystemBase {
 
 
     private Intake() {
+        instance = this;
         inputs = new IntakeIOInputsAutoLogged();
         io = Robot.isSimulation() ? new IntakeIOSim(inputs) : new IntakeIOSparkMax(inputs);
         extendController = new PIDController(0, 0, 0);
+    }
+
+    /**
+     * Initialize the subsystem
+     */
+    public static void init() {
+        if (instance == null) new Intake();
     }
 
 
@@ -66,7 +76,10 @@ public class Intake extends SubsystemBase {
      * @param position The position for the intake to slam to
      * @param out Whether the intake is intended to slam outwards
      */
-    public void slamPosition(double position, boolean out) {
+    public static void slamPosition(double position, boolean out) {
+        instance.slamPositionI(position, out);
+    }
+    private void slamPositionI(double position, boolean out) {
         slam = true;
         slamOut = out;
         targetPosition = position;
@@ -76,7 +89,10 @@ public class Intake extends SubsystemBase {
      * Moves the intake to the specified position
      * @param position The position for the intake to move to
      */
-    public void movePosition(double position) {
+    public static void movePosition(double position) {
+        instance.movePositionI(position);
+    }
+    private void movePositionI(double position) {
         slam = false;
         reached = false;
         targetPosition = position;
@@ -87,7 +103,10 @@ public class Intake extends SubsystemBase {
      * Set the percentage speed of the intake motor (not the deploy motor)
      * @param percent The percentage speed (-1 to 1)
      */
-    public void setIntakePercent(double percent) {
+    public static void setIntakePercent(double percent) {
+        instance.movePositionI(percent);
+    }
+    private void setIntakePercentI(double percent) {
         io.setIntakeMotor(MathUtil.clamp(percent, -1, 1) * 12.0);
     }
 
@@ -97,11 +116,17 @@ public class Intake extends SubsystemBase {
      * Gets whether a note had been grabbed by the intake
      * @return Whether there is a note in the intake
      */
-    public boolean noteCaptured() { return inputs.noteCaptured; }
+    public static boolean noteCaptured() {
+        return instance.noteCapturedI();
+    }
+    private boolean noteCapturedI() { return inputs.noteCaptured; }
 
     /**
      * Gets whether a note has been secured by the intake
      * @return Whether there is a note fully in the intake
      */
-    public boolean noteSecured() { return inputs.noteSecured; }
+    public static boolean noteSecured() {
+        return instance.noteSecuredI();
+    }
+    private boolean noteSecuredI() { return inputs.noteSecured; }
 }

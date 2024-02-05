@@ -21,11 +21,11 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    Swerve.instance.setPidHeadingControl(false);
+    Swerve.setPidHeadingControl(false);
     Swerve.instance.setDefaultCommand(Commands.run(() -> {
-      Swerve.instance.drivePercents(new Translation2d(controller.getLeftY(), controller.getLeftX()), controller.getRightX(), false);
+      Swerve.drivePercents(new Translation2d(controller.getLeftY(), controller.getLeftX()), controller.getRightX(), false);
     }, Swerve.instance));
-    controller.a().onTrue(Commands.runOnce(Swerve.instance::syncEncoders));
+    controller.a().onTrue(Commands.runOnce(Swerve::syncEncoders));
   }
 
   public Command getAutonomousCommand() {

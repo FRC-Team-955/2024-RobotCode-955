@@ -28,7 +28,7 @@ import java.util.Optional;
  */
 public class Swerve extends SubsystemBase {
 
-    public static final Swerve instance = new Swerve();
+    public static Swerve instance;
 
     private enum State {
         Lock,
@@ -51,8 +51,8 @@ public class Swerve extends SubsystemBase {
         AutoBuilder.configureHolonomic(
                 Odometry::getPose,
                 Odometry::resetPose,
-                this::getSpeedsRelative,
-                this::driveChassisSpeeds,
+                this::getSpeedsRelativeI,
+                this::driveChassisSpeedsI,
                 new HolonomicPathFollowerConfig(
                         new PIDConstants(0, 0, 0),
                         new PIDConstants(0, 0, 0),
@@ -67,7 +67,14 @@ public class Swerve extends SubsystemBase {
                 },
                 this
         );
-        setBrakeMode(false);
+        setBrakeModeI(false);
+    }
+
+    /**
+     * Initializes the subsystem
+     */
+    public static void init() {
+        if (instance == null) new Swerve();
     }
 
 
@@ -103,8 +110,8 @@ public class Swerve extends SubsystemBase {
         Gyro.updateEstimateDelta(Rotation2d.fromRadians(kinematics.toTwist2d(deltas).dtheta));
         Odometry.updateEstimatePositions();
 
-        Logger.recordOutput("SwerveStates/Target", getTargetStates());
-        Logger.recordOutput("SwerveStates/Current", getStates());
+        Logger.recordOutput("SwerveStates/Target", getTargetStatesI());
+        Logger.recordOutput("SwerveStates/Current", getStatesI());
     }
 
 
@@ -114,8 +121,11 @@ public class Swerve extends SubsystemBase {
      * @param rotation The desired turn rate in percentage of max turn rate
      * @param fieldRelative Whether the translation should be relative to the field
      */
-    public void drivePercents(Translation2d translation, double rotation, boolean fieldRelative) {
-        driveSpeeds(translation.times(Constants.Swerve.maxFreeSpeed), rotation * Constants.Swerve.maxRotationSpeed, fieldRelative);
+    public static void drivePercents(Translation2d translation, double rotation, boolean fieldRelative) {
+        instance.drivePercentsI(translation, rotation, fieldRelative);
+    }
+    private void drivePercentsI(Translation2d translation, double rotation, boolean fieldRelative) {
+        driveSpeedsI(translation.times(Constants.Swerve.maxFreeSpeed), rotation * Constants.Swerve.maxRotationSpeed, fieldRelative);
     }
 
     /**
@@ -124,9 +134,12 @@ public class Swerve extends SubsystemBase {
      * @param rotation The desired turn rate in degrees per second
      * @param fieldRelative Whether the translation should be relative to the field
      */
-    public void driveSpeeds(Translation2d translation, double rotation, boolean fieldRelative) {
+    public static void driveSpeeds(Translation2d translation, double rotation, boolean fieldRelative) {
+        instance.driveSpeedsI(translation, rotation, fieldRelative);
+    }
+    private void driveSpeedsI(Translation2d translation, double rotation, boolean fieldRelative) {
         driveHeading += rotation * 0.02;
-        driveChassisSpeeds(ChassisSpeeds.fromFieldRelativeSpeeds(translation.getX(), translation.getY(),
+        driveChassisSpeedsI(ChassisSpeeds.fromFieldRelativeSpeeds(translation.getX(), translation.getY(),
                 pidHeadingControl ? headingPid.calculate(Gyro.getHeading().getDegrees(), driveHeading) : AngleUtil.degToRad(rotation),
                 fieldRelative ? Gyro.getHeading() : Rotation2d.fromDegrees(0)));
     }
@@ -135,7 +148,10 @@ public class Swerve extends SubsystemBase {
      * Translates and rotates the robot based on robot relative {@link ChassisSpeeds}
      * @param speeds The desired robot relative motion
      */
-    public void driveChassisSpeeds(ChassisSpeeds speeds) {
+    public static void driveChassisSpeeds(ChassisSpeeds speeds) {
+        instance.driveChassisSpeedsI(speeds);
+    }
+    private void driveChassisSpeedsI(ChassisSpeeds speeds) {
         controlSpeeds = speeds;
         state = State.Drive;
     }
@@ -144,7 +160,10 @@ public class Swerve extends SubsystemBase {
      * Prevents the swerve drivebase from moving on the field by facing all wheels inwards and
      * setting them to brake mode
      */
-    public void lock() {
+    public static void lock() {
+        instance.lockI();
+    }
+    private void lockI() {
         state = State.Lock;
     }
 
@@ -158,7 +177,10 @@ public class Swerve extends SubsystemBase {
      * PID heading control or direct angular velocity control
      * @param usePidControl Whether to use PID heading control
      */
-    public void setPidHeadingControl(boolean usePidControl) {
+    public static void setPidHeadingControl(boolean usePidControl) {
+        instance.setPidHeadingControlI(usePidControl);
+    }
+    private void setPidHeadingControlI(boolean usePidControl) {
         pidHeadingControl = usePidControl;
     }
 
@@ -166,7 +188,10 @@ public class Swerve extends SubsystemBase {
      * Sets whether to use brake mode on the swerve modules
      * @param brake Whether to use brake mode
      */
-    public void setBrakeMode(boolean brake) {
+    public static void setBrakeMode(boolean brake) {
+        instance.setBrakeModeI(brake);
+    }
+    private void setBrakeModeI(boolean brake) {
         for (SwerveMod mod : SwerveMod.instance) {
             mod.setBrakeMode(brake);
         }
@@ -175,7 +200,10 @@ public class Swerve extends SubsystemBase {
     /**
      * Syncs the relative encoders on the angle motors with the absolute encoders on the swerve modules
      */
-    public void syncEncoders() {
+    public static void syncEncoders() {
+        instance.syncEncodersI();
+    }
+    private void syncEncodersI() {
         for (SwerveMod mod : SwerveMod.instance) {
             mod.syncEncoders();
         }
@@ -211,7 +239,10 @@ public class Swerve extends SubsystemBase {
      * @return An array of {@link SwerveModuleState} representing the current state of each respective swerve module
      * as described by {@link SwerveMod#modId}
      */
-    public SwerveModuleState[] getStates() {
+    public static SwerveModuleState[] getStates() {
+        return instance.getStatesI();
+    }
+    private SwerveModuleState[] getStatesI() {
         return new SwerveModuleState[] {
                 SwerveMod.instance[0].getCurrentState(),
                 SwerveMod.instance[1].getCurrentState(),
@@ -225,7 +256,10 @@ public class Swerve extends SubsystemBase {
      * @return An array of {@link SwerveModuleState} representing the current target state of each respective swerve module
      * as described by {@link SwerveMod#modId}
      */
-    public SwerveModuleState[] getTargetStates() {
+    public static SwerveModuleState[] getTargetStates() {
+        return instance.getTargetStatesI();
+    }
+    private SwerveModuleState[] getTargetStatesI() {
         return new SwerveModuleState[] {
                 SwerveMod.instance[0].getTargetState(),
                 SwerveMod.instance[1].getTargetState(),
@@ -239,7 +273,10 @@ public class Swerve extends SubsystemBase {
      * @return An array of {@link SwerveModulePosition} representing the current state of each respective swerve module
      * as described by {@link SwerveMod#modId}
      */
-    public SwerveModulePosition[] getPositions() {
+    public static SwerveModulePosition[] getPositions() {
+        return instance.getPositionsI();
+    }
+    private SwerveModulePosition[] getPositionsI() {
         return new SwerveModulePosition[] {
                 SwerveMod.instance[0].getCurrentPosition(),
                 SwerveMod.instance[1].getCurrentPosition(),
@@ -252,7 +289,10 @@ public class Swerve extends SubsystemBase {
      * Gets the robot relative speeds of the swerve drivebase
      * @return A {@link ChassisSpeeds} representing the current swerve drivebase speeds
      */
-    public ChassisSpeeds getSpeedsRelative() {
-        return kinematics.toChassisSpeeds(getStates());
+    public static ChassisSpeeds getSpeedsRelative() {
+        return instance.getSpeedsRelativeI();
+    }
+    private ChassisSpeeds getSpeedsRelativeI() {
+        return kinematics.toChassisSpeeds(getStatesI());
     }
 }

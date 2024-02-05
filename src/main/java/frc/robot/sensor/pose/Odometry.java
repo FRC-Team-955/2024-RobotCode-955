@@ -42,7 +42,7 @@ public class Odometry {
      * Updates the odometry position estimate. Called periodically by the {@link Swerve} {@link Subsystem}
      */
     public static void updateEstimatePositions() {
-        estimator.update(Gyro.getHeading(), Swerve.instance.getPositions());
+        estimator.update(Gyro.getHeading(), Swerve.getPositions());
     }
 
     /**
@@ -60,7 +60,7 @@ public class Odometry {
      * @param pose The pose to reset the estimate to
      */
     public static void resetPose(Pose2d pose) {
-        estimator.resetPosition(Gyro.getHeading(), Swerve.instance.getPositions(), pose);
+        estimator.resetPosition(Gyro.getHeading(), Swerve.getPositions(), pose);
     }
 
 
