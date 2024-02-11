@@ -5,7 +5,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import frc.robot.Constants;
-import frc.robot.utility.AngleUtil;
+import frc.robot.utility.conversion.AngleUtil;
 
 public class SwerveModIOSim extends SwerveModIO {
 

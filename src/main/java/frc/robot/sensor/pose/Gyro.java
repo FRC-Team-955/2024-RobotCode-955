@@ -4,7 +4,9 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.I2C;
+import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.utility.conversion.AngleUtil;
 
 /**
  * Manages the rotational position estimation of the robot
@@ -47,7 +49,7 @@ public class Gyro {
             mode = GyroMode.Estimation;
         } else {
             try {
-                pigeon = new Pigeon2(0);
+                pigeon = new Pigeon2(Constants.Swerve.gyroId);
             }
             catch (Exception e) {
                 mode = GyroMode.Secondary;
@@ -86,7 +88,7 @@ public class Gyro {
      */
     public static Rotation2d getHeading() {
         return switch (mode) {
-            case Primary -> Rotation2d.fromRotations(pigeon.getYaw().getValue());
+            case Primary -> Rotation2d.fromRotations(AngleUtil.unsignedRangeRotations(pigeon.getYaw().getValue()));
             case Secondary -> new Rotation2d();
             case Estimation -> estimate;
         };

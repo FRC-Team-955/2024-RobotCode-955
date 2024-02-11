@@ -2,22 +2,18 @@ package frc.robot.subsystem.swerve;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.utility.AngleUtil;
-import frc.robot.utility.InputUtil;
+import frc.robot.utility.conversion.AngleUtil;
 import org.littletonrobotics.junction.Logger;
 
 public class SwerveMod extends SubsystemBase {
 
-    public static final SwerveMod[] instance = new SwerveMod[]{
-            new SwerveMod(0), new SwerveMod(1), new SwerveMod(2),  new SwerveMod(3)
-    };
+    public static SwerveMod[] instance;
 
     /**
      * The numerical id of the swerve module
@@ -47,15 +43,24 @@ public class SwerveMod extends SubsystemBase {
         io.syncEncoders();
     }
 
+    public static void init() {
+        if (instance == null)
+            instance = new SwerveMod[]{
+                    new SwerveMod(0), new SwerveMod(1), new SwerveMod(2),  new SwerveMod(3)
+            };
+    }
 
 
-    @Override
-    public void periodic() {
+
+    public void updateInputs() {
         positionLast = getCurrentPosition();
 
         io.updateInputs();
         Logger.processInputs("Swerve/Mod" + modId, inputs);
+    }
 
+    @Override
+    public void periodic() {
         SwerveModuleState target = SwerveModuleState.optimize(targetState, getAnglePositionRotation2d());
 
         double av = MathUtil.clamp(anglePid.calculate(getAnglePosition(),
@@ -63,7 +68,7 @@ public class SwerveMod extends SubsystemBase {
         io.setAngleVolts(av);
         target.speedMetersPerSecond *= Math.cos(AngleUtil.degToRad(
                 AngleUtil.signedRangeDifferenceDegrees(target.angle.getDegrees(), getAnglePosition())));
-        double dv = (target.speedMetersPerSecond / Constants.Swerve.maxFreeSpeed) * 12;
+        double dv = (target.speedMetersPerSecond / Constants.Swerve.Constraints.maxFreeSpeed) * 12;
         io.setDriveVolts(dv);
 
         Logger.recordOutput("Swerve/Mod" + modId + "/VoltsAngle", av);

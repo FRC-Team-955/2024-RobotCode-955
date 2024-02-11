@@ -65,4 +65,10 @@ public class ShooterIOSparkMax extends ShooterIO {
     public void setFlywheelRightVolts(double volts) {
         flywheelRight.setVoltage(MathUtil.clamp(volts, -12.0, 12.0));
     }
+
+    @Override
+    public void setFlywheelBrake(boolean brake) {
+        flywheelLeft.setIdleMode(brake ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast);
+        flywheelRight.setIdleMode(brake ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast);
+    }
 }

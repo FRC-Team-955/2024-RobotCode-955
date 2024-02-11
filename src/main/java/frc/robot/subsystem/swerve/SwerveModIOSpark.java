@@ -7,7 +7,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
 import frc.robot.Constants;
-import frc.robot.utility.AngleUtil;
+import frc.robot.utility.conversion.AngleUtil;
 
 public class SwerveModIOSpark extends SwerveModIO {
 
@@ -28,14 +28,18 @@ public class SwerveModIOSpark extends SwerveModIO {
         absoluteEncoder = new CANcoder(Constants.Swerve.encoderIds[id]);
         driveEncoder.setPositionConversionFactor(Constants.Swerve.driveGearRatio * Constants.Swerve.relativeConversion);
         driveEncoder.setVelocityConversionFactor(Constants.Swerve.driveGearRatio * Constants.Swerve.relativeConversion);
-        angleEncoder.setPositionConversionFactor(Constants.Swerve.angleGearRatio * Constants.Swerve.relativeConversion);
+        angleEncoder.setPositionConversionFactor(360 / 12.8);
+//        angleEncoder.setPositionConversionFactor(Constants.Swerve.angleGearRatio * Constants.Swerve.relativeConversion);
         angleEncoder.setVelocityConversionFactor(Constants.Swerve.angleGearRatio * Constants.Swerve.relativeConversion);
+        System.out.println(driveEncoder.getCountsPerRevolution());
     }
 
     @Override
     public void updateInputs() {
-        inputs.anglePositionAbsoluteDeg = AngleUtil.unsignedRangeDegrees(absoluteEncoder.getPosition().getValue() * Constants.Swerve.absoluteConversion);
-        inputs.anglePositionDeg = AngleUtil.unsignedRangeDegrees(angleEncoder.getPosition());
+        inputs.anglePositionAbsoluteDeg = AngleUtil.unsignedRangeDegrees(absoluteEncoder.getPosition().getValue()
+                * Constants.Swerve.absoluteConversion);
+//        inputs.anglePositionDeg = AngleUtil.unsignedRangeDegrees(angleEncoder.getPosition() / Constants.Swerve.angleGearRatio);
+        inputs.anglePositionDeg = inputs.anglePositionAbsoluteDeg;
         inputs.angleVelocityDegSec = angleEncoder.getVelocity();
         inputs.drivePositionDeg = driveEncoder.getPosition();
         inputs.driveVelocityDegSec = driveEncoder.getVelocity();

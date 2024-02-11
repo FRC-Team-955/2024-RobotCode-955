@@ -1,11 +1,13 @@
 package frc.robot.subsystem.shooter;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.utility.conversion.AngleUtil;
 
 /**
  * The Shooter {@link Subsystem} for scoring in the speaker, amplifier, and trap
@@ -19,10 +21,7 @@ public class Shooter extends SubsystemBase {
 
     private final PIDController pivotPid;
     private final PIDController feedPid;
-    private final PIDController feedFlywheelLeftPid;
-    private final PIDController feedFlywheelRightPid;
-    private final PIDController flywheelLeftPid;
-    private final PIDController flywheelRightPid;
+    private final ArmFeedforward pivotFf;
 
     private double pivotSetpoint = 0;
     private double noteSetpoint = 0;
@@ -41,12 +40,12 @@ public class Shooter extends SubsystemBase {
         inputs = new ShooterIOInputsAutoLogged();
         io = Robot.isSimulation() ? new ShooterIOSim(inputs) : new ShooterIOSparkMax(inputs);
 
-        pivotPid = new PIDController(0, 0, 0);
-        feedPid = new PIDController(0, 0, 0);
-        feedFlywheelLeftPid = new PIDController(0, 0, 0);
-        feedFlywheelRightPid = new PIDController(0, 0, 0);
-        flywheelLeftPid = new PIDController(0, 0, 0);
-        flywheelRightPid = new PIDController(0, 0, 0);
+        pivotPid = new PIDController(Constants.Shooter.Control.pivotKp, Constants.Shooter.Control.pivotKi,
+                Constants.Shooter.Control.pivotKd);
+        feedPid = new PIDController(Constants.Shooter.Control.feedKp, Constants.Shooter.Control.feedKi,
+                Constants.Shooter.Control.feedKd);
+        pivotFf = new ArmFeedforward(Constants.Shooter.Control.pivotKs, Constants.Shooter.Control.pivotKg,
+                Constants.Shooter.Control.pivotKv, Constants.Shooter.Control.pivotKa);
     }
     /**
      * Initialize the subsystem
@@ -56,6 +55,10 @@ public class Shooter extends SubsystemBase {
     }
 
 
+
+    public void updateInputs() {
+        io.updateInputs();
+    }
 
     @Override
     public void periodic() {
@@ -79,17 +82,21 @@ public class Shooter extends SubsystemBase {
             hasNote = true;
         }
 
-        io.setFeedVolts(feedPid.calculate(notePosition, noteSetpoint));
+        double feedSpeed = MathUtil.clamp(feedPid.calculate(notePosition, noteSetpoint),
+                Constants.Shooter.FeedVelocities.feedMax, -Constants.Shooter.FeedVelocities.feedMax);
+
+        io.setFeedVolts(12 * feedSpeed * Constants.Shooter.FeedVelocities.feedMax);
         if (flywheelIndexing) {
-            io.setFlywheelLeftVolts(feedFlywheelLeftPid.calculate(notePosition, noteSetpoint));
-            io.setFlywheelRightVolts(feedFlywheelRightPid.calculate(notePosition, noteSetpoint));
+            io.setFlywheelLeftVolts(12 * feedSpeed / Constants.Shooter.FeedVelocities.flywheelMax);
+            io.setFlywheelRightVolts(12 * feedSpeed / Constants.Shooter.FeedVelocities.flywheelMax);
         }
         else {
-            io.setFlywheelRightVolts(flywheelLeftPid.calculate(inputs.flywheelVelocityLeft, flywheelSetpointLeft));
-            io.setFlywheelRightVolts(flywheelRightPid.calculate(inputs.flywheelVelocityRight, flywheelSetpointRight));
+            io.setFlywheelLeftVolts(12 * flywheelSetpointLeft / Constants.Shooter.FeedVelocities.flywheelMax);
+            io.setFlywheelRightVolts(12 * flywheelSetpointLeft / Constants.Shooter.FeedVelocities.flywheelMax);
         }
 
-        io.setPivotVolts(pivotPid.calculate(inputs.pivotPosition, pivotSetpoint));
+        io.setPivotVolts(pivotPid.calculate(inputs.pivotPosition, pivotSetpoint) +
+                pivotFf.calculate(inputs.pivotPosition, inputs.pivotVelocity));
 
         feedLast = inputs.feedPosition;
         flywheelLeftLast = inputs.flywheelPositionLeft;
@@ -97,6 +104,37 @@ public class Shooter extends SubsystemBase {
     }
 
 
+
+    /**
+     * Sets the target position of the shooter pivot to {@value Constants.Shooter.Setpoints#tuck}
+     */
+    public static void setPivotPositionTuck() {
+        instance.setPivotPositionI(Constants.Shooter.Setpoints.tuck);
+    }
+    /**
+     * Sets the target position of the shooter pivot to {@value Constants.Shooter.Setpoints#load}
+     */
+    public static void setPivotPositionLoad() {
+        instance.setPivotPositionI(Constants.Shooter.Setpoints.load);
+    }
+    /**
+     * Sets the target position of the shooter pivot to {@value Constants.Shooter.Setpoints#subwoofer}
+     */
+    public static void setPivotPositionSubwoofer() {
+        instance.setPivotPositionI(Constants.Shooter.Setpoints.subwoofer);
+    }
+    /**
+     * Sets the target position of the shooter pivot to {@value Constants.Shooter.Setpoints#amp}
+     */
+    public static void setPivotPositionAmp() {
+        instance.setPivotPositionI(Constants.Shooter.Setpoints.amp);
+    }
+    /**
+     * Sets the target position of the shooter pivot to {@value Constants.Shooter.Setpoints#trap}
+     */
+    public static void setPivotPositionTrap() {
+        instance.setPivotPositionI(Constants.Shooter.Setpoints.trap);
+    }
     /**
      * Sets the target position for the shooter pivot
      * @param degrees The target position of the pivot in degrees from 0 to {@value Constants.Shooter#maxAngle}
@@ -109,6 +147,39 @@ public class Shooter extends SubsystemBase {
     }
 
     /**
+     * Sets the target position of the note inside the shooter to {@value Constants.Shooter.ContactRanges#minSafe}
+     */
+    public static void setNotePositionMinSafe() {
+        instance.setNotePositionI(Constants.Shooter.ContactRanges.minSafe);
+    }
+    /**
+     * Sets the target position of the note inside the shooter to {@value Constants.Shooter.ContactRanges#held}
+     */
+    public static void setNotePositionHeld() {
+        instance.setNotePositionI(Constants.Shooter.ContactRanges.held);
+    }
+    /**
+     * Sets the target position of the note inside the shooter to {@value Constants.Shooter.ContactRanges#maxSafe}
+     */
+    public static void setNotePositionMaxSafe() {
+        instance.setNotePositionI(Constants.Shooter.ContactRanges.maxSafe);
+    }
+    /**
+     * Sets the target position of the note inside the shooter to {@value Constants.Shooter.ContactRanges#exit}
+     */
+    public static void setNotePositionExit() {
+        instance.setNotePositionI(Constants.Shooter.ContactRanges.exit);
+    }
+    /**
+     * Sets the target position of the note inside the shooter,
+     * which gets limited to ensure that the note does not touch the flywheels
+     * @param inches The position of the top of the note from the feed end of the shooter in inches
+     */
+    public static void setNotePositionSafe(double inches) {
+        instance.setNotePositionI(MathUtil.clamp(inches, Constants.Shooter.ContactRanges.minSafe,
+                Constants.Shooter.ContactRanges.maxSafe));
+    }
+    /**
      * Sets the target position of the note inside the shooter
      * @param inches The position of the top of the note from the feed end of the shooter in inches
      */
@@ -120,20 +191,25 @@ public class Shooter extends SubsystemBase {
     }
 
     /**
-     * Sets the target position of the note inside the shooter,
-     * which gets limited to ensure that the note does not touch the flywheels
-     * @param inches The position of the top of the note from the feed end of the shooter in inches
+     * Sets the target velocity of the flywheels to 0
      */
-    public static void setNotePositionSafe(double inches) {
-        instance.setNotePositionSafeI(inches);
+    public static void setFlywheelVelocityZero() {
+        instance.setFlywheelVelocityLeftI(0);
     }
-    private void setNotePositionSafeI(double inches) {
-        noteSetpoint = MathUtil.clamp(inches,
-                Constants.Shooter.ContactRanges.minSafe, Constants.Shooter.ContactRanges.maxSafe);
-    }
-
     /**
-     * Set the target velocity of the flywheels
+     * Sets the target velocity of the flywheels to {@value Constants.Shooter.FlywheelVelocities#subwoofer}
+     */
+    public static void setFlywheelVelocitySubwoofer() {
+        instance.setFlywheelVelocityLeftI(Constants.Shooter.FlywheelVelocities.subwoofer);
+    }
+    /**
+     * Sets the target velocity of the flywheels to {@value Constants.Shooter.FlywheelVelocities#max}
+     */
+    public static void setFlywheelVelocityMax() {
+        instance.setFlywheelVelocityLeftI(Constants.Shooter.FlywheelVelocities.max);
+    }
+    /**
+     * Sets the target velocity of the flywheels
      * @param meters The linear speed of the outer rim of the flywheels in meters per second
      */
     public static void setFlywheelVelocity(double meters) {
@@ -142,7 +218,7 @@ public class Shooter extends SubsystemBase {
     }
 
     /**
-     * Set the target velocity of the left flywheel
+     * Sets the target velocity of the left flywheel
      * @param meters The linear speed of the outer rim of the flywheel in meters per second
      */
     public static void setFlywheelVelocityLeft(double meters) {
@@ -152,7 +228,7 @@ public class Shooter extends SubsystemBase {
         flywheelSetpointLeft = meters;
     }
     /**
-     * Set the target velocity of the right flywheel
+     * Sets the target velocity of the right flywheel
      * @param meters The linear speed of the outer rim of the flywheel in meters per second
      */
     public static void setFlywheelVelocityRight(double meters) {
@@ -171,10 +247,18 @@ public class Shooter extends SubsystemBase {
         instance.setFlywheelIndexingI(indexing);
     }
     private void setFlywheelIndexingI(boolean indexing) {
+        io.setFlywheelBrake(indexing);
         flywheelIndexing = indexing;
     }
 
 
+    /**
+     * Gets whether the robot is safe to go under the stage
+     * @return Whether the shooter is in the stowed position
+     */
+    public static boolean isStageSafe() {
+        return instance.getPivotPositionI() < Constants.Shooter.Setpoints.maxSafe;
+    }
     /**
      * Gets the position of the shooter pivot
      * @return The rotational position of the shooter pivot in degrees from 0 to {@value Constants.Shooter#maxAngle}
@@ -241,6 +325,7 @@ public class Shooter extends SubsystemBase {
     }
 
 
+
     /**
      * Gets whether the pivot is at the angle setpoint
      * @return Whether the pivot is within {@value Constants.Shooter.Tolerances#pivot} degrees of the setpoint
@@ -276,7 +361,7 @@ public class Shooter extends SubsystemBase {
         return instance.atNoteSetpointI(tolerance);
     }
     private boolean atNoteSetpointI(double tolerance) {
-        return Math.abs(noteSetpoint - notePosition) <= tolerance;
+        return hasNote && Math.abs(noteSetpoint - notePosition) <= tolerance;
     }
 
     /**

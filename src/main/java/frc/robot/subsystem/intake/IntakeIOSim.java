@@ -3,7 +3,7 @@ package frc.robot.subsystem.intake;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.Constants;
-import frc.robot.utility.AngleUtil;
+import frc.robot.utility.conversion.AngleUtil;
 
 public class IntakeIOSim extends IntakeIO {
 

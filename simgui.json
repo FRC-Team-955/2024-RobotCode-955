@@ -4,6 +4,34 @@
       "/FMSInfo": "FMSInfo"
     }
   },
+  "NetworkTables": {
+    "transitory": {
+      "AdvantageKit": {
+        "RealOutputs": {
+          "LoggedRobot": {
+            "open": true
+          },
+          "Logger": {
+            "open": true
+          },
+          "Odom": {
+            "open": true
+          },
+          "SwerveStates": {
+            "open": true
+          },
+          "open": true
+        },
+        "Swerve": {
+          "Mod0": {
+            "open": true
+          },
+          "open": true
+        },
+        "open": true
+      }
+    }
+  },
   "NetworkTables Info": {
     "visible": true
   }

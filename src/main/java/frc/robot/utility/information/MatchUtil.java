@@ -1,4 +1,4 @@
-package frc.robot.utility;
+package frc.robot.utility.information;
 
 public class MatchUtil {
 

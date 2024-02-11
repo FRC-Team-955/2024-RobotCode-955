@@ -1,5 +1,7 @@
 package frc.robot.sensor.pose;
 
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -20,6 +22,7 @@ import org.littletonrobotics.junction.Logger;
 public class Odometry {
 
     private static final SwerveDrivePoseEstimator estimator;
+    private static ChassisSpeeds fieldRel;
     private static final Timer timer;
 
 
@@ -63,6 +66,10 @@ public class Odometry {
         estimator.resetPosition(Gyro.getHeading(), Swerve.getPositions(), pose);
     }
 
+    public static void updateChassisSpeedsEstimate(ChassisSpeeds estimate) {
+        fieldRel = estimate;
+    }
+
 
 
     /**
@@ -72,6 +79,11 @@ public class Odometry {
     public static Pose2d getPose() {
         return estimator.getEstimatedPosition();
     }
+
+    public static Translation2d getVelocity() {
+        return new Translation2d(fieldRel.vxMetersPerSecond, fieldRel.vyMetersPerSecond);
+    }
+
 
 
     /**

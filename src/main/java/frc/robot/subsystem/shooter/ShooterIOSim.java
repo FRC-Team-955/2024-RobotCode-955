@@ -30,4 +30,9 @@ public class ShooterIOSim extends ShooterIO {
     public void setFlywheelRightVolts(double volts) {
 
     }
+
+    @Override
+    public void setFlywheelBrake(boolean brake) {
+
+    }
 }

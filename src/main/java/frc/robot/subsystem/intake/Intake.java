@@ -1,12 +1,14 @@
 package frc.robot.subsystem.intake;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.utility.MatchUtil;
+import frc.robot.utility.conversion.AngleUtil;
+import frc.robot.utility.information.MatchUtil;
 
 /**
  * The Intake {@link Subsystem} for collecting notes from the ground
@@ -22,7 +24,8 @@ public class Intake extends SubsystemBase {
     private boolean reached = false;
     private boolean slam = false;
     private boolean slamOut = false;
-    private final PIDController extendController;
+    private final PIDController extendPid;
+    private final ArmFeedforward extendFf;
 
 
 
@@ -30,7 +33,10 @@ public class Intake extends SubsystemBase {
         instance = this;
         inputs = new IntakeIOInputsAutoLogged();
         io = Robot.isSimulation() ? new IntakeIOSim(inputs) : new IntakeIOSparkMax(inputs);
-        extendController = new PIDController(0, 0, 0);
+        extendPid = new PIDController(Constants.Intake.Control.kp, Constants.Intake.Control.ki,
+                Constants.Intake.Control.kd);
+        extendFf = new ArmFeedforward(Constants.Intake.Control.ks, Constants.Intake.Control.kg,
+                Constants.Intake.Control.kv, Constants.Intake.Control.ka);
     }
 
     /**
@@ -41,6 +47,10 @@ public class Intake extends SubsystemBase {
     }
 
 
+
+    public void updateInputs() {
+        io.updateInputs();
+    }
 
     @Override
     public void periodic() {
@@ -54,7 +64,8 @@ public class Intake extends SubsystemBase {
         }
         else {
             if (!reached) {
-                io.setDeployMotor(extendController.calculate(inputs.position));
+                io.setDeployMotor(extendPid.calculate(inputs.position) +
+                        extendFf.calculate(AngleUtil.degToRad(inputs.position), AngleUtil.degToRad(inputs.velocity)));
                 if (Math.abs(inputs.position - targetPosition) < 5) reached = true;
             }
             else
@@ -65,12 +76,24 @@ public class Intake extends SubsystemBase {
             io.setDeployBrake(false);
         }
         else {
-            io.setDeployBrake(inputs.position > Constants.Intake.extrusionThreshold);
+            io.setDeployBrake(inputs.position < Constants.Intake.extrusionThreshold);
         }
     }
 
 
 
+    /**
+     * Slams the intake to {@value Constants.Intake.Setpoints#handoff} as fast as possible
+     */
+    public static void slamPositionHandoff() {
+        instance.slamPositionI(Constants.Intake.Setpoints.handoff, false);
+    }
+    /**
+     * Slams the intake to {@value Constants.Intake.Setpoints#intake} as fast as possible
+     */
+    public static void slamPositionIntake() {
+        instance.slamPositionI(Constants.Intake.Setpoints.intake, true);
+    }
     /**
      * Slams the intake to the specified position as fast as possible
      * @param position The position for the intake to slam to
@@ -86,6 +109,24 @@ public class Intake extends SubsystemBase {
     }
 
     /**
+     * Moves the intake to {@value Constants.Intake.Setpoints#handoff}
+     */
+    public static void movePositionHandoff() {
+        instance.movePositionI(Constants.Intake.Setpoints.handoff);
+    }
+    /**
+     * Moves the intake to {@value Constants.Intake.Setpoints#hover}
+     */
+    public static void movePositionHover() {
+        instance.movePositionI(Constants.Intake.Setpoints.hover);
+    }
+    /**
+     * Moves the intake to {@value Constants.Intake.Setpoints#intake}
+     */
+    public static void movePositionIntake() {
+        instance.movePositionI(Constants.Intake.Setpoints.intake);
+    }
+    /**
      * Moves the intake to the specified position
      * @param position The position for the intake to move to
      */
@@ -96,11 +137,32 @@ public class Intake extends SubsystemBase {
         slam = false;
         reached = false;
         targetPosition = position;
-        extendController.setSetpoint(position);
+        extendPid.setSetpoint(position);
     }
 
+
+
+
     /**
-     * Set the percentage speed of the intake motor (not the deploy motor)
+     * Sets the percentage speed of the intake motor to {@value Constants.Intake.Percents#handoff}
+     */
+    public static void setIntakePercentHandoff() {
+        instance.movePositionI(Constants.Intake.Percents.handoff);
+    }
+    /**
+     * Sets the percentage speed of the intake motor to {@value Constants.Intake.Percents#hold}
+     */
+    public static void setIntakePercentHold() {
+        instance.movePositionI(Constants.Intake.Percents.hold);
+    }
+    /**
+     * Sets the percentage speed of the intake motor to {@value Constants.Intake.Percents#intake}
+     */
+    public static void setIntakePercentIntake() {
+        instance.movePositionI(Constants.Intake.Percents.intake);
+    }
+    /**
+     * Sets the percentage speed of the intake motor
      * @param percent The percentage speed (-1 to 1)
      */
     public static void setIntakePercent(double percent) {
@@ -111,6 +173,33 @@ public class Intake extends SubsystemBase {
     }
 
 
+    /**
+     * Gets the current position of the intake
+     * @return The current position of the intake deploy pivot
+     */
+    public static double getPosition() { return instance.getPositionI(); }
+    private double getPositionI() { return inputs.position; }
+
+
+
+    /**
+     * Gets whether the deploy pivot is at the angular position setpoint
+     * @return Whether the right flywheel is within {@value Constants.Intake#tolerance} degrees from the setpoint
+     */
+    public static boolean atSetpoint() {
+        return instance.atSetpointI(Constants.Intake.tolerance);
+    }
+    /**
+     * Gets whether the deploy pivot is at the angular position setpoint within a given tolerance
+     * @param tolerance The setpoint error tolerance in degrees
+     * @return Whether the right flywheel is within the given tolerance from the setpoint
+     */
+    public static boolean atSetpoint(double tolerance) {
+        return instance.atSetpointI(tolerance);
+    }
+    private boolean atSetpointI(double tolerance) {
+        return Math.abs(targetPosition - inputs.position) <= tolerance;
+    }
 
     /**
      * Gets whether a note had been grabbed by the intake

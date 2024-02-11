@@ -1,4 +1,4 @@
-package frc.robot.utility;
+package frc.robot.utility.conversion;
 
 public class AngleUtil {
     /**
@@ -39,6 +39,17 @@ public class AngleUtil {
         angle = angle % 360;
         if (angle <= -180) angle += 360;
         if (angle > 180) angle -= 360;
+        return angle;
+    }
+
+    /**
+     * Transforms a given angle to a 0 to 1 rotation range
+     * @param angle The angle to be transformed
+     * @return The unsigned range of the given angle, from 0 (inclusive) to 1 (exclusive)
+     */
+    public static double unsignedRangeRotations(double angle) {
+        angle = angle % 1;
+        if (angle < 0) angle += 1;
         return angle;
     }
 

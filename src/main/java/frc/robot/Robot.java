@@ -4,14 +4,15 @@
 
 package frc.robot;
 
+import frc.robot.command.defaults.Drive;
 import frc.robot.sensor.pose.Odometry;
+import frc.robot.subsystem.swerve.Swerve;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
-import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
   private Command autonomousCommand;
@@ -20,14 +21,33 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void robotInit() {
+
+//    Pathfinding.setPathfinder(new LocalADStarAK());
+
+    new Swerve();
+//    Swerve.init();
+//    Shooter.init();
+//    Intake.init();
+//    Climber.init();
+
+    Swerve.instance.setDefaultCommand(new Drive());
+//    Shooter.instance.setDefaultCommand(new Read(Shooter.instance));
+//    Intake.instance.setDefaultCommand(new Read(Intake.instance));
+//    Climber.instance.setDefaultCommand(new Read(Climber.instance));
+
     robotContainer = new RobotContainer();
-    Logger.addDataReceiver(new WPILOGWriter(""));
+//    Logger.addDataReceiver(new WPILOGWriter(Filesystem.getDeployDirectory().getPath() + "/logs"));
     Logger.addDataReceiver(new NT4Publisher());
     Logger.start();
   }
 
   @Override
   public void robotPeriodic() {
+
+    Swerve.instance.updateInputs();
+//    Shooter.instance.updateInputs();
+//    Intake.instance.updateInputs();
+//    Climber.instance.updateInputs();
 
     // Periodic Actions
     CommandScheduler.getInstance().run();

@@ -10,6 +10,7 @@ public abstract class IntakeIO {
     @AutoLog
     public static class IntakeIOInputs {
         public double position;
+        public double velocity;
         public boolean noteCaptured;
         public boolean noteSecured;
     }

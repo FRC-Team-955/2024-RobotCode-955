@@ -57,11 +57,35 @@ public class Constants {
             /** Fully stowed and able to go under the stage **/
             public static final double tuck = 0;
 
+            /** Biggest angle at which the robot is able to go under the stage **/
+            public static final double maxSafe = 5; // TODO
+
             /** Able to load from the intake **/
             public static final double load = 35;
 
+            /** Able to shoot from the subwoofer **/
+            public static final double subwoofer = 35;
+
             /** Able to score in the amp **/
             public static final double amp = 235; // TODO
+
+            /** Able to shoot into the trap **/
+            public static final double trap = 20; // TODO
+        }
+
+        /** Flywheel velocity setpoints **/
+        public static final class FlywheelVelocities {
+            /** The max velocity of the shooter flywheels **/
+            public static final double max = 10; // TODO
+
+            /** The min velocity to shoot from the subwoofer **/
+            public static final double subwoofer = 5; // TODO
+        }
+
+        /** Feed velocity values **/
+        public static final class FeedVelocities {
+            public static final double flywheelMax = 198.1297766868;
+            public static final double feedMax = 22.6434030498;
         }
 
         /** The default setpoint tolerances for checking if a setpoint has been reached **/
@@ -107,6 +131,41 @@ public class Constants {
 
             /** The last position where the note will not touch the flywheels **/
             public static final double maxSafe = 14; // TODO
+
+            /** The position where the note is fully in the shooter **/
+            public static final double held = 14; // TODO
+        }
+
+        /** Values for pid, feedforward, and other controllers **/
+        public static final class Control {
+            /** Pivot PID kp **/
+            public static final double pivotKp = 0.1; // TODO
+            /** Pivot PID ki **/
+            public static final double pivotKi = 0; // TODO
+            /** Pivot PID kd **/
+            public static final double pivotKd = 0; // TODO
+            /** Pivot FF kg **/
+            public static final double pivotKg = 0.5; // TODO
+            /** Pivot FF kv **/
+            public static final double pivotKv = 0.5; // TODO
+            /** Pivot FF ka **/
+            public static final double pivotKa = 0.5; // TODO
+            /** Pivot FF ks **/
+            public static final double pivotKs = 0.5; // TODO
+            /** The pivot gravity compensation voltage **/
+            public static final double gravComp = 0.5; // TODO
+            /** Feed position PID kp **/
+            public static final double feedKp = 0.1; // TODO
+            /** Feed position PID ki **/
+            public static final double feedKi = 0; // TODO
+            /** Feed position PID kd **/
+            public static final double feedKd = 0; // TODO
+            /** Flywheel PID kp **/
+            public static final double flywheelKp = 0.1; // TODO
+            /** Flywheel PID ki **/
+            public static final double flywheelKi = 0; // TODO
+            /** Flywheel PID kd **/
+            public static final double flywheelKd = 0; // TODO
         }
 
         /** Values needed for simulation **/
@@ -133,6 +192,9 @@ public class Constants {
         /** The max deploy angle **/
         public static final double maxAngle = 180;
 
+        /** The default error tolerance for setpoints in degrees **/
+        public static final double tolerance = 5;
+
         /** CAN ID for the deploy motor **/
         public static final int deployId = 31;
 
@@ -145,14 +207,58 @@ public class Constants {
         /** Serial ID for the ultrasonic sensor echo channel **/
         public static final int echoId = 2; // TODO
 
+        /** The setpoints for the intake deployment pivot **/
+        public static final class Setpoints {
+            /** Able to give note to the shooter **/
+            public static final double handoff = 0;
+
+            /** In the frame but out of the shooter's way **/
+            public static final double hover = 90;
+
+            /** Able to intake from the ground **/
+            public static final double intake = 180;
+        }
+
+        /** Percentages for the intake motor **/
+        public static final class Percents {
+            /** Intake the note from the ground **/
+            public static final double intake = 1;
+
+            /** Keep the note in the intake **/
+            public static final double hold = 0.15;
+
+            /** Pass the note to the shooter **/
+            public static final double handoff = -0.5;
+        }
+
         /** The ranges reported by the ultrasonic sensor for different note distances within the intake **/
-        public static class UltrasonicRanges {
+        public static final class UltrasonicRanges {
             /** The note has been grabbed by the intake wheels **/
             public static final double noteCaptureDistance = 12; // TODO
 
             /** The note is fully in the intake **/
             public static final double noteSecureDistance = 3; // TODO
 
+        }
+
+        /** Values for pid, feedforward, and other controllers **/
+        public static final class Control {
+            /** Extend PID kp **/
+            public static final double kp = 0.1; // TODO
+            /** Extend PID ki **/
+            public static final double ki = 0; // TODO
+            /** Extend PID kd **/
+            public static final double kd = 0; // TODO
+            /** Extend FF kg **/
+            public static final double kg = 0.5; // TODO
+            /** Extend FF kv **/
+            public static final double kv = 0.5; // TODO
+            /** Extend FF ka **/
+            public static final double ka = 0.5; // TODO
+            /** Extend FF ks **/
+            public static final double ks = 0.5; // TODO
+            /** The deployment gravity compensation voltage **/
+            public static final double gravComp = 0.5; // TODO
         }
 
         /** Values needed for simulation **/
@@ -163,6 +269,12 @@ public class Constants {
             /** The length of the intake in meters **/
             public static final double length = 0.36;
         }
+    }
+
+    /** Constants relating to handoffs **/
+    public static final class Handoff {
+        /** The range in which a note sticking out of the intake or shooter will contact both in degrees **/
+        public static final double contactRange = 20;
     }
 
     /** Constants relating the Climber **/
@@ -179,7 +291,7 @@ public class Constants {
         /** The voltage to be applied for raising the climber up (Not climbing) **/
         public static final double extendVoltage = 4.0; // TODO
 
-        /** The coltage to be applied for pulling the climber down (Climbing) **/
+        /** The voltage to be applied for pulling the climber down (Climbing) **/
         public static final double climbVoltage = 12.0; // TODO
 
         /** CAN ID for the left climber motor **/
@@ -207,6 +319,9 @@ public class Constants {
         /** CAN IDs for the CANCoders for each respective swerve module as described by {@link SwerveMod#modId} **/
         public static final int[] encoderIds = new int[] { 11, 12, 13, 14 };
 
+        /** CAN ID for the Pigeon 2 gyro **/
+        public static final int gyroId = 10;
+
         /** {@link Translation2d}s representing the positions for each respective swerve wheel relative to the robot center as described by {@link SwerveMod#modId} **/
         public static final Translation2d[] modulePositions = new Translation2d[] {
                 new Translation2d( ((frameX / 2) - wheelInset),  ((frameY / 2) - wheelInset)),
@@ -227,11 +342,26 @@ public class Constants {
         /** The conversion from Neo encoder units to degrees **/
         public static final double relativeConversion = 1; // TODO
 
-        /** The max free speed of the swerve drive in meters per second **/
-        public static final double maxFreeSpeed = 4.60248;
+        /** The tolerances for checking if a setpoint has been reached **/
+        public static final class Tolerances {
+            /** Heading position tolerance in degrees **/
+            public static double heading = 3;
+        }
 
-        /** The max heading change in degrees per second **/
-        public static final double maxRotationSpeed = 360;
+        /** The values relating to the physical limits of the robot **/
+        public static final class Constraints {
+            /** The max free speed of the robot in meters per second **/
+            public static final double maxFreeSpeed = 4.60248;
+
+            /** The max acceleration of the robot in meters per second squared **/
+            public static final double maxAcceleration = 2;
+
+            /** The max rotational velocity in rotations per second **/
+            public static final double maxRotationSpeed = 1;
+
+            /** The max rotational acceleration in rotations per second squared **/
+            public static final double maxRotationalAcceleration = 1;
+        }
 
         /** Values needed for simulation **/
         public static final class Simulation {
@@ -240,6 +370,15 @@ public class Constants {
 
             /** The moment of inertia of the angle wheel **/
             public static final double angleMoi = 0.004096955; // Might not be perfect, taken from 6328's code
+        }
+    }
+
+    public static final class Stage {
+        public static final class Safety {
+            public static final double warningDistance = 1.5;
+            public static final double dangerDistance = 0.6;
+            public static final double warningTime = 1;
+            public static final double dangerTime = 0.5;
         }
     }
 }

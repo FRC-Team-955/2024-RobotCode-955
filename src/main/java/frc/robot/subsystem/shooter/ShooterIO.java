@@ -54,4 +54,10 @@ public abstract class ShooterIO {
      * @param volts The voltage to be applied
      */
     public abstract void setFlywheelRightVolts(double volts);
+
+    /**
+     * Sets the brake mode on the flywheel motors
+     * @param brake Whether the flywheels should be in brake mode
+     */
+    public abstract void setFlywheelBrake(boolean brake);
 }

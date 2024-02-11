@@ -34,6 +34,11 @@ public class Climber extends SubsystemBase {
     }
 
 
+
+    public void updateInputs() {
+        io.updateInputs();
+    }
+
     @Override
     public void periodic() {
         if (inputs.extensionPositionLeft < left)
@@ -52,6 +57,21 @@ public class Climber extends SubsystemBase {
     }
 
 
+
+    /**
+     * Sets the target extension of both climbers to 0
+     */
+    public static void setTargetRetracted() {
+        instance.setTargetLeftI(0);
+        instance.setTargetRightI(0);
+    }
+    /**
+     * Sets the target extension of both climbers to {@value Constants.Climber#extensionLength}
+     */
+    public static void setTargetExtended() {
+        instance.setTargetLeftI(Constants.Climber.extensionLength);
+        instance.setTargetRightI(Constants.Climber.extensionLength);
+    }
 
     /**
      * Sets the target extension of the left climber
