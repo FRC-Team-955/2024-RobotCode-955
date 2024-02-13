@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.utility.conversion.AngleUtil;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * The Shooter {@link Subsystem} for scoring in the speaker, amplifier, and trap
@@ -36,7 +37,8 @@ public class Shooter extends SubsystemBase {
 
 
 
-    private Shooter() {
+    public Shooter() {
+        instance = this;
         inputs = new ShooterIOInputsAutoLogged();
         io = Robot.isSimulation() ? new ShooterIOSim(inputs) : new ShooterIOSparkMax(inputs);
 
@@ -91,16 +93,18 @@ public class Shooter extends SubsystemBase {
             io.setFlywheelRightVolts(12 * feedSpeed / Constants.Shooter.FeedVelocities.flywheelMax);
         }
         else {
-            io.setFlywheelLeftVolts(12 * flywheelSetpointLeft / Constants.Shooter.FeedVelocities.flywheelMax);
-            io.setFlywheelRightVolts(12 * flywheelSetpointLeft / Constants.Shooter.FeedVelocities.flywheelMax);
+            io.setFlywheelLeftVolts(12 * flywheelSetpointLeft / Constants.Shooter.FlywheelVelocities.max);
+            io.setFlywheelRightVolts(12 * flywheelSetpointRight / Constants.Shooter.FlywheelVelocities.max);
         }
 
-        io.setPivotVolts(pivotPid.calculate(inputs.pivotPosition, pivotSetpoint) +
-                pivotFf.calculate(inputs.pivotPosition, inputs.pivotVelocity));
+        io.setPivotVolts(pivotPid.calculate(inputs.pivotPosition, pivotSetpoint) /*+
+                pivotFf.calculate(inputs.pivotPosition, inputs.pivotVelocity)*/);
 
         feedLast = inputs.feedPosition;
         flywheelLeftLast = inputs.flywheelPositionLeft;
         flywheelRightLast = inputs.flywheelPositionRight;
+
+        Logger.processInputs("Shooter", inputs);
     }
 
 
@@ -195,18 +199,22 @@ public class Shooter extends SubsystemBase {
      */
     public static void setFlywheelVelocityZero() {
         instance.setFlywheelVelocityLeftI(0);
+        instance.setFlywheelVelocityRightI(0);
     }
     /**
      * Sets the target velocity of the flywheels to {@value Constants.Shooter.FlywheelVelocities#subwoofer}
      */
     public static void setFlywheelVelocitySubwoofer() {
         instance.setFlywheelVelocityLeftI(Constants.Shooter.FlywheelVelocities.subwoofer);
+        instance.setFlywheelVelocityRightI(Constants.Shooter.FlywheelVelocities.subwoofer);
     }
     /**
      * Sets the target velocity of the flywheels to {@value Constants.Shooter.FlywheelVelocities#max}
      */
     public static void setFlywheelVelocityMax() {
         instance.setFlywheelVelocityLeftI(Constants.Shooter.FlywheelVelocities.max);
+        instance.setFlywheelVelocityRightI(Constants.Shooter.FlywheelVelocities.max);
+        instance.setNotePositionI(100000000000.0);
     }
     /**
      * Sets the target velocity of the flywheels

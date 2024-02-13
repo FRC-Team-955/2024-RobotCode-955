@@ -11,7 +11,7 @@ public class InputUtil {
      * @return The deadzoned input
      */
     public static double deadzone(final double input, final double deadzone) {
-        if (input <= deadzone) return 0;
+        if (Math.abs(input) <= deadzone) return 0;
         return input;
     }
 

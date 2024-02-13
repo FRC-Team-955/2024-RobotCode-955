@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.sensor.pose.Gyro;
 import frc.robot.sensor.pose.Odometry;
+import frc.robot.sensor.vision.VisionAprilTag;
 import frc.robot.subsystem.shooter.Shooter;
 import frc.robot.utility.conversion.AngleUtil;
 import frc.robot.utility.conversion.ObjectUtil;
@@ -83,7 +84,7 @@ public class Swerve extends SubsystemBase {
         PPHolonomicDriveController.setRotationTargetOverride(() -> {
             return headingController.get();
         });
-        setBrakeModeI(false);
+        setBrakeModeI(true);
     }
 
 //    /**
@@ -113,6 +114,7 @@ public class Swerve extends SubsystemBase {
 
         Gyro.updateEstimateDelta(Rotation2d.fromRadians(kinematics.toTwist2d(deltas).dtheta));
         Odometry.updateEstimatePositions();
+//        VisionAprilTag.update();
     }
 
     @Override

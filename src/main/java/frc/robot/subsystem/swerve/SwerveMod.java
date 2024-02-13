@@ -38,7 +38,7 @@ public class SwerveMod extends SubsystemBase {
         inputs = new SwerveModIOInputsAutoLogged();
         io = Robot.isSimulation() ? new SwerveModIOSim(inputs, id) : new SwerveModIOSpark(inputs, id);
 
-        anglePid = new PIDController(0.1, 0, 0.00001);
+        anglePid = new PIDController(0.1, 0.0, 0.0);
 
         io.syncEncoders();
     }
@@ -61,7 +61,7 @@ public class SwerveMod extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SwerveModuleState target = SwerveModuleState.optimize(targetState, getAnglePositionRotation2d());
+        SwerveModuleState target = SwerveModuleState.optimize(targetState, Rotation2d.fromDegrees(inputs.anglePositionDeg));
 
         double av = MathUtil.clamp(anglePid.calculate(getAnglePosition(),
                 AngleUtil.getUnwrappedSetpoint(getAnglePosition(), target.angle.getDegrees())), -12.0, 12.0);

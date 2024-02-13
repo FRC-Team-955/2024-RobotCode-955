@@ -23,23 +23,23 @@ public class SwerveModIOSpark extends SwerveModIO {
         inputs = input;
         drive = new CANSparkMax(Constants.Swerve.driveIds[id], CANSparkLowLevel.MotorType.kBrushless);
         angle = new CANSparkMax(Constants.Swerve.angleIds[id], CANSparkLowLevel.MotorType.kBrushless);
+        angle.setInverted(true);
         driveEncoder = drive.getEncoder();
         angleEncoder = angle.getEncoder();
         absoluteEncoder = new CANcoder(Constants.Swerve.encoderIds[id]);
         driveEncoder.setPositionConversionFactor(Constants.Swerve.driveGearRatio * Constants.Swerve.relativeConversion);
         driveEncoder.setVelocityConversionFactor(Constants.Swerve.driveGearRatio * Constants.Swerve.relativeConversion);
-        angleEncoder.setPositionConversionFactor(360 / 12.8);
-//        angleEncoder.setPositionConversionFactor(Constants.Swerve.angleGearRatio * Constants.Swerve.relativeConversion);
+        angleEncoder.setPositionConversionFactor(Constants.Swerve.angleGearRatio * Constants.Swerve.relativeConversion);
         angleEncoder.setVelocityConversionFactor(Constants.Swerve.angleGearRatio * Constants.Swerve.relativeConversion);
         System.out.println(driveEncoder.getCountsPerRevolution());
+        angle.setIdleMode(CANSparkBase.IdleMode.kBrake);
     }
 
     @Override
     public void updateInputs() {
-        inputs.anglePositionAbsoluteDeg = AngleUtil.unsignedRangeDegrees(absoluteEncoder.getPosition().getValue()
+        inputs.anglePositionAbsoluteDeg = AngleUtil.unsignedRangeDegrees(-absoluteEncoder.getPosition().getValue()
                 * Constants.Swerve.absoluteConversion);
-//        inputs.anglePositionDeg = AngleUtil.unsignedRangeDegrees(angleEncoder.getPosition() / Constants.Swerve.angleGearRatio);
-        inputs.anglePositionDeg = inputs.anglePositionAbsoluteDeg;
+        inputs.anglePositionDeg = AngleUtil.unsignedRangeDegrees(angleEncoder.getPosition());
         inputs.angleVelocityDegSec = angleEncoder.getVelocity();
         inputs.drivePositionDeg = driveEncoder.getPosition();
         inputs.driveVelocityDegSec = driveEncoder.getVelocity();
@@ -57,7 +57,7 @@ public class SwerveModIOSpark extends SwerveModIO {
 
     @Override
     public void syncEncoders() {
-        angleEncoder.setPosition(-absoluteEncoder.getPosition().getValue() * Constants.Swerve.absoluteConversion);
+        angleEncoder.setPosition(absoluteEncoder.getPosition().getValue() * Constants.Swerve.absoluteConversion);
     }
 
     @Override

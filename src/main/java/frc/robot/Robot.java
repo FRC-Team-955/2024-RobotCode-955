@@ -4,8 +4,10 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.command.defaults.Drive;
 import frc.robot.sensor.pose.Odometry;
+import frc.robot.subsystem.shooter.Shooter;
 import frc.robot.subsystem.swerve.Swerve;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -26,12 +28,13 @@ public class Robot extends LoggedRobot {
 
     new Swerve();
 //    Swerve.init();
+    new Shooter();
 //    Shooter.init();
 //    Intake.init();
 //    Climber.init();
 
     Swerve.instance.setDefaultCommand(new Drive());
-//    Shooter.instance.setDefaultCommand(new Read(Shooter.instance));
+    Shooter.instance.setDefaultCommand(Commands.idle(Shooter.instance));
 //    Intake.instance.setDefaultCommand(new Read(Intake.instance));
 //    Climber.instance.setDefaultCommand(new Read(Climber.instance));
 
@@ -45,7 +48,7 @@ public class Robot extends LoggedRobot {
   public void robotPeriodic() {
 
     Swerve.instance.updateInputs();
-//    Shooter.instance.updateInputs();
+    Shooter.instance.updateInputs();
 //    Intake.instance.updateInputs();
 //    Climber.instance.updateInputs();
 

@@ -50,6 +50,7 @@ public class Gyro {
         } else {
             try {
                 pigeon = new Pigeon2(Constants.Swerve.gyroId);
+                pigeon.setYaw(90);
             }
             catch (Exception e) {
                 mode = GyroMode.Secondary;
@@ -74,6 +75,10 @@ public class Gyro {
         estimate = Rotation2d.fromDegrees(estimate.getDegrees() + estimateDelta.getDegrees());
     }
 
+    public static void resetGyro() {
+        pigeon.setYaw(0);
+    }
+
     /**
      * Returns the current mode of the gyro
      * @return The current {@link GyroMode} of the robot representing fallback to backup systems
@@ -88,7 +93,7 @@ public class Gyro {
      */
     public static Rotation2d getHeading() {
         return switch (mode) {
-            case Primary -> Rotation2d.fromRotations(AngleUtil.unsignedRangeRotations(pigeon.getYaw().getValue()));
+            case Primary -> Rotation2d.fromRotations(AngleUtil.unsignedRangeRotations(pigeon.getYaw().getValue() / 360));
             case Secondary -> new Rotation2d();
             case Estimation -> estimate;
         };

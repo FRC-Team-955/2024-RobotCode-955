@@ -51,11 +51,11 @@ public class Odometry {
     /**
      * Updates the current position estimate with vision information
      * @param pose The estimated {@link Pose2d} from the vision frame
-     * @param delay The time in milliseconds since the frame has been captured
+     * @param timestamp The timestamp the frame was captured at
      * @param stdDevs The standard deviations of the vision estimate
      */
-    public static void updateEstimateVision(Pose2d pose, double delay, Matrix<N3, N1> stdDevs) {
-        estimator.addVisionMeasurement(pose, timer.get() - (delay / 1000), stdDevs);
+    public static void updateEstimateVision(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {
+        estimator.addVisionMeasurement(pose, timestamp, stdDevs);
     }
 
     /**

@@ -18,7 +18,7 @@ public class ShooterIOSparkMax extends ShooterIO {
     private final RelativeEncoder feedEncoder;
     private final RelativeEncoder flywheelLeftEncoder;
     private final RelativeEncoder flywheelRightEncoder;
-    private final Ultrasonic ultrasonic;
+//    private final Ultrasonic ultrasonic;
 
     public ShooterIOSparkMax(ShooterIOInputsAutoLogged input) {
         inputs = input;
@@ -30,7 +30,8 @@ public class ShooterIOSparkMax extends ShooterIO {
         feedEncoder = feed.getEncoder();
         flywheelLeftEncoder = flywheelLeft.getEncoder();
         flywheelRightEncoder = flywheelRight.getEncoder();
-        ultrasonic = new Ultrasonic(Constants.Shooter.pingId, Constants.Shooter.echoId);
+        pivotEncoder.setPositionConversionFactor(Constants.Shooter.gearRatioAngle * 360);
+//        ultrasonic = new Ultrasonic(Constants.Shooter.pingId, Constants.Shooter.echoId);
     }
 
     @Override
@@ -43,27 +44,35 @@ public class ShooterIOSparkMax extends ShooterIO {
         inputs.flywheelVelocityLeft = flywheelLeftEncoder.getVelocity();
         inputs.flywheelPositionRight = flywheelRightEncoder.getPosition();
         inputs.flywheelVelocityRight = flywheelRightEncoder.getVelocity();
-        inputs.ultrasonicRange = ultrasonic.getRangeInches();
+        inputs.ultrasonicRange = 0;
+//        inputs.ultrasonicRange = ultrasonic.getRangeInches();
     }
 
     @Override
     public void setPivotVolts(double volts) {
+//        System.out.println(volts);
+//        pivot.setVoltage(0);
         pivot.setVoltage(MathUtil.clamp(volts, -12.0, 12.0));
     }
 
     @Override
     public void setFeedVolts(double volts) {
-        feed.setVoltage(MathUtil.clamp(volts, -12.0, 12.0));
+        feed.setVoltage(0);
+//        System.out.println(volts);
+//        feed.setVoltage(MathUtil.clamp(volts, -12.0, 12.0));
     }
 
     @Override
     public void setFlywheelLeftVolts(double volts) {
+//        flywheelLeft.setVoltage(0);
+//        System.out.println(volts);
         flywheelLeft.setVoltage(MathUtil.clamp(volts, -12.0, 12.0));
     }
 
     @Override
     public void setFlywheelRightVolts(double volts) {
-        flywheelRight.setVoltage(MathUtil.clamp(volts, -12.0, 12.0));
+//        flywheelRight.setVoltage(0);
+        flywheelRight.setVoltage(-MathUtil.clamp(volts, -12.0, 12.0));
     }
 
     @Override
