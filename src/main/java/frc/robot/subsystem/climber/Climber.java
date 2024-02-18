@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * The Climber {@link Subsystem} for completing the endgame stage chain climb
@@ -18,7 +19,8 @@ public class Climber extends SubsystemBase {
     private double left;
     private double right;
 
-
+    public static boolean leftBrake = false;
+    public static boolean rightBrake = false;
 
     private Climber() {
         instance = this;
@@ -37,26 +39,33 @@ public class Climber extends SubsystemBase {
 
     public void updateInputs() {
         io.updateInputs();
+        Logger.processInputs("Climber", inputs);
     }
 
     @Override
     public void periodic() {
-        if (inputs.extensionPositionLeft < left)
-            io.setLeftVolts(Constants.Climber.extendVoltage);
-        else if (inputs.extensionPositionLeft > left)
-            io.setLeftVolts(Constants.Climber.climbVoltage);
-        else
-            io.setLeftVolts(0);
-
-        if (inputs.extensionPositionRight < right)
-            io.setRightVolts(Constants.Climber.extendVoltage);
-        else if (inputs.extensionPositionRight > right)
-            io.setRightVolts(Constants.Climber.climbVoltage);
-        else
-            io.setRightVolts(0);
+//        if (inputs.extensionPositionLeft < left)
+//            io.setLeftVolts(Constants.Climber.extendVoltage);
+//        else if (inputs.extensionPositionLeft > left)
+//            io.setLeftVolts(Constants.Climber.climbVoltage);
+//        else
+//            io.setLeftVolts(0);
+//
+//        if (inputs.extensionPositionRight < right)
+//            io.setRightVolts(Constants.Climber.extendVoltage);
+//        else if (inputs.extensionPositionRight > right)
+//            io.setRightVolts(Constants.Climber.climbVoltage);
+//        else
+//            io.setRightVolts(0);
     }
 
-
+    public static void setVoltage(double volts) {
+        instance.setVoltageI(volts);
+    }
+    private void setVoltageI(double volts) {
+        io.setLeftVolts(volts);
+        io.setRightVolts(volts);
+    }
 
     /**
      * Sets the target extension of both climbers to 0
@@ -99,6 +108,14 @@ public class Climber extends SubsystemBase {
      * Sets the brake mode of the left climber
      * @param brake Whether the climber should be in brake mode
      */
+    public static void flipLeftBrake() {
+        leftBrake = !leftBrake;
+        setLeftBrake(leftBrake);
+    }
+    public static void flipRightBrake() {
+        rightBrake = !rightBrake;
+        setRightBrake(rightBrake);
+    }
     public static void setLeftBrake(boolean brake) {
         instance.setLeftBrakeI(brake);
     }

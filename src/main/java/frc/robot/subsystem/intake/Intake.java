@@ -9,6 +9,7 @@ import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.utility.conversion.AngleUtil;
 import frc.robot.utility.information.MatchUtil;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * The Intake {@link Subsystem} for collecting notes from the ground
@@ -21,7 +22,7 @@ public class Intake extends SubsystemBase {
     private final IntakeIOInputsAutoLogged inputs;
 
     private double targetPosition;
-    private boolean reached = false;
+    public double intakePercent;
     private boolean slam = false;
     private boolean slamOut = false;
     private final PIDController extendPid;
@@ -50,10 +51,14 @@ public class Intake extends SubsystemBase {
 
     public void updateInputs() {
         io.updateInputs();
+        Logger.processInputs("Intake", inputs);
     }
 
     @Override
     public void periodic() {
+        inputs.positionSetpoint = targetPosition;
+        inputs.intakePercent = intakePercent;
+
         if (slam) {
             if (slamOut && inputs.position < targetPosition) {
                 io.setDeployMotor(12.0);
@@ -63,13 +68,9 @@ public class Intake extends SubsystemBase {
             }
         }
         else {
-            if (!reached) {
-                io.setDeployMotor(extendPid.calculate(inputs.position) +
-                        extendFf.calculate(AngleUtil.degToRad(inputs.position), AngleUtil.degToRad(inputs.velocity)));
-                if (Math.abs(inputs.position - targetPosition) < 5) reached = true;
-            }
-            else
-                io.setDeployMotor(0);
+            io.setDeployMotor(extendPid.calculate(inputs.position) +
+                    extendFf.calculate(AngleUtil.degToRad(inputs.position +
+                            Constants.Intake.Control.comAngleCompensation), AngleUtil.degToRad(inputs.velocity)));
         }
 
         if (MatchUtil.isPrematch()) {
@@ -135,7 +136,6 @@ public class Intake extends SubsystemBase {
     }
     private void movePositionI(double position) {
         slam = false;
-        reached = false;
         targetPosition = position;
         extendPid.setSetpoint(position);
     }
@@ -147,28 +147,29 @@ public class Intake extends SubsystemBase {
      * Sets the percentage speed of the intake motor to {@value Constants.Intake.Percents#handoff}
      */
     public static void setIntakePercentHandoff() {
-        instance.movePositionI(Constants.Intake.Percents.handoff);
+        instance.setIntakePercentI(Constants.Intake.Percents.handoff);
     }
     /**
      * Sets the percentage speed of the intake motor to {@value Constants.Intake.Percents#hold}
      */
     public static void setIntakePercentHold() {
-        instance.movePositionI(Constants.Intake.Percents.hold);
+        instance.setIntakePercentI(Constants.Intake.Percents.hold);
     }
     /**
      * Sets the percentage speed of the intake motor to {@value Constants.Intake.Percents#intake}
      */
     public static void setIntakePercentIntake() {
-        instance.movePositionI(Constants.Intake.Percents.intake);
+        instance.setIntakePercentI(Constants.Intake.Percents.intake);
     }
     /**
      * Sets the percentage speed of the intake motor
      * @param percent The percentage speed (-1 to 1)
      */
     public static void setIntakePercent(double percent) {
-        instance.movePositionI(percent);
+        instance.setIntakePercentI(percent);
     }
     private void setIntakePercentI(double percent) {
+        intakePercent = percent;
         io.setIntakeMotor(MathUtil.clamp(percent, -1, 1) * 12.0);
     }
 
@@ -208,14 +209,5 @@ public class Intake extends SubsystemBase {
     public static boolean noteCaptured() {
         return instance.noteCapturedI();
     }
-    private boolean noteCapturedI() { return inputs.noteCaptured; }
-
-    /**
-     * Gets whether a note has been secured by the intake
-     * @return Whether there is a note fully in the intake
-     */
-    public static boolean noteSecured() {
-        return instance.noteSecuredI();
-    }
-    private boolean noteSecuredI() { return inputs.noteSecured; }
+    private boolean noteCapturedI() { return inputs.ultrasonicRange < Constants.Intake.UltrasonicRanges.noteCaptureDistance; }
 }

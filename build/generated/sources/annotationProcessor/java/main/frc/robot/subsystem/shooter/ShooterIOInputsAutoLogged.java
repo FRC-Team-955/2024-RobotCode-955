@@ -9,6 +9,7 @@ public class ShooterIOInputsAutoLogged extends ShooterIO.ShooterIOInputs impleme
   @Override
   public void toLog(LogTable table) {
     table.put("PivotPosition", pivotPosition);
+    table.put("PivotPositionSetpoint", pivotPositionSetpoint);
     table.put("PivotVelocity", pivotVelocity);
     table.put("FeedPosition", feedPosition);
     table.put("FeedVelocity", feedVelocity);
@@ -17,11 +18,17 @@ public class ShooterIOInputsAutoLogged extends ShooterIO.ShooterIOInputs impleme
     table.put("FlywheelPositionRight", flywheelPositionRight);
     table.put("FlywheelVelocityRight", flywheelVelocityRight);
     table.put("UltrasonicRange", ultrasonicRange);
+    table.put("VoltsAppliedPivot", voltsAppliedPivot);
+    table.put("VoltsAppliedFeed", voltsAppliedFeed);
+    table.put("VoltsAppliedLeft", voltsAppliedLeft);
+    table.put("VoltsAppliedRight", voltsAppliedRight);
+    table.put("BrakeFlywheel", brakeFlywheel);
   }
 
   @Override
   public void fromLog(LogTable table) {
     pivotPosition = table.get("PivotPosition", pivotPosition);
+    pivotPositionSetpoint = table.get("PivotPositionSetpoint", pivotPositionSetpoint);
     pivotVelocity = table.get("PivotVelocity", pivotVelocity);
     feedPosition = table.get("FeedPosition", feedPosition);
     feedVelocity = table.get("FeedVelocity", feedVelocity);
@@ -30,11 +37,17 @@ public class ShooterIOInputsAutoLogged extends ShooterIO.ShooterIOInputs impleme
     flywheelPositionRight = table.get("FlywheelPositionRight", flywheelPositionRight);
     flywheelVelocityRight = table.get("FlywheelVelocityRight", flywheelVelocityRight);
     ultrasonicRange = table.get("UltrasonicRange", ultrasonicRange);
+    voltsAppliedPivot = table.get("VoltsAppliedPivot", voltsAppliedPivot);
+    voltsAppliedFeed = table.get("VoltsAppliedFeed", voltsAppliedFeed);
+    voltsAppliedLeft = table.get("VoltsAppliedLeft", voltsAppliedLeft);
+    voltsAppliedRight = table.get("VoltsAppliedRight", voltsAppliedRight);
+    brakeFlywheel = table.get("BrakeFlywheel", brakeFlywheel);
   }
 
   public ShooterIOInputsAutoLogged clone() {
     ShooterIOInputsAutoLogged copy = new ShooterIOInputsAutoLogged();
     copy.pivotPosition = this.pivotPosition;
+    copy.pivotPositionSetpoint = this.pivotPositionSetpoint;
     copy.pivotVelocity = this.pivotVelocity;
     copy.feedPosition = this.feedPosition;
     copy.feedVelocity = this.feedVelocity;
@@ -43,6 +56,11 @@ public class ShooterIOInputsAutoLogged extends ShooterIO.ShooterIOInputs impleme
     copy.flywheelPositionRight = this.flywheelPositionRight;
     copy.flywheelVelocityRight = this.flywheelVelocityRight;
     copy.ultrasonicRange = this.ultrasonicRange;
+    copy.voltsAppliedPivot = this.voltsAppliedPivot;
+    copy.voltsAppliedFeed = this.voltsAppliedFeed;
+    copy.voltsAppliedLeft = this.voltsAppliedLeft;
+    copy.voltsAppliedRight = this.voltsAppliedRight;
+    copy.brakeFlywheel = this.brakeFlywheel;
     return copy;
   }
 }

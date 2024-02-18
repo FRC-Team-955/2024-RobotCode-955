@@ -10,9 +10,15 @@ public abstract class IntakeIO {
     @AutoLog
     public static class IntakeIOInputs {
         public double position;
+        public double positionSetpoint;
         public double velocity;
-        public boolean noteCaptured;
-        public boolean noteSecured;
+        public double intakePercent;
+        public double intakeVelocity;
+        public double intakeAmpDraw;
+        public double ultrasonicRange;
+        public double voltsAppliedDeploy;
+        public double voltsAppliedIntake;
+        public boolean brakeDeploy;
     }
 
     /**

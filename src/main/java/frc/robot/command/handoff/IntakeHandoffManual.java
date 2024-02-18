@@ -2,29 +2,28 @@ package frc.robot.command.handoff;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants;
 import frc.robot.subsystem.intake.Intake;
 import frc.robot.subsystem.shooter.Shooter;
 
-public class HandoffFull extends Command {
+import java.util.function.BooleanSupplier;
 
-    int state = 0;
+public class IntakeHandoffManual extends Command {
 
-    Timer timer;
+    private int state = 0;
+    private final BooleanSupplier r;
+    private final Timer timer;
 
-    public HandoffFull() {
+    public IntakeHandoffManual(BooleanSupplier control) {
+        r = control;
         timer = new Timer();
         addRequirements(Intake.instance, Shooter.instance);
     }
 
     @Override
-    public InterruptionBehavior getInterruptionBehavior() {
-        return state == 0 ? InterruptionBehavior.kCancelSelf : InterruptionBehavior.kCancelIncoming;
-    }
-
-    @Override
     public void initialize() {
-        Intake.movePositionHandoff();
+        state = 0;
+        Intake.movePositionIntake();
+        Intake.setIntakePercent(1);
         Shooter.setPivotPositionLoad();
         Shooter.setFlywheelVelocityZero();
         Shooter.setFlywheelIndexing(false);
@@ -33,15 +32,26 @@ public class HandoffFull extends Command {
     @Override
     public void execute() {
         switch (state) {
-            case 0:
+            case 0: {
+                System.out.println(r.getAsBoolean());
+                if (!r.getAsBoolean()) {
+                    System.out.println("MISBEHAVE");
+                    Intake.movePositionHandoff();
+                    Intake.setIntakePercent(1);
+                    state++;
+                }
+            }
+            break;
+            case 1: {
                 if (Intake.atSetpoint() && Shooter.atPivotSetpoint()) {
                     Intake.setIntakePercentHandoff();
                     Shooter.setNotePosition(1);
                     timer.start();
                     state++;
                 }
-                break;
-            case 1:
+            }
+            break;
+            case 2: {
                 if (timer.get() >= 0.3) {
                     timer.stop();
                     Intake.movePositionHover();
@@ -50,24 +60,22 @@ public class HandoffFull extends Command {
                     Shooter.setNotePosition(0);
                     state++;
                 }
-                break;
-            case 2:
-                break;
+            }
+            break;
+            case 3: break;
         }
     }
 
     @Override
     public boolean isFinished() {
-        return state == 2;
+        return state == 3;
     }
 
     @Override
     public void end(boolean interrupted) {
-        Shooter.setFlywheelIndexing(false);
+        System.out.println("IAGSND: " + interrupted);
         state = 0;
         timer.stop();
         timer.reset();
-//        if (!interrupted)
-//            Shooter.setNotePositionSafe(Constants.Shooter.ContactRanges.flywheelStart);
     }
 }

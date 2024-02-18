@@ -65,6 +65,8 @@ public class Shooter extends SubsystemBase {
     @Override
     public void periodic() {
 
+        inputs.pivotPositionSetpoint = pivotSetpoint;
+
         if (hasNote) {
             if (notePosition > Constants.Shooter.ContactRanges.feedStart &&
                     notePosition < Constants.Shooter.ContactRanges.feedEnd) {
@@ -84,10 +86,13 @@ public class Shooter extends SubsystemBase {
             hasNote = true;
         }
 
-        double feedSpeed = MathUtil.clamp(feedPid.calculate(notePosition, noteSetpoint),
-                Constants.Shooter.FeedVelocities.feedMax, -Constants.Shooter.FeedVelocities.feedMax);
+//        double feedSpeed = MathUtil.clamp(feedPid.calculate(notePosition, noteSetpoint),
+//                Constants.Shooter.FeedVelocities.feedMax, -Constants.Shooter.FeedVelocities.feedMax);
 
-        io.setFeedVolts(12 * feedSpeed * Constants.Shooter.FeedVelocities.feedMax);
+        double feedSpeed = noteSetpoint;
+
+//        io.setFeedVolts(12 * feedSpeed * Constants.Shooter.FeedVelocities.feedMax);
+        io.setFeedVolts(12 * feedSpeed);
         if (flywheelIndexing) {
             io.setFlywheelLeftVolts(12 * feedSpeed / Constants.Shooter.FeedVelocities.flywheelMax);
             io.setFlywheelRightVolts(12 * feedSpeed / Constants.Shooter.FeedVelocities.flywheelMax);
@@ -97,8 +102,9 @@ public class Shooter extends SubsystemBase {
             io.setFlywheelRightVolts(12 * flywheelSetpointRight / Constants.Shooter.FlywheelVelocities.max);
         }
 
-        io.setPivotVolts(pivotPid.calculate(inputs.pivotPosition, pivotSetpoint) /*+
-                pivotFf.calculate(inputs.pivotPosition, inputs.pivotVelocity)*/);
+        io.setPivotVolts(pivotPid.calculate(inputs.pivotPosition, pivotSetpoint) +
+                pivotFf.calculate(AngleUtil.degToRad(inputs.pivotPosition +
+                        Constants.Shooter.Control.comAngleCompensation), AngleUtil.degToRad(inputs.pivotVelocity)));
 
         feedLast = inputs.feedPosition;
         flywheelLeftLast = inputs.flywheelPositionLeft;
@@ -191,7 +197,8 @@ public class Shooter extends SubsystemBase {
         instance.setNotePositionI(inches);
     }
     private void setNotePositionI(double inches) {
-        noteSetpoint = Math.max(inches, Constants.Shooter.ContactRanges.minSafe);
+//        noteSetpoint = Math.max(inches, Constants.Shooter.ContactRanges.minSafe);
+        noteSetpoint = inches;
     }
 
     /**
@@ -214,7 +221,6 @@ public class Shooter extends SubsystemBase {
     public static void setFlywheelVelocityMax() {
         instance.setFlywheelVelocityLeftI(Constants.Shooter.FlywheelVelocities.max);
         instance.setFlywheelVelocityRightI(Constants.Shooter.FlywheelVelocities.max);
-        instance.setNotePositionI(100000000000.0);
     }
     /**
      * Sets the target velocity of the flywheels
@@ -369,7 +375,8 @@ public class Shooter extends SubsystemBase {
         return instance.atNoteSetpointI(tolerance);
     }
     private boolean atNoteSetpointI(double tolerance) {
-        return hasNote && Math.abs(noteSetpoint - notePosition) <= tolerance;
+        return inputs.ultrasonicRange <= Constants.Intake.UltrasonicRanges.noteCaptureDistance;
+//        return hasNote && Math.abs(noteSetpoint - notePosition) <= tolerance;
     }
 
     /**

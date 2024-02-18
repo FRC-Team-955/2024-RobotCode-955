@@ -9,25 +9,37 @@ public class IntakeIOInputsAutoLogged extends IntakeIO.IntakeIOInputs implements
   @Override
   public void toLog(LogTable table) {
     table.put("Position", position);
+    table.put("PositionSetpoint", positionSetpoint);
     table.put("Velocity", velocity);
-    table.put("NoteCaptured", noteCaptured);
-    table.put("NoteSecured", noteSecured);
+    table.put("IntakePercent", intakePercent);
+    table.put("UltrasonicRange", ultrasonicRange);
+    table.put("VoltsAppliedDeploy", voltsAppliedDeploy);
+    table.put("VoltsAppliedIntake", voltsAppliedIntake);
+    table.put("BrakeDeploy", brakeDeploy);
   }
 
   @Override
   public void fromLog(LogTable table) {
     position = table.get("Position", position);
+    positionSetpoint = table.get("PositionSetpoint", positionSetpoint);
     velocity = table.get("Velocity", velocity);
-    noteCaptured = table.get("NoteCaptured", noteCaptured);
-    noteSecured = table.get("NoteSecured", noteSecured);
+    intakePercent = table.get("IntakePercent", intakePercent);
+    ultrasonicRange = table.get("UltrasonicRange", ultrasonicRange);
+    voltsAppliedDeploy = table.get("VoltsAppliedDeploy", voltsAppliedDeploy);
+    voltsAppliedIntake = table.get("VoltsAppliedIntake", voltsAppliedIntake);
+    brakeDeploy = table.get("BrakeDeploy", brakeDeploy);
   }
 
   public IntakeIOInputsAutoLogged clone() {
     IntakeIOInputsAutoLogged copy = new IntakeIOInputsAutoLogged();
     copy.position = this.position;
+    copy.positionSetpoint = this.positionSetpoint;
     copy.velocity = this.velocity;
-    copy.noteCaptured = this.noteCaptured;
-    copy.noteSecured = this.noteSecured;
+    copy.intakePercent = this.intakePercent;
+    copy.ultrasonicRange = this.ultrasonicRange;
+    copy.voltsAppliedDeploy = this.voltsAppliedDeploy;
+    copy.voltsAppliedIntake = this.voltsAppliedIntake;
+    copy.brakeDeploy = this.brakeDeploy;
     return copy;
   }
 }

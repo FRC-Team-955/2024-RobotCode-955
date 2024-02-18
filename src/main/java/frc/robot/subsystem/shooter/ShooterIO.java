@@ -13,6 +13,7 @@ public abstract class ShooterIO {
     @AutoLog
     public static class ShooterIOInputs {
         public double pivotPosition;
+        public double pivotPositionSetpoint;
         public double pivotVelocity;
         public double feedPosition;
         public double feedVelocity;
@@ -21,6 +22,11 @@ public abstract class ShooterIO {
         public double flywheelPositionRight;
         public double flywheelVelocityRight;
         public double ultrasonicRange;
+        public double voltsAppliedPivot;
+        public double voltsAppliedFeed;
+        public double voltsAppliedLeft;
+        public double voltsAppliedRight;
+        public boolean brakeFlywheel;
     }
 
     /**

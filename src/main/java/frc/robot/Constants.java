@@ -50,10 +50,7 @@ public class Constants {
         public static final int flywheelRightId = 9;
 
         /** Serial ID for the ultrasonic sensor ping channel **/
-        public static final int pingId = 0; // TODO
-
-        /** Serial ID for the ultrasonic sensor echo channel **/
-        public static final int echoId = 0; // TODO
+        public static final int ultrasonicId = 0; // TODO
 
         /** Pivot angle setpoints **/
         public static final class Setpoints {
@@ -70,7 +67,7 @@ public class Constants {
             public static final double subwoofer = 35;
 
             /** Able to score in the amp **/
-            public static final double amp = 235; // TODO
+            public static final double amp = 135; // TODO
 
             /** Able to shoot into the trap **/
             public static final double trap = 20; // TODO
@@ -142,21 +139,22 @@ public class Constants {
         /** Values for pid, feedforward, and other controllers **/
         public static final class Control {
             /** Pivot PID kp **/
-            public static final double pivotKp = 0.3; // TODO
+            public static final double pivotKp = 0.15; // TODO
             /** Pivot PID ki **/
             public static final double pivotKi = 0; // TODO
             /** Pivot PID kd **/
-            public static final double pivotKd = 0; // TODO
+            public static final double pivotKd = 0.003; // TODO
             /** Pivot FF kg **/
-            public static final double pivotKg = 0.92; // TODO
+            public static final double pivotKg = 0.475; // TODO
             /** Pivot FF kv **/
-            public static final double pivotKv = 0.78; // TODO
+            public static final double pivotKv = 0; // TODO
             /** Pivot FF ka **/
-            public static final double pivotKa = 0.02; // TODO
+            public static final double pivotKa = 0; // TODO
             /** Pivot FF ks **/
             public static final double pivotKs = 0; // TODO
-            /** The pivot gravity compensation voltage **/
-            public static final double gravComp = 0.5; // TODO
+            /** The angle the FF input should be offset by to account for the COM not being at the exact angle of the
+             * encoder reading **/
+            public static final double comAngleCompensation = -20.0; // TODO
             /** Feed position PID kp **/
             public static final double feedKp = 0.1; // TODO
             /** Feed position PID ki **/
@@ -184,10 +182,10 @@ public class Constants {
     /** Constants relating to the Intake **/
     public static final class Intake {
         /** The gear reduction from the deploy motor to the pivot **/
-        public static final double gearRatioDeploy = 75;
+        public static final double gearRatioDeploy = 1.0 / 75.0;
 
         /** The gear reduction from the intake motor to the intake rollers **/
-        public static final double gearRatioIntake = 75;
+        public static final double gearRatioIntake = 1.0 / 75.0;
 
         /** The angle at which the intake leaves the frame perimeter **/
         public static final double extrusionThreshold = 90; // TODO
@@ -199,16 +197,13 @@ public class Constants {
         public static final double tolerance = 5;
 
         /** CAN ID for the deploy motor **/
-        public static final int deployId = 31;
+        public static final int deployId = 3;
 
         /** CAN ID for the intake motor **/
-        public static final int intakeId = 32;
+        public static final int intakeId = 16;
 
         /** Serial ID for the ultrasonic sensor ping channel **/
-        public static final int pingId = 1; // TODO
-
-        /** Serial ID for the ultrasonic sensor echo channel **/
-        public static final int echoId = 1; // TODO
+        public static final int ultrasonicId = 1; // TODO
 
         /** The setpoints for the intake deployment pivot **/
         public static final class Setpoints {
@@ -216,7 +211,7 @@ public class Constants {
             public static final double handoff = 0;
 
             /** In the frame but out of the shooter's way **/
-            public static final double hover = 90;
+            public static final double hover = 60;
 
             /** Able to intake from the ground **/
             public static final double intake = 180;
@@ -231,37 +226,35 @@ public class Constants {
             public static final double hold = 0.15;
 
             /** Pass the note to the shooter **/
-            public static final double handoff = -0.5;
+            public static final double handoff = -1;
         }
 
         /** The ranges reported by the ultrasonic sensor for different note distances within the intake **/
         public static final class UltrasonicRanges {
             /** The note has been grabbed by the intake wheels **/
-            public static final double noteCaptureDistance = 12; // TODO
-
-            /** The note is fully in the intake **/
-            public static final double noteSecureDistance = 3; // TODO
+            public static final double noteCaptureDistance = 12.0;
 
         }
 
         /** Values for pid, feedforward, and other controllers **/
         public static final class Control {
             /** Extend PID kp **/
-            public static final double kp = 0.1; // TODO
+            public static final double kp = 0.2; // TODO
             /** Extend PID ki **/
             public static final double ki = 0; // TODO
             /** Extend PID kd **/
-            public static final double kd = 0; // TODO
+            public static final double kd = 0.003; // TODO
             /** Extend FF kg **/
             public static final double kg = 0.36; // TODO
             /** Extend FF kv **/
-            public static final double kv = 1.46; // TODO
+            public static final double kv = 0; // TODO
             /** Extend FF ka **/
-            public static final double ka = 0.01; // TODO
+            public static final double ka = 0; // TODO
             /** Extend FF ks **/
             public static final double ks = 0; // TODO
-            /** The deployment gravity compensation voltage **/
-            public static final double gravComp = 0.5; // TODO
+            /** The angle the FF input should be offset by to account for the COM not being at the exact angle of the
+             * encoder reading **/
+            public static final double comAngleCompensation = 30;
         }
 
         /** Values needed for simulation **/
@@ -298,10 +291,10 @@ public class Constants {
         public static final double climbVoltage = 12.0; // TODO
 
         /** CAN ID for the left climber motor **/
-        public static final int leftId = 41;
+        public static final int leftId = 4;
 
         /** CAN ID for the right climber motor **/
-        public static final int rightId = 42;
+        public static final int rightId = 13;
     }
 
     /** Constants relating to the swerve drivebase **/

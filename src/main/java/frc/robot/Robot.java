@@ -7,7 +7,11 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.command.defaults.Drive;
 import frc.robot.sensor.pose.Odometry;
+import frc.robot.subsystem.climber.Climber;
+import frc.robot.subsystem.intake.Intake;
+import frc.robot.subsystem.intake.IntakeIOSparkMax;
 import frc.robot.subsystem.shooter.Shooter;
+import frc.robot.subsystem.shooter.ShooterIOSparkMax;
 import frc.robot.subsystem.swerve.Swerve;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -28,15 +32,17 @@ public class Robot extends LoggedRobot {
 
     new Swerve();
 //    Swerve.init();
-    new Shooter();
-//    Shooter.init();
-//    Intake.init();
+    Shooter.init();
+    Intake.init();
 //    Climber.init();
 
     Swerve.instance.setDefaultCommand(new Drive());
     Shooter.instance.setDefaultCommand(Commands.idle(Shooter.instance));
-//    Intake.instance.setDefaultCommand(new Read(Intake.instance));
-//    Climber.instance.setDefaultCommand(new Read(Climber.instance));
+    Intake.instance.setDefaultCommand(Commands.idle(Intake.instance));
+//    Climber.instance.setDefaultCommand(Commands.idle(Climber.instance));
+
+    ShooterIOSparkMax.paralyzedPivot = false;
+    IntakeIOSparkMax.paralyzedDeploy = false;
 
     robotContainer = new RobotContainer();
 //    Logger.addDataReceiver(new WPILOGWriter(Filesystem.getDeployDirectory().getPath() + "/logs"));
@@ -47,9 +53,11 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
 
+    robotContainer.scuffed();
+
     Swerve.instance.updateInputs();
     Shooter.instance.updateInputs();
-//    Intake.instance.updateInputs();
+    Intake.instance.updateInputs();
 //    Climber.instance.updateInputs();
 
     // Periodic Actions

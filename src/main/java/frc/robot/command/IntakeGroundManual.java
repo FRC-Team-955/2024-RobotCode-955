@@ -1,12 +1,17 @@
 package frc.robot.command;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants;
 import frc.robot.subsystem.intake.Intake;
 
-public class IntakeGround extends Command {
+import java.util.function.BooleanSupplier;
 
-    boolean r = false;
+public class IntakeGroundManual extends Command {
+
+    private final BooleanSupplier r;
+
+    public IntakeGroundManual(BooleanSupplier control) {
+        r = control;
+    }
 
     @Override
     public void initialize() {
@@ -15,18 +20,8 @@ public class IntakeGround extends Command {
     }
 
     @Override
-    public void execute() {
-        System.out.println(Intake.noteCaptured());
-        if (!r && Intake.noteCaptured()) {
-            Intake.movePositionHandoff();
-            r = true;
-        }
-    }
-
-    @Override
     public boolean isFinished() {
-//        return false;
-        return r && Intake.atSetpoint();
+        return !r.getAsBoolean();
     }
 
     @Override
