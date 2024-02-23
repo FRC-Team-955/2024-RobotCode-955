@@ -13,15 +13,15 @@ public class ShooterIOInputsAutoLogged extends ShooterIO.ShooterIOInputs impleme
     table.put("PivotVelocity", pivotVelocity);
     table.put("FeedPosition", feedPosition);
     table.put("FeedVelocity", feedVelocity);
-    table.put("FlywheelPositionLeft", flywheelPositionLeft);
-    table.put("FlywheelVelocityLeft", flywheelVelocityLeft);
-    table.put("FlywheelPositionRight", flywheelPositionRight);
-    table.put("FlywheelVelocityRight", flywheelVelocityRight);
-    table.put("UltrasonicRange", ultrasonicRange);
+    table.put("FlywheelPositionTop", flywheelPositionTop);
+    table.put("FlywheelVelocityTop", flywheelVelocityTop);
+    table.put("FlywheelPositionBottom", flywheelPositionBottom);
+    table.put("FlywheelVelocityBottom", flywheelVelocityBottom);
+    table.put("BeamBreak", beamBreak);
     table.put("VoltsAppliedPivot", voltsAppliedPivot);
     table.put("VoltsAppliedFeed", voltsAppliedFeed);
-    table.put("VoltsAppliedLeft", voltsAppliedLeft);
-    table.put("VoltsAppliedRight", voltsAppliedRight);
+    table.put("VoltsAppliedTop", voltsAppliedTop);
+    table.put("VoltsAppliedBottom", voltsAppliedBottom);
     table.put("BrakeFlywheel", brakeFlywheel);
   }
 
@@ -32,15 +32,15 @@ public class ShooterIOInputsAutoLogged extends ShooterIO.ShooterIOInputs impleme
     pivotVelocity = table.get("PivotVelocity", pivotVelocity);
     feedPosition = table.get("FeedPosition", feedPosition);
     feedVelocity = table.get("FeedVelocity", feedVelocity);
-    flywheelPositionLeft = table.get("FlywheelPositionLeft", flywheelPositionLeft);
-    flywheelVelocityLeft = table.get("FlywheelVelocityLeft", flywheelVelocityLeft);
-    flywheelPositionRight = table.get("FlywheelPositionRight", flywheelPositionRight);
-    flywheelVelocityRight = table.get("FlywheelVelocityRight", flywheelVelocityRight);
-    ultrasonicRange = table.get("UltrasonicRange", ultrasonicRange);
+    flywheelPositionTop = table.get("FlywheelPositionTop", flywheelPositionTop);
+    flywheelVelocityTop = table.get("FlywheelVelocityTop", flywheelVelocityTop);
+    flywheelPositionBottom = table.get("FlywheelPositionBottom", flywheelPositionBottom);
+    flywheelVelocityBottom = table.get("FlywheelVelocityBottom", flywheelVelocityBottom);
+    beamBreak = table.get("BeamBreak", beamBreak);
     voltsAppliedPivot = table.get("VoltsAppliedPivot", voltsAppliedPivot);
     voltsAppliedFeed = table.get("VoltsAppliedFeed", voltsAppliedFeed);
-    voltsAppliedLeft = table.get("VoltsAppliedLeft", voltsAppliedLeft);
-    voltsAppliedRight = table.get("VoltsAppliedRight", voltsAppliedRight);
+    voltsAppliedTop = table.get("VoltsAppliedTop", voltsAppliedTop);
+    voltsAppliedBottom = table.get("VoltsAppliedBottom", voltsAppliedBottom);
     brakeFlywheel = table.get("BrakeFlywheel", brakeFlywheel);
   }
 
@@ -51,15 +51,15 @@ public class ShooterIOInputsAutoLogged extends ShooterIO.ShooterIOInputs impleme
     copy.pivotVelocity = this.pivotVelocity;
     copy.feedPosition = this.feedPosition;
     copy.feedVelocity = this.feedVelocity;
-    copy.flywheelPositionLeft = this.flywheelPositionLeft;
-    copy.flywheelVelocityLeft = this.flywheelVelocityLeft;
-    copy.flywheelPositionRight = this.flywheelPositionRight;
-    copy.flywheelVelocityRight = this.flywheelVelocityRight;
-    copy.ultrasonicRange = this.ultrasonicRange;
+    copy.flywheelPositionTop = this.flywheelPositionTop;
+    copy.flywheelVelocityTop = this.flywheelVelocityTop;
+    copy.flywheelPositionBottom = this.flywheelPositionBottom;
+    copy.flywheelVelocityBottom = this.flywheelVelocityBottom;
+    copy.beamBreak = this.beamBreak;
     copy.voltsAppliedPivot = this.voltsAppliedPivot;
     copy.voltsAppliedFeed = this.voltsAppliedFeed;
-    copy.voltsAppliedLeft = this.voltsAppliedLeft;
-    copy.voltsAppliedRight = this.voltsAppliedRight;
+    copy.voltsAppliedTop = this.voltsAppliedTop;
+    copy.voltsAppliedBottom = this.voltsAppliedBottom;
     copy.brakeFlywheel = this.brakeFlywheel;
     return copy;
   }

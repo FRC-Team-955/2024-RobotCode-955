@@ -12,6 +12,8 @@ public class IntakeIOInputsAutoLogged extends IntakeIO.IntakeIOInputs implements
     table.put("PositionSetpoint", positionSetpoint);
     table.put("Velocity", velocity);
     table.put("IntakePercent", intakePercent);
+    table.put("IntakeVelocity", intakeVelocity);
+    table.put("IntakeAmpDraw", intakeAmpDraw);
     table.put("UltrasonicRange", ultrasonicRange);
     table.put("VoltsAppliedDeploy", voltsAppliedDeploy);
     table.put("VoltsAppliedIntake", voltsAppliedIntake);
@@ -24,6 +26,8 @@ public class IntakeIOInputsAutoLogged extends IntakeIO.IntakeIOInputs implements
     positionSetpoint = table.get("PositionSetpoint", positionSetpoint);
     velocity = table.get("Velocity", velocity);
     intakePercent = table.get("IntakePercent", intakePercent);
+    intakeVelocity = table.get("IntakeVelocity", intakeVelocity);
+    intakeAmpDraw = table.get("IntakeAmpDraw", intakeAmpDraw);
     ultrasonicRange = table.get("UltrasonicRange", ultrasonicRange);
     voltsAppliedDeploy = table.get("VoltsAppliedDeploy", voltsAppliedDeploy);
     voltsAppliedIntake = table.get("VoltsAppliedIntake", voltsAppliedIntake);
@@ -36,6 +40,8 @@ public class IntakeIOInputsAutoLogged extends IntakeIO.IntakeIOInputs implements
     copy.positionSetpoint = this.positionSetpoint;
     copy.velocity = this.velocity;
     copy.intakePercent = this.intakePercent;
+    copy.intakeVelocity = this.intakeVelocity;
+    copy.intakeAmpDraw = this.intakeAmpDraw;
     copy.ultrasonicRange = this.ultrasonicRange;
     copy.voltsAppliedDeploy = this.voltsAppliedDeploy;
     copy.voltsAppliedIntake = this.voltsAppliedIntake;

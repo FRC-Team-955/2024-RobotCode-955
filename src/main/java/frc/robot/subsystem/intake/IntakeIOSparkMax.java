@@ -18,7 +18,7 @@ public class IntakeIOSparkMax extends IntakeIO {
     private final CANSparkBase intake;
 
     private final RelativeEncoder deployEncoder;
-    private final RelativeEncoder intakeEncoder;
+//    private final RelativeEncoder intakeEncoder;
 
     private final MaxbotixUltrasonic ultrasonic;
     private final LinearFilter ultrasonicFilter;
@@ -30,7 +30,7 @@ public class IntakeIOSparkMax extends IntakeIO {
         deploy.setInverted(true);
         intake.setInverted(true);
         deployEncoder = deploy.getEncoder();
-        intakeEncoder = intake.getEncoder();
+//        intakeEncoder = intake.getEncoder();
         deployEncoder.setPositionConversionFactor(Constants.Intake.gearRatioDeploy * 360);
         deployEncoder.setVelocityConversionFactor(Constants.Intake.gearRatioDeploy * 360);
         ultrasonic = new MaxbotixUltrasonic(Constants.Intake.ultrasonicId);
@@ -42,7 +42,7 @@ public class IntakeIOSparkMax extends IntakeIO {
         inputs.position = deployEncoder.getPosition();
         inputs.velocity = deployEncoder.getVelocity();
         inputs.ultrasonicRange = ultrasonicFilter.calculate(ultrasonic.getRangeInches());
-        inputs.intakeVelocity = intakeEncoder.getVelocity();
+//        inputs.intakeVelocity = intakeEncoder.getVelocity();
         inputs.intakeAmpDraw = intake.getOutputCurrent();
     }
 

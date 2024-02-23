@@ -17,15 +17,15 @@ public abstract class ShooterIO {
         public double pivotVelocity;
         public double feedPosition;
         public double feedVelocity;
-        public double flywheelPositionLeft;
-        public double flywheelVelocityLeft;
-        public double flywheelPositionRight;
-        public double flywheelVelocityRight;
-        public double ultrasonicRange;
+        public double flywheelPositionTop;
+        public double flywheelVelocityTop;
+        public double flywheelPositionBottom;
+        public double flywheelVelocityBottom;
+        public boolean beamBreak;
         public double voltsAppliedPivot;
         public double voltsAppliedFeed;
-        public double voltsAppliedLeft;
-        public double voltsAppliedRight;
+        public double voltsAppliedTop;
+        public double voltsAppliedBottom;
         public boolean brakeFlywheel;
     }
 
@@ -51,15 +51,10 @@ public abstract class ShooterIO {
      */
     public abstract void setFeedVolts(double volts);
     /**
-     * Sets the voltage for the left flywheel motor
+     * Sets the voltage for the flywheel motors
      * @param volts The voltage to be applied
      */
-    public abstract void setFlywheelLeftVolts(double volts);
-    /**
-     * Sets the voltage for the right flywheel motor
-     * @param volts The voltage to be applied
-     */
-    public abstract void setFlywheelRightVolts(double volts);
+    public abstract void setFlywheelVolts(double volts);
 
     /**
      * Sets the brake mode on the flywheel motors

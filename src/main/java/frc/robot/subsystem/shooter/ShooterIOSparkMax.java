@@ -6,38 +6,34 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
 import frc.robot.Constants;
-import frc.robot.utility.object.MaxbotixUltrasonic;
 
 public class ShooterIOSparkMax extends ShooterIO {
 
     public static boolean paralyzedPivot = false;
     public static boolean paralyzedFeed = false;
-    public static boolean paralyzedLeft = false;
-    public static boolean paralyzedRight = false;
+    public static boolean paralyzedFlywheel = false;
 
     private final CANSparkBase pivot;
     private final CANSparkBase feed;
-    private final CANSparkBase flywheelLeft;
-    private final CANSparkBase flywheelRight;
+    private final CANSparkBase flywheelTop;
+    private final CANSparkBase flywheelBottom;
     private final RelativeEncoder pivotEncoder;
     private final RelativeEncoder feedEncoder;
-    private final RelativeEncoder flywheelLeftEncoder;
-    private final RelativeEncoder flywheelRightEncoder;
-    private final MaxbotixUltrasonic ultrasonic;
+    private final RelativeEncoder flywheelTopEncoder;
+    private final RelativeEncoder flywheelBottomEncoder;
 
     public ShooterIOSparkMax(ShooterIOInputsAutoLogged input) {
         inputs = input;
-        pivot = new CANSparkMax(Constants.Shooter.pivotId, CANSparkLowLevel.MotorType.kBrushless);
+        pivot = new CANSparkMax(Constants.ShooterV1.pivotId, CANSparkLowLevel.MotorType.kBrushless);
         pivot.setIdleMode(CANSparkBase.IdleMode.kBrake);
-        feed = new CANSparkMax(Constants.Shooter.feedId, CANSparkLowLevel.MotorType.kBrushless);
-        flywheelLeft = new CANSparkMax(Constants.Shooter.flywheelLeftId, CANSparkLowLevel.MotorType.kBrushless);
-        flywheelRight = new CANSparkMax(Constants.Shooter.flywheelRightId, CANSparkLowLevel.MotorType.kBrushless);
+        feed = new CANSparkMax(Constants.ShooterV1.feedId, CANSparkLowLevel.MotorType.kBrushless);
+        flywheelTop = new CANSparkMax(Constants.ShooterV1.flywheelLeftId, CANSparkLowLevel.MotorType.kBrushless);
+        flywheelBottom = new CANSparkMax(Constants.ShooterV1.flywheelRightId, CANSparkLowLevel.MotorType.kBrushless);
         pivotEncoder = pivot.getEncoder();
         feedEncoder = feed.getEncoder();
-        flywheelLeftEncoder = flywheelLeft.getEncoder();
-        flywheelRightEncoder = flywheelRight.getEncoder();
-        pivotEncoder.setPositionConversionFactor(Constants.Shooter.gearRatioAngle * 360);
-        ultrasonic = new MaxbotixUltrasonic(Constants.Shooter.ultrasonicId);
+        flywheelTopEncoder = flywheelTop.getEncoder();
+        flywheelBottomEncoder = flywheelBottom.getEncoder();
+        pivotEncoder.setPositionConversionFactor(Constants.ShooterV1.gearRatioAngle * 360);
     }
 
     @Override
@@ -46,11 +42,10 @@ public class ShooterIOSparkMax extends ShooterIO {
         inputs.pivotVelocity = pivotEncoder.getVelocity();
         inputs.feedPosition = feedEncoder.getPosition();
         inputs.feedVelocity = feedEncoder.getVelocity();
-        inputs.flywheelPositionLeft = flywheelLeftEncoder.getPosition();
-        inputs.flywheelVelocityLeft = flywheelLeftEncoder.getVelocity();
-        inputs.flywheelPositionRight = flywheelRightEncoder.getPosition();
-        inputs.flywheelVelocityRight = flywheelRightEncoder.getVelocity();
-        inputs.ultrasonicRange = ultrasonic.getRangeInches();
+        inputs.flywheelPositionTop = flywheelTopEncoder.getPosition();
+        inputs.flywheelVelocityTop = flywheelTopEncoder.getVelocity();
+        inputs.flywheelPositionBottom = flywheelBottomEncoder.getPosition();
+        inputs.flywheelVelocityBottom = flywheelBottomEncoder.getVelocity();
     }
 
     @Override
@@ -66,21 +61,17 @@ public class ShooterIOSparkMax extends ShooterIO {
     }
 
     @Override
-    public void setFlywheelLeftVolts(double volts) {
-        inputs.voltsAppliedLeft = volts;
-        flywheelLeft.setVoltage(paralyzedLeft ? 0 : MathUtil.clamp(volts, -12.0, 12.0));
-    }
-
-    @Override
-    public void setFlywheelRightVolts(double volts) {
-        inputs.voltsAppliedRight = volts;
-        flywheelRight.setVoltage(paralyzedRight ? 0 : -MathUtil.clamp(volts, -12.0, 12.0));
+    public void setFlywheelVolts(double volts) {
+        inputs.voltsAppliedTop = volts;
+        flywheelTop.setVoltage(paralyzedFlywheel ? 0 : MathUtil.clamp(volts, -12.0, 12.0));
+        inputs.voltsAppliedBottom = -volts;
+        flywheelBottom.setVoltage(paralyzedFlywheel ? 0 : -MathUtil.clamp(volts, -12.0, 12.0));
     }
 
     @Override
     public void setFlywheelBrake(boolean brake) {
         inputs.brakeFlywheel = brake;
-        flywheelLeft.setIdleMode(brake ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast);
-        flywheelRight.setIdleMode(brake ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast);
+        flywheelTop.setIdleMode(brake ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast);
+        flywheelBottom.setIdleMode(brake ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast);
     }
 }

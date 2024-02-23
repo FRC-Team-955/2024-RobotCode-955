@@ -1,17 +1,17 @@
 package frc.robot.command.defaults;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystem.shooter.Shooter;
+import frc.robot.subsystem.shooterV1.ShooterV1;
 
 public class DefaultShooter extends Command {
 
     public DefaultShooter() {
-        addRequirements(Shooter.instance);
+        addRequirements(ShooterV1.instance);
     }
 
     @Override
     public void initialize() {
-        Shooter.setFlywheelVelocityZero();
-        Shooter.setPivotPositionTuck();
+        ShooterV1.setFlywheelVelocityZero();
+        ShooterV1.setPivotPositionTuck();
     }
 }

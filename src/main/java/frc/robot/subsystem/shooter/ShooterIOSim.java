@@ -1,5 +1,7 @@
 package frc.robot.subsystem.shooter;
 
+import frc.robot.subsystem.shooterV1.ShooterIOInputsV1AutoLogged;
+
 public class ShooterIOSim extends ShooterIO {
 
     public ShooterIOSim(ShooterIOInputsAutoLogged input) {
@@ -22,12 +24,7 @@ public class ShooterIOSim extends ShooterIO {
     }
 
     @Override
-    public void setFlywheelLeftVolts(double volts) {
-
-    }
-
-    @Override
-    public void setFlywheelRightVolts(double volts) {
+    public void setFlywheelVolts(double volts) {
 
     }
 

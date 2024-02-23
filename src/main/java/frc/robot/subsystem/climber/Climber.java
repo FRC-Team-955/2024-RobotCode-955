@@ -63,6 +63,7 @@ public class Climber extends SubsystemBase {
         instance.setVoltageI(volts);
     }
     private void setVoltageI(double volts) {
+        System.out.print(volts);
         io.setLeftVolts(volts);
         io.setRightVolts(volts);
     }

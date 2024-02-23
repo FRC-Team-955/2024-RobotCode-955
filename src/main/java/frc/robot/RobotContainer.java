@@ -4,22 +4,16 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.command.*;
-import frc.robot.command.factories.IntakeCommand;
-import frc.robot.command.factories.ShooterCommand;
-import frc.robot.command.handoff.HandoffFull;
+import frc.robot.command.handoff.IntakeHandoff;
+import frc.robot.command.handoff.IntakeHandoffAuto;
 import frc.robot.command.handoff.IntakeHandoffManual;
-import frc.robot.sensor.pose.Gyro;
-import frc.robot.subsystem.climber.Climber;
-import frc.robot.subsystem.intake.Intake;
-import frc.robot.subsystem.shooter.Shooter;
+import frc.robot.subsystem.shooterV1.ShooterV1;
 import frc.robot.subsystem.swerve.Swerve;
 import frc.robot.utility.information.InputUtil;
 
@@ -31,7 +25,10 @@ public class RobotContainer {
   public RobotContainer() {
     controller = new CommandXboxController(0);
     controller2 = new CommandXboxController(1);
+
+    registerAutoCommands();
     configureBindings();
+
   }
 
   private void configureBindings() {
@@ -39,19 +36,22 @@ public class RobotContainer {
     Swerve.instance.setDefaultCommand(Commands.run(() -> {
       Swerve.drivePercents(new Translation2d(-InputUtil.deadzone(controller.getLeftY(), 0.1),
               -InputUtil.deadzone(controller.getLeftX(), 0.1)),
-              InputUtil.deadzone(controller.getRightX(), 0.1), true);
+              -InputUtil.deadzone(controller.getRightX(), 0.1), true);
     }, Swerve.instance));
     controller.rightBumper().onTrue(new IntakeHandoffManual(controller.rightBumper()));
     controller.rightTrigger().onTrue(new ShootBasic(controller.rightTrigger()));
     controller.leftTrigger().onTrue(new AmpBasic(controller.leftTrigger()));
-    controller.a().onTrue(Commands.runOnce(Shooter::setPivotPositionLoad));
-    controller.b().onTrue(Commands.runOnce(Shooter::setPivotPositionAmp));
+    controller.leftBumper().onTrue(new TrapBasic(controller.leftBumper()));
+    controller.a().onTrue(Commands.runOnce(ShooterV1::setPivotPositionLoad));
+    controller.b().onTrue(Commands.runOnce(ShooterV1::setPivotPositionAmp));
   }
 
-  public void scuffed() {
-//    Intake.setIntakePercent(InputUtil.deadzone(controller2.getRightY(), 0.1));
-//    Climber.setVoltage(controller2.rightBumper().getAsBoolean() ? InputUtil.deadzone(controller2.getLeftY(), 0.1) * 12 : 0);
-//    Shooter.setNotePosition(controller2.rightBumper().getAsBoolean() ? 0 : InputUtil.deadzone(controller2.getLeftY(), 0.1));
+  private void registerAutoCommands() {
+    NamedCommands.registerCommand("intake", new IntakeHandoffAuto());
+    NamedCommands.registerCommand("shoot", new ShootAuto());
+    NamedCommands.registerCommand("prepShootSubwoofer", new PrepShootSubwooferAuto());
+    NamedCommands.registerCommand("prepShootShort", new PrepShootShortAuto());
+    NamedCommands.registerCommand("prepShootLong", new PrepShootLongAuto());
   }
 
   public Command getAutonomousCommand() {

@@ -28,6 +28,10 @@ public class Intake extends SubsystemBase {
     private final PIDController extendPid;
     private final ArmFeedforward extendFf;
 
+    private boolean hasNote = false;
+    private boolean ampSpike = false;
+    private int ampSpikeCounter = 10;
+
 
 
     private Intake() {
@@ -79,6 +83,23 @@ public class Intake extends SubsystemBase {
         else {
             io.setDeployBrake(inputs.position < Constants.Intake.extrusionThreshold);
         }
+
+        if (inputs.voltsAppliedIntake <= 0.1) {
+            hasNote = false;
+            ampSpike = false;
+            ampSpikeCounter = 10;
+        }
+        else if (inputs.intakeAmpDraw > 30) {
+            if (ampSpike && ampSpikeCounter <= 0) {
+                hasNote = true;
+            }
+            else if (!ampSpike) {
+                ampSpike = true;
+                ampSpikeCounter = 10;
+            }
+        }
+
+        ampSpikeCounter--;
     }
 
 
@@ -209,5 +230,5 @@ public class Intake extends SubsystemBase {
     public static boolean noteCaptured() {
         return instance.noteCapturedI();
     }
-    private boolean noteCapturedI() { return inputs.ultrasonicRange < Constants.Intake.UltrasonicRanges.noteCaptureDistance; }
+    private boolean noteCapturedI() { return hasNote; }
 }

@@ -2,7 +2,7 @@ package frc.robot.command;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystem.shooter.Shooter;
+import frc.robot.subsystem.shooterV1.ShooterV1;
 
 import java.util.function.BooleanSupplier;
 
@@ -20,7 +20,7 @@ public class AmpBasic extends Command {
 
     @Override
     public void initialize() {
-        Shooter.setPivotPositionAmp();
+        ShooterV1.setPivotPositionAmp();
     }
 
     @Override
@@ -30,9 +30,9 @@ public class AmpBasic extends Command {
 
         switch (state) {
             case 0: {
-                if (aligned && Shooter.atPivotSetpoint()) {
-                    Shooter.setFlywheelVelocityMax();
-                    Shooter.setNotePosition(1);
+                if (aligned && ShooterV1.atPivotSetpoint()) {
+                    ShooterV1.setFlywheelVelocityMax();
+                    ShooterV1.setFeedPercent(1);
                     timer.start();
                     state++;
                 }
@@ -49,9 +49,9 @@ public class AmpBasic extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        Shooter.setPivotPositionTuck();
-        Shooter.setFlywheelVelocityZero();
-        Shooter.setNotePosition(0);
+        ShooterV1.setPivotPositionTuck();
+        ShooterV1.setFlywheelVelocityZero();
+        ShooterV1.setFeedPercent(0);
         state = 0;
         timer.stop();
         timer.reset();

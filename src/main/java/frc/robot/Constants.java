@@ -17,8 +17,238 @@ public class Constants {
     /** The time in seconds between each code loop **/
     public static final double loopTime = 0.02;
 
-    /** Constants relating to the shooter **/
     public static final class Shooter {
+        public static final class Setpoints {
+            public static final double tuck = 0;
+            public static final double trap = 20; // TODO
+            public static final double load = 30;
+            public static final double amp = 135; // TODO
+            public static final double max = 150;
+
+            public static final double autoShootShort = 15;
+            public static final double autoShootLong = 15;
+        }
+        public static final class Voltages {
+            public static final double feedUp = 6;
+        }
+        public static final class Control {
+            public static final double kp = 1; // TODO
+            public static final double ki = 1; // TODO
+            public static final double kd = 1; // TODO
+            public static final double kg = 1; // TODO
+            public static final double kv = 0;
+            public static final double ka = 0;
+            public static final double ks = 0;
+            public static final double comAngleCompensation = -20; // TODO
+        }
+        public static final class Tolerances {
+            public static final double pivot = 1;
+        }
+        public static final class GearRatios {
+            public static final double pivot = 1; // TODO
+            public static final double feed = 1; // TODO
+            public static final double flywheel = 1; // TODO
+        }
+        public static final class Ids {
+            public static final int pivot = 7;
+            public static final int feed = 8;
+            public static final int flywheelTop = 9;
+            public static final int flywheelBottom = 10;
+        }
+    }
+
+    /** Constants relating to the Intake **/
+    public static final class Intake {
+        /** The gear reduction from the deploy motor to the pivot **/
+        public static final double gearRatioDeploy = 1.0 / 75.0;
+
+        /** The gear reduction from the intake motor to the intake rollers **/
+        public static final double gearRatioIntake = 1.0 / 75.0;
+
+        /** The angle at which the intake leaves the frame perimeter **/
+        public static final double extrusionThreshold = 90; // TODO
+
+        /** The max deploy angle **/
+        public static final double maxAngle = 180;
+
+        /** The default error tolerance for setpoints in degrees **/
+        public static final double tolerance = 5;
+
+        /** CAN ID for the deploy motor **/
+        public static final int deployId = 3;
+
+        /** CAN ID for the intake motor **/
+        public static final int intakeId = 16;
+
+        /** Serial ID for the ultrasonic sensor ping channel **/
+        public static final int ultrasonicId = 1; // TODO
+
+        /** The setpoints for the intake deployment pivot **/
+        public static final class Setpoints {
+            /** Able to give note to the shooter **/
+            public static final double handoff = 0;
+
+            /** In the frame but out of the shooter's way **/
+            public static final double hover = 60;
+
+            /** Able to intake from the ground **/
+            public static final double intake = 175;
+        }
+
+        /** Percentages for the intake motor **/
+        public static final class Percents {
+            /** Intake the note from the ground **/
+            public static final double intake = 1;
+
+            /** Keep the note in the intake **/
+            public static final double hold = 0.15;
+
+            /** Pass the note to the shooter **/
+            public static final double handoff = -1;
+        }
+
+        /** The ranges reported by the ultrasonic sensor for different note distances within the intake **/
+        public static final class UltrasonicRanges {
+            /** The note has been grabbed by the intake wheels **/
+            public static final double noteCaptureDistance = 12.0;
+
+        }
+
+        /** Values for pid, feedforward, and other controllers **/
+        public static final class Control {
+            /** Extend PID kp **/
+            public static final double kp = 0.2; // TODO
+            /** Extend PID ki **/
+            public static final double ki = 0; // TODO
+            /** Extend PID kd **/
+            public static final double kd = 0.003; // TODO
+            /** Extend FF kg **/
+            public static final double kg = 0.36; // TODO
+            /** Extend FF kv **/
+            public static final double kv = 0; // TODO
+            /** Extend FF ka **/
+            public static final double ka = 0; // TODO
+            /** Extend FF ks **/
+            public static final double ks = 0; // TODO
+            /** The angle the FF input should be offset by to account for the COM not being at the exact angle of the
+             * encoder reading **/
+            public static final double comAngleCompensation = 30;
+        }
+
+        /** Values needed for simulation **/
+        public static final class Simulation {
+            /** The moment of inertia of the intake in kg m^2 **/
+            public static final double moi = 0.1818003362;
+
+            /** The length of the intake in meters **/
+            public static final double length = 0.36;
+        }
+    }
+
+    /** Constants relating to handoffs **/
+    public static final class Handoff {
+        /** The range in which a note sticking out of the intake or shooter will contact both in degrees **/
+        public static final double contactRange = 20;
+    }
+
+    /** Constants relating the Climber **/
+    public static final class Climber {
+        /** The gear ratio from the motor to the climber **/
+        public static final double gearRatio = 1; // TODO
+
+        /** The radius of the mechanism applying force to the telescoping tube **/
+        public static final double radius = 1; // TODO
+
+        /** The max extension length of the climber **/
+        public static final double extensionLength = 1; // TODO
+
+        /** The voltage to be applied for raising the climber up (Not climbing) **/
+        public static final double extendVoltage = 4.0; // TODO
+
+        /** The voltage to be applied for pulling the climber down (Climbing) **/
+        public static final double climbVoltage = 12.0; // TODO
+
+        /** CAN ID for the left climber motor **/
+        public static final int leftId = 4;
+
+        /** CAN ID for the right climber motor **/
+        public static final int rightId = 13;
+    }
+
+    /** Constants relating to the swerve drivebase **/
+    public static final class Swerve {
+
+        /** The radius of the wheel in meters **/
+        public static final double wheelRadius = 0.0508;
+
+        /** How far back the wheel is set in from the frame **/
+        public static final double wheelInset = 0.066675;
+
+        /** CAN IDs for the drive motors for each respective swerve module as described by {@link SwerveMod#modId} **/
+        public static final int[] driveIds = new int[] { 2, 14, 11, 5 };
+
+        /** CAN IDs for the angle motors for each respective swerve module as described by {@link SwerveMod#modId} **/
+        public static final int[] angleIds = new int[] { 1, 15, 12, 6 };
+
+        /** CAN IDs for the CANCoders for each respective swerve module as described by {@link SwerveMod#modId} **/
+        public static final int[] encoderIds = new int[] { 11, 12, 13, 14 };
+
+        /** CAN ID for the Pigeon 2 gyro **/
+        public static final int gyroId = 10;
+
+        /** {@link Translation2d}s representing the positions for each respective swerve wheel relative to the robot center as described by {@link SwerveMod#modId} **/
+        public static final Translation2d[] modulePositions = new Translation2d[] {
+                new Translation2d( ((frameX / 2) - wheelInset),  ((frameY / 2) - wheelInset)),
+                new Translation2d( ((frameX / 2) - wheelInset), -((frameY / 2) - wheelInset)),
+                new Translation2d(-((frameX / 2) - wheelInset), -((frameY / 2) - wheelInset)),
+                new Translation2d(-((frameX / 2) - wheelInset),  ((frameY / 2) - wheelInset))
+        };
+
+        /** The conversion from CANCoder units to degrees **/
+        public static final double absoluteConversion = 360.0;
+
+        /** The gear reduction from the drive motors to the wheels **/
+        public static final double driveGearRatio = 1.0 / 6.75;
+
+        /** The gear reduction from the angle motors to the wheels **/
+        public static final double angleGearRatio = 7.0 / 150.0;
+
+        /** The conversion from Neo encoder units to degrees **/
+        public static final double relativeConversion = 360.0;
+
+        /** The tolerances for checking if a setpoint has been reached **/
+        public static final class Tolerances {
+            /** Heading position tolerance in degrees **/
+            public static double heading = 3;
+        }
+
+        /** The values relating to the physical limits of the robot **/
+        public static final class Constraints {
+            /** The max free speed of the robot in meters per second **/
+            public static final double maxFreeSpeed = 4.60248;
+
+            /** The max acceleration of the robot in meters per second squared **/
+            public static final double maxAcceleration = 2;
+
+            /** The max rotational velocity in degrees per second **/
+            public static final double maxRotationSpeed = 1;
+
+            /** The max rotational acceleration in rotations per second squared **/
+            public static final double maxRotationalAcceleration = 1;
+        }
+
+        /** Values needed for simulation **/
+        public static final class Simulation {
+            /** The moment of inertia of the drive wheel / robot **/
+            public static final double driveMoi = 0.025; // Might not be perfect
+
+            /** The moment of inertia of the angle wheel **/
+            public static final double angleMoi = 0.004096955; // Might not be perfect, taken from 6328's code
+        }
+    }
+
+    /** Constants relating to the shooter **/
+    public static final class ShooterV1 {
         /** The gear reduction from the motor to the pivot **/
         public static final double gearRatioAngle = 1.0 / 40.0; // TODO
 
@@ -176,196 +406,6 @@ public class Constants {
 
             /** The length of the shooter in meters **/
             public static final double length = 0.3; // TODO
-        }
-    }
-
-    /** Constants relating to the Intake **/
-    public static final class Intake {
-        /** The gear reduction from the deploy motor to the pivot **/
-        public static final double gearRatioDeploy = 1.0 / 75.0;
-
-        /** The gear reduction from the intake motor to the intake rollers **/
-        public static final double gearRatioIntake = 1.0 / 75.0;
-
-        /** The angle at which the intake leaves the frame perimeter **/
-        public static final double extrusionThreshold = 90; // TODO
-
-        /** The max deploy angle **/
-        public static final double maxAngle = 180;
-
-        /** The default error tolerance for setpoints in degrees **/
-        public static final double tolerance = 5;
-
-        /** CAN ID for the deploy motor **/
-        public static final int deployId = 3;
-
-        /** CAN ID for the intake motor **/
-        public static final int intakeId = 16;
-
-        /** Serial ID for the ultrasonic sensor ping channel **/
-        public static final int ultrasonicId = 1; // TODO
-
-        /** The setpoints for the intake deployment pivot **/
-        public static final class Setpoints {
-            /** Able to give note to the shooter **/
-            public static final double handoff = 0;
-
-            /** In the frame but out of the shooter's way **/
-            public static final double hover = 60;
-
-            /** Able to intake from the ground **/
-            public static final double intake = 180;
-        }
-
-        /** Percentages for the intake motor **/
-        public static final class Percents {
-            /** Intake the note from the ground **/
-            public static final double intake = 1;
-
-            /** Keep the note in the intake **/
-            public static final double hold = 0.15;
-
-            /** Pass the note to the shooter **/
-            public static final double handoff = -1;
-        }
-
-        /** The ranges reported by the ultrasonic sensor for different note distances within the intake **/
-        public static final class UltrasonicRanges {
-            /** The note has been grabbed by the intake wheels **/
-            public static final double noteCaptureDistance = 12.0;
-
-        }
-
-        /** Values for pid, feedforward, and other controllers **/
-        public static final class Control {
-            /** Extend PID kp **/
-            public static final double kp = 0.2; // TODO
-            /** Extend PID ki **/
-            public static final double ki = 0; // TODO
-            /** Extend PID kd **/
-            public static final double kd = 0.003; // TODO
-            /** Extend FF kg **/
-            public static final double kg = 0.36; // TODO
-            /** Extend FF kv **/
-            public static final double kv = 0; // TODO
-            /** Extend FF ka **/
-            public static final double ka = 0; // TODO
-            /** Extend FF ks **/
-            public static final double ks = 0; // TODO
-            /** The angle the FF input should be offset by to account for the COM not being at the exact angle of the
-             * encoder reading **/
-            public static final double comAngleCompensation = 30;
-        }
-
-        /** Values needed for simulation **/
-        public static final class Simulation {
-            /** The moment of inertia of the intake in kg m^2 **/
-            public static final double moi = 0.1818003362;
-
-            /** The length of the intake in meters **/
-            public static final double length = 0.36;
-        }
-    }
-
-    /** Constants relating to handoffs **/
-    public static final class Handoff {
-        /** The range in which a note sticking out of the intake or shooter will contact both in degrees **/
-        public static final double contactRange = 20;
-    }
-
-    /** Constants relating the Climber **/
-    public static final class Climber {
-        /** The gear ratio from the motor to the climber **/
-        public static final double gearRatio = 1; // TODO
-
-        /** The radius of the mechanism applying force to the telescoping tube **/
-        public static final double radius = 1; // TODO
-
-        /** The max extension length of the climber **/
-        public static final double extensionLength = 1; // TODO
-
-        /** The voltage to be applied for raising the climber up (Not climbing) **/
-        public static final double extendVoltage = 4.0; // TODO
-
-        /** The voltage to be applied for pulling the climber down (Climbing) **/
-        public static final double climbVoltage = 12.0; // TODO
-
-        /** CAN ID for the left climber motor **/
-        public static final int leftId = 4;
-
-        /** CAN ID for the right climber motor **/
-        public static final int rightId = 13;
-    }
-
-    /** Constants relating to the swerve drivebase **/
-    public static final class Swerve {
-
-        /** The radius of the wheel in meters **/
-        public static final double wheelRadius = 0.0508;
-
-        /** How far back the wheel is set in from the frame **/
-        public static final double wheelInset = 0.066675;
-
-        /** CAN IDs for the drive motors for each respective swerve module as described by {@link SwerveMod#modId} **/
-        public static final int[] driveIds = new int[] { 2, 14, 11, 5 };
-
-        /** CAN IDs for the angle motors for each respective swerve module as described by {@link SwerveMod#modId} **/
-        public static final int[] angleIds = new int[] { 1, 15, 12, 6 };
-
-        /** CAN IDs for the CANCoders for each respective swerve module as described by {@link SwerveMod#modId} **/
-        public static final int[] encoderIds = new int[] { 11, 12, 13, 14 };
-
-        /** CAN ID for the Pigeon 2 gyro **/
-        public static final int gyroId = 10;
-
-        /** {@link Translation2d}s representing the positions for each respective swerve wheel relative to the robot center as described by {@link SwerveMod#modId} **/
-        public static final Translation2d[] modulePositions = new Translation2d[] {
-                new Translation2d( ((frameX / 2) - wheelInset),  ((frameY / 2) - wheelInset)),
-                new Translation2d( ((frameX / 2) - wheelInset), -((frameY / 2) - wheelInset)),
-                new Translation2d(-((frameX / 2) - wheelInset), -((frameY / 2) - wheelInset)),
-                new Translation2d(-((frameX / 2) - wheelInset),  ((frameY / 2) - wheelInset))
-        };
-
-        /** The conversion from CANCoder units to degrees **/
-        public static final double absoluteConversion = 360.0;
-
-        /** The gear reduction from the drive motors to the wheels **/
-        public static final double driveGearRatio = 1.0 / 6.75;
-
-        /** The gear reduction from the angle motors to the wheels **/
-        public static final double angleGearRatio = 7.0 / 150.0;
-
-        /** The conversion from Neo encoder units to degrees **/
-        public static final double relativeConversion = 360.0;
-
-        /** The tolerances for checking if a setpoint has been reached **/
-        public static final class Tolerances {
-            /** Heading position tolerance in degrees **/
-            public static double heading = 3;
-        }
-
-        /** The values relating to the physical limits of the robot **/
-        public static final class Constraints {
-            /** The max free speed of the robot in meters per second **/
-            public static final double maxFreeSpeed = 4.60248;
-
-            /** The max acceleration of the robot in meters per second squared **/
-            public static final double maxAcceleration = 2;
-
-            /** The max rotational velocity in degrees per second **/
-            public static final double maxRotationSpeed = 360;
-
-            /** The max rotational acceleration in rotations per second squared **/
-            public static final double maxRotationalAcceleration = 1;
-        }
-
-        /** Values needed for simulation **/
-        public static final class Simulation {
-            /** The moment of inertia of the drive wheel / robot **/
-            public static final double driveMoi = 0.025; // Might not be perfect
-
-            /** The moment of inertia of the angle wheel **/
-            public static final double angleMoi = 0.004096955; // Might not be perfect, taken from 6328's code
         }
     }
 

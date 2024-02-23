@@ -8,6 +8,10 @@ public class IntakeGround extends Command {
 
     boolean r = false;
 
+    public IntakeGround() {
+        addRequirements(Intake.instance);
+    }
+
     @Override
     public void initialize() {
         Intake.movePositionIntake();
@@ -16,7 +20,6 @@ public class IntakeGround extends Command {
 
     @Override
     public void execute() {
-        System.out.println(Intake.noteCaptured());
         if (!r && Intake.noteCaptured()) {
             Intake.movePositionHandoff();
             r = true;

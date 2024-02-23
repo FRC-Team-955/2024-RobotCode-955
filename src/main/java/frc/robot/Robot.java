@@ -7,11 +7,10 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.command.defaults.Drive;
 import frc.robot.sensor.pose.Odometry;
-import frc.robot.subsystem.climber.Climber;
 import frc.robot.subsystem.intake.Intake;
 import frc.robot.subsystem.intake.IntakeIOSparkMax;
-import frc.robot.subsystem.shooter.Shooter;
-import frc.robot.subsystem.shooter.ShooterIOSparkMax;
+import frc.robot.subsystem.shooterV1.ShooterV1;
+import frc.robot.subsystem.shooterV1.ShooterIOV1SparkMax;
 import frc.robot.subsystem.swerve.Swerve;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -25,6 +24,8 @@ public class Robot extends LoggedRobot {
 
   private RobotContainer robotContainer;
 
+  public static boolean hasNote;
+
   @Override
   public void robotInit() {
 
@@ -32,16 +33,16 @@ public class Robot extends LoggedRobot {
 
     new Swerve();
 //    Swerve.init();
-    Shooter.init();
+    ShooterV1.init();
     Intake.init();
 //    Climber.init();
 
     Swerve.instance.setDefaultCommand(new Drive());
-    Shooter.instance.setDefaultCommand(Commands.idle(Shooter.instance));
+    ShooterV1.instance.setDefaultCommand(Commands.idle(ShooterV1.instance));
     Intake.instance.setDefaultCommand(Commands.idle(Intake.instance));
 //    Climber.instance.setDefaultCommand(Commands.idle(Climber.instance));
 
-    ShooterIOSparkMax.paralyzedPivot = false;
+    ShooterIOV1SparkMax.paralyzedPivot = false;
     IntakeIOSparkMax.paralyzedDeploy = false;
 
     robotContainer = new RobotContainer();
@@ -52,11 +53,8 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void robotPeriodic() {
-
-    robotContainer.scuffed();
-
     Swerve.instance.updateInputs();
-    Shooter.instance.updateInputs();
+    ShooterV1.instance.updateInputs();
     Intake.instance.updateInputs();
 //    Climber.instance.updateInputs();
 

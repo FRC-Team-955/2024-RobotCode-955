@@ -19,8 +19,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.sensor.pose.Gyro;
 import frc.robot.sensor.pose.Odometry;
-import frc.robot.sensor.vision.VisionAprilTag;
-import frc.robot.subsystem.shooter.Shooter;
+import frc.robot.subsystem.shooterV1.ShooterV1;
 import frc.robot.utility.conversion.AngleUtil;
 import frc.robot.utility.conversion.ObjectUtil;
 import frc.robot.utility.information.StageDetector;
@@ -136,7 +135,7 @@ public class Swerve extends SubsystemBase {
             }
             case Drive -> {
                 SwerveModuleState[] states = kinematics.toSwerveModuleStates(
-                        ChassisSpeeds.discretize(stageAware && !Shooter.isStageSafe() ?
+                        ChassisSpeeds.discretize(stageAware && !ShooterV1.isStageSafe() ?
                                 ObjectUtil.limitChassisSpeeds(controlSpeeds, Constants.Swerve.Constraints.maxFreeSpeed,
                                         1 - getStageLockI()) : controlSpeeds, 0.02));
                 assignStates(states);

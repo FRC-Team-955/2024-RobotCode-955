@@ -1,8 +1,6 @@
 package frc.robot.subsystem.swerve;
 
 import edu.wpi.first.wpilibj2.command.Subsystem;
-import frc.robot.subsystem.shooter.Shooter;
-import frc.robot.subsystem.shooter.ShooterIO;
 import org.littletonrobotics.junction.AutoLog;
 
 /**
