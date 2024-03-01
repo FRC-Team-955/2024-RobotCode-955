@@ -3,6 +3,7 @@ package frc.robot.subsystem.intake;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -10,6 +11,8 @@ import frc.robot.Robot;
 import frc.robot.utility.conversion.AngleUtil;
 import frc.robot.utility.information.MatchUtil;
 import org.littletonrobotics.junction.Logger;
+
+import java.util.Stack;
 
 /**
  * The Intake {@link Subsystem} for collecting notes from the ground
@@ -21,20 +24,19 @@ public class Intake extends SubsystemBase {
     private final IntakeIO io;
     private final IntakeIOInputsAutoLogged inputs;
 
-    private double targetPosition;
+    private double targetPosition = Constants.Intake.Setpoints.hover;
     public double intakePercent;
     private boolean slam = false;
     private boolean slamOut = false;
     private final PIDController extendPid;
     private final ArmFeedforward extendFf;
 
-    private boolean hasNote = false;
-    private boolean ampSpike = false;
-    private int ampSpikeCounter = 10;
+    private final Debouncer limitSwitchDebouncer;
 
 
 
     private Intake() {
+
         instance = this;
         inputs = new IntakeIOInputsAutoLogged();
         io = Robot.isSimulation() ? new IntakeIOSim(inputs) : new IntakeIOSparkMax(inputs);
@@ -42,6 +44,8 @@ public class Intake extends SubsystemBase {
                 Constants.Intake.Control.kd);
         extendFf = new ArmFeedforward(Constants.Intake.Control.ks, Constants.Intake.Control.kg,
                 Constants.Intake.Control.kv, Constants.Intake.Control.ka);
+        targetPosition = Constants.Intake.Setpoints.hover;
+        limitSwitchDebouncer = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
     }
 
     /**
@@ -55,6 +59,7 @@ public class Intake extends SubsystemBase {
 
     public void updateInputs() {
         io.updateInputs();
+        inputs.hasNote = limitSwitchDebouncer.calculate(inputs.limitSwitch);
         Logger.processInputs("Intake", inputs);
     }
 
@@ -83,23 +88,6 @@ public class Intake extends SubsystemBase {
         else {
             io.setDeployBrake(inputs.position < Constants.Intake.extrusionThreshold);
         }
-
-        if (inputs.voltsAppliedIntake <= 0.1) {
-            hasNote = false;
-            ampSpike = false;
-            ampSpikeCounter = 10;
-        }
-        else if (inputs.intakeAmpDraw > 30) {
-            if (ampSpike && ampSpikeCounter <= 0) {
-                hasNote = true;
-            }
-            else if (!ampSpike) {
-                ampSpike = true;
-                ampSpikeCounter = 10;
-            }
-        }
-
-        ampSpikeCounter--;
     }
 
 
@@ -227,8 +215,8 @@ public class Intake extends SubsystemBase {
      * Gets whether a note had been grabbed by the intake
      * @return Whether there is a note in the intake
      */
-    public static boolean noteCaptured() {
-        return instance.noteCapturedI();
+    public static boolean hasNote() {
+        return instance.hasNoteI();
     }
-    private boolean noteCapturedI() { return hasNote; }
+    private boolean hasNoteI() { return inputs.hasNote; }
 }

@@ -26,8 +26,11 @@ public class Shooter extends SubsystemBase {
 
     private boolean hasNote = false;
     private boolean isIntaking = false;
+    private int intakeCounter = 0;
+    private boolean isIntakingSource = false;
     private boolean flywheelSpinup = false;
     private boolean isShooting = false;
+    private int abort = 0;
     private int outCounter = 25;
 
 
@@ -37,10 +40,10 @@ public class Shooter extends SubsystemBase {
         inputs = new ShooterIOInputsAutoLogged();
         io = Robot.isSimulation() ? new ShooterIOSim(inputs) : new ShooterIOSparkMax(inputs);
 
-        pivotPid = new PIDController(Constants.ShooterV1.Control.pivotKp, Constants.ShooterV1.Control.pivotKi,
-                Constants.ShooterV1.Control.pivotKd);
-        pivotFf = new ArmFeedforward(Constants.ShooterV1.Control.pivotKs, Constants.ShooterV1.Control.pivotKg,
-                Constants.ShooterV1.Control.pivotKv, Constants.ShooterV1.Control.pivotKa);
+        pivotPid = new PIDController(Constants.Shooter.Control.kp, Constants.Shooter.Control.ki,
+                Constants.Shooter.Control.kd);
+        pivotFf = new ArmFeedforward(Constants.Shooter.Control.ks, Constants.Shooter.Control.kg,
+                Constants.Shooter.Control.kv, Constants.Shooter.Control.ka);
     }
     /**
      * Initialize the subsystem
@@ -53,6 +56,7 @@ public class Shooter extends SubsystemBase {
 
     public void updateInputs() {
         io.updateInputs();
+        Logger.processInputs("Shooter", inputs);
     }
 
     @Override
@@ -60,17 +64,19 @@ public class Shooter extends SubsystemBase {
 
         inputs.pivotPositionSetpoint = pivotSetpoint;
 
-        if ((isIntaking || hasNote) && !inputs.beamBreak) {
-            io.setFeedVolts(Constants.Shooter.Voltages.feedUp);
-        }
         if (isIntaking && inputs.beamBreak) {
             hasNote = true;
             isIntaking = false;
+            intakeCounter = 3;
         }
-        if (isShooting || flywheelSpinup)
-            io.setFlywheelVolts(12);
-        if (isShooting)
-            io.setFeedVolts(12);
+
+        if (isIntakingSource && !inputs.beamBreak && hasNote) {
+            isIntakingSource = false;
+            isIntaking = true;
+        }
+        else if (isIntakingSource && !hasNote)
+            hasNote = true;
+
         if (isShooting && inputs.beamBreak)
             outCounter = 25;
         else if (isShooting) {
@@ -81,9 +87,41 @@ public class Shooter extends SubsystemBase {
             }
         }
 
+
+        if (isIntaking && !inputs.beamBreak) {
+            io.setFeedVolts(Constants.Shooter.Voltages.feedUp);
+        }
+        else if (isShooting) {
+            io.setFeedVolts(12);
+        }
+        else if (isIntakingSource) {
+            io.setFeedVolts(-Constants.Shooter.Voltages.feedUp);
+        }
+        else if (intakeCounter > 0) {
+            io.setFeedVolts(-12);
+            intakeCounter--;
+        }
+        else {
+            io.setFeedVolts(0);
+        }
+
+        if (isShooting || flywheelSpinup)
+            io.setFlywheelVolts(4);
+        else if (isIntakingSource)
+            io.setFlywheelVolts(-3);
+        else
+            io.setFlywheelVolts(0);
+
+        if (abort > 0) {
+            io.setFeedVolts(-3);
+            abort--;
+        }
+
+
+
         io.setPivotVolts(pivotPid.calculate(inputs.pivotPosition, pivotSetpoint) +
                 pivotFf.calculate(AngleUtil.degToRad(inputs.pivotPosition +
-                        Constants.ShooterV1.Control.comAngleCompensation), AngleUtil.degToRad(inputs.pivotVelocity)));
+                        Constants.Shooter.Control.comAngleCompensation), AngleUtil.degToRad(inputs.pivotVelocity)));
 
         Logger.processInputs("Shooter", inputs);
     }
@@ -91,38 +129,44 @@ public class Shooter extends SubsystemBase {
 
 
     /**
-     * Sets the target position of the shooter pivot to {@value Constants.ShooterV1.Setpoints#tuck}
+     * Sets the target position of the shooter pivot to {@value Constants.Shooter.Setpoints#tuck}
      */
     public static void setPivotPositionTuck() {
-        instance.setPivotPositionI(Constants.ShooterV1.Setpoints.tuck);
+        instance.setPivotPositionI(Constants.Shooter.Setpoints.tuck);
     }
     /**
-     * Sets the target position of the shooter pivot to {@value Constants.ShooterV1.Setpoints#load}
+     * Sets the target position of the shooter pivot to {@value Constants.Shooter.Setpoints#hover}
+     */
+    public static void setPivotPositionHover() {
+        instance.setPivotPositionI(Constants.Shooter.Setpoints.hover);
+    }
+    /**
+     * Sets the target position of the shooter pivot to {@value Constants.Shooter.Setpoints#load}
      */
     public static void setPivotPositionLoad() {
-        instance.setPivotPositionI(Constants.ShooterV1.Setpoints.load);
+        instance.setPivotPositionI(Constants.Shooter.Setpoints.load);
     }
     /**
-     * Sets the target position of the shooter pivot to {@value Constants.ShooterV1.Setpoints#subwoofer}
+     * Sets the target position of the shooter pivot to {@value Constants.Shooter.Setpoints#subwoofer}
      */
     public static void setPivotPositionSubwoofer() {
-        instance.setPivotPositionI(Constants.ShooterV1.Setpoints.subwoofer);
+        instance.setPivotPositionI(Constants.Shooter.Setpoints.subwoofer);
     }
     /**
-     * Sets the target position of the shooter pivot to {@value Constants.ShooterV1.Setpoints#amp}
+     * Sets the target position of the shooter pivot to {@value Constants.Shooter.Setpoints#amp}
      */
     public static void setPivotPositionAmp() {
-        instance.setPivotPositionI(Constants.ShooterV1.Setpoints.amp);
+        instance.setPivotPositionI(Constants.Shooter.Setpoints.amp);
     }
     /**
-     * Sets the target position of the shooter pivot to {@value Constants.ShooterV1.Setpoints#trap}
+     * Sets the target position of the shooter pivot to {@value Constants.Shooter.Setpoints#trap}
      */
     public static void setPivotPositionTrap() {
-        instance.setPivotPositionI(Constants.ShooterV1.Setpoints.trap);
+        instance.setPivotPositionI(Constants.Shooter.Setpoints.trap);
     }
     /**
      * Sets the target position for the shooter pivot
-     * @param degrees The target position of the pivot in degrees from 0 to {@value Constants.ShooterV1#maxAngle}
+     * @param degrees The target position of the pivot in degrees from 0 to {@value Constants.Shooter.Setpoints#max}
      */
     public static void setPivotPosition(double degrees) {
         instance.setPivotPositionI(degrees);
@@ -137,6 +181,8 @@ public class Shooter extends SubsystemBase {
     private void setIntakingI(boolean intaking) {
         isIntaking = intaking;
     }
+    public static void setIntakingSource(boolean intaking) { instance.setIntakingSourceI(intaking); }
+    private void setIntakingSourceI(boolean intaking) { isIntakingSource = intaking; }
     public static void setSpinup(boolean spinup) {
         instance.setSpinupI(spinup);
     }
@@ -147,7 +193,17 @@ public class Shooter extends SubsystemBase {
         instance.shootI();
     }
     private void shootI() {
+        flywheelSpinup = false;
         isShooting = true;
+    }
+
+    public static void abortHandoff() {
+
+    }
+    private void abortHandoffI() {
+        abort = 50;
+        isShooting = false;
+        flywheelSpinup = false;
     }
 
 
@@ -161,7 +217,7 @@ public class Shooter extends SubsystemBase {
     }
     /**
      * Gets the position of the shooter pivot
-     * @return The rotational position of the shooter pivot in degrees from 0 to {@value Constants.ShooterV1#maxAngle}
+     * @return The rotational position of the shooter pivot in degrees from 0 to {@value Constants.Shooter.Setpoints#max}
      */
     public static double getPivotPosition() {
         return instance.getPivotPositionI();

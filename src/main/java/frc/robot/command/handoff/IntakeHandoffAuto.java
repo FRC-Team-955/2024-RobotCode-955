@@ -1,6 +1,5 @@
 package frc.robot.command.handoff;
 
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystem.intake.Intake;
 import frc.robot.subsystem.shooter.Shooter;
@@ -19,7 +18,7 @@ public class IntakeHandoffAuto extends Command {
         state = 0;
         Intake.movePositionIntake();
         Intake.setIntakePercent(1);
-        Shooter.setPivotPositionLoad();
+        Shooter.setPivotPositionHover();
         Shooter.setIntaking(false);
     }
 
@@ -27,7 +26,7 @@ public class IntakeHandoffAuto extends Command {
     public void execute() {
         switch (state) {
             case 0: {
-                if (Intake.noteCaptured()) {
+                if (Intake.hasNote()) {
                     Intake.movePositionHandoff();
                     Intake.setIntakePercent(1);
                     state++;
@@ -35,15 +34,20 @@ public class IntakeHandoffAuto extends Command {
             }
             break;
             case 1: {
-                if (Intake.atSetpoint() && ShooterV1.atPivotSetpoint()) {
-                    Intake.setIntakePercentHandoff();
-                    Shooter.setIntaking(true);
-                    Shooter.setSpinup(true);
+                if (Intake.atSetpoint()) {
+                    Shooter.setPivotPositionLoad();
                     state++;
                 }
             }
             break;
             case 2: {
+                if (Intake.atSetpoint() && Shooter.atPivotSetpoint()) {
+                    Intake.setIntakePercentHandoff();
+                    Shooter.setIntaking(true);
+                    Shooter.setSpinup(true);
+                }
+            }
+            case 3: {
                 if (Shooter.hasNote()) {
                     Intake.movePositionHover();
                     Intake.setIntakePercent(0);
@@ -52,13 +56,13 @@ public class IntakeHandoffAuto extends Command {
                 }
             }
             break;
-            case 3: break;
+            case 4: break;
         }
     }
 
     @Override
     public boolean isFinished() {
-        return state == 3;
+        return state == 4;
     }
 
     @Override

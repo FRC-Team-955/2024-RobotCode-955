@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.sensor.pose.Gyro;
 import frc.robot.sensor.pose.Odometry;
+import frc.robot.sensor.vision.VisionAprilTag;
 import frc.robot.subsystem.shooterV1.ShooterV1;
 import frc.robot.utility.conversion.AngleUtil;
 import frc.robot.utility.conversion.ObjectUtil;
@@ -52,7 +53,7 @@ public class Swerve extends SubsystemBase {
 
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(Constants.Swerve.modulePositions);
 
-    private final PIDController headingPid = new PIDController(5, 0, 0);
+    private final PIDController headingPid = new PIDController(0.075, 0, 0.003);
 
 
 
@@ -67,16 +68,17 @@ public class Swerve extends SubsystemBase {
                 this::getSpeedsRelativeI,
                 this::driveChassisSpeedsI,
                 new HolonomicPathFollowerConfig(
-                        new PIDConstants(0, 0, 0),
-                        new PIDConstants(0, 0, 0),
+                        new PIDConstants(0.1, 0, 0),
+                        new PIDConstants(0.075, 0, 0.003),
                         Constants.Swerve.Constraints.maxFreeSpeed,
                         Math.hypot(Constants.frameX - Constants.Swerve.wheelInset,
                                 Constants.frameY - Constants.Swerve.wheelInset),
                         new ReplanningConfig()
                 ),
                 () -> {
-                    Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
-                    return alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red;
+//                    Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
+//                    return alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red;
+                    return false; // TODO FIX THIS DO NOT LEAVE THIS HERE YOU IDIOT
                 },
                 this
         );
@@ -108,9 +110,6 @@ public class Swerve extends SubsystemBase {
             deltas[i] = SwerveMod.instance[i].getPositionDelta();
         }
 
-        if (headingController.get().isPresent())
-            driveHeading = Gyro.getHeading().getDegrees();
-
         Gyro.updateEstimateDelta(Rotation2d.fromRadians(kinematics.toTwist2d(deltas).dtheta));
         Odometry.updateEstimatePositions();
 //        VisionAprilTag.update();
@@ -118,6 +117,9 @@ public class Swerve extends SubsystemBase {
 
     @Override
     public void periodic() {
+
+        if (headingController.get().isPresent())
+            driveHeading = Gyro.getHeading().getDegrees();
 
         if (targetHeading >= 0 && Math.abs(targetHeading - AngleUtil.unsignedRangeDegrees(
                 Gyro.getHeading().getDegrees())) <= Constants.Swerve.Tolerances.heading) {
@@ -176,9 +178,12 @@ public class Swerve extends SubsystemBase {
             cancelTargetHeading();
         driveHeading += rotation * 0.02;
         driveChassisSpeedsI(ChassisSpeeds.fromFieldRelativeSpeeds(translation.getX(), translation.getY(),
-                pidHeadingControl || headingController.get().isPresent() ? headingPid.calculate(
-                        Gyro.getHeading().getDegrees(), headingController.get().isEmpty() ? driveHeading :
-                                headingController.get().get().getDegrees()) : AngleUtil.degToRad(rotation),
+                pidHeadingControl || headingController.get().isPresent() ?
+                        headingPid.calculate(Gyro.getHeading().getDegrees(), headingController.get().isEmpty() ?
+                                AngleUtil.getUnwrappedSetpoint(Gyro.getHeading().getDegrees(), driveHeading) :
+                                AngleUtil.getUnwrappedSetpoint(Gyro.getHeading().getDegrees(),
+                                        headingController.get().get().getDegrees())) :
+                        AngleUtil.degToRad(rotation),
                 fieldRelative ? Gyro.getHeading() : Rotation2d.fromDegrees(0)));
     }
 

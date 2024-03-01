@@ -1,11 +1,6 @@
 package frc.robot.utility.generator;
 
-import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants;
-import frc.robot.command.factories.IntakeCommand;
-import frc.robot.command.factories.ShooterCommand;
 
 import java.util.*;
 

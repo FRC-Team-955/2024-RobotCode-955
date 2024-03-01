@@ -5,6 +5,7 @@ import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants;
 
 public class ShooterIOSparkMax extends ShooterIO {
@@ -21,19 +22,22 @@ public class ShooterIOSparkMax extends ShooterIO {
     private final RelativeEncoder feedEncoder;
     private final RelativeEncoder flywheelTopEncoder;
     private final RelativeEncoder flywheelBottomEncoder;
+    private final DigitalInput beamBreak;
 
     public ShooterIOSparkMax(ShooterIOInputsAutoLogged input) {
         inputs = input;
-        pivot = new CANSparkMax(Constants.ShooterV1.pivotId, CANSparkLowLevel.MotorType.kBrushless);
+        pivot = new CANSparkMax(Constants.Shooter.Ids.pivot, CANSparkLowLevel.MotorType.kBrushless);
         pivot.setIdleMode(CANSparkBase.IdleMode.kBrake);
-        feed = new CANSparkMax(Constants.ShooterV1.feedId, CANSparkLowLevel.MotorType.kBrushless);
-        flywheelTop = new CANSparkMax(Constants.ShooterV1.flywheelLeftId, CANSparkLowLevel.MotorType.kBrushless);
-        flywheelBottom = new CANSparkMax(Constants.ShooterV1.flywheelRightId, CANSparkLowLevel.MotorType.kBrushless);
+        feed = new CANSparkMax(Constants.Shooter.Ids.feed, CANSparkLowLevel.MotorType.kBrushless);
+        feed.setIdleMode(CANSparkBase.IdleMode.kBrake);
+        flywheelTop = new CANSparkMax(Constants.Shooter.Ids.flywheelTop, CANSparkLowLevel.MotorType.kBrushless);
+        flywheelBottom = new CANSparkMax(Constants.Shooter.Ids.flywheelBottom, CANSparkLowLevel.MotorType.kBrushless);
         pivotEncoder = pivot.getEncoder();
         feedEncoder = feed.getEncoder();
         flywheelTopEncoder = flywheelTop.getEncoder();
         flywheelBottomEncoder = flywheelBottom.getEncoder();
-        pivotEncoder.setPositionConversionFactor(Constants.ShooterV1.gearRatioAngle * 360);
+        pivotEncoder.setPositionConversionFactor(Constants.Shooter.GearRatios.pivot * 360);
+        beamBreak = new DigitalInput(Constants.Shooter.Ids.beamBreak);
     }
 
     @Override
@@ -46,6 +50,7 @@ public class ShooterIOSparkMax extends ShooterIO {
         inputs.flywheelVelocityTop = flywheelTopEncoder.getVelocity();
         inputs.flywheelPositionBottom = flywheelBottomEncoder.getPosition();
         inputs.flywheelVelocityBottom = flywheelBottomEncoder.getVelocity();
+        inputs.beamBreak = !beamBreak.get();
     }
 
     @Override
@@ -63,7 +68,7 @@ public class ShooterIOSparkMax extends ShooterIO {
     @Override
     public void setFlywheelVolts(double volts) {
         inputs.voltsAppliedTop = volts;
-        flywheelTop.setVoltage(paralyzedFlywheel ? 0 : MathUtil.clamp(volts, -12.0, 12.0));
+        flywheelTop.setVoltage(paralyzedFlywheel ? 0 : -MathUtil.clamp(volts, -12.0, 12.0));
         inputs.voltsAppliedBottom = -volts;
         flywheelBottom.setVoltage(paralyzedFlywheel ? 0 : -MathUtil.clamp(volts, -12.0, 12.0));
     }

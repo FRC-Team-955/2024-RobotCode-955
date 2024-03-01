@@ -3,16 +3,18 @@ package frc.robot.command;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystem.shooter.Shooter;
 
-public class PrepShootSubwooferAuto extends Command {
+public class PrepShootAuto extends Command {
 
-    public PrepShootSubwooferAuto() {
+    double a;
+
+    public PrepShootAuto(double angle) {
         addRequirements(Shooter.instance);
     }
 
     @Override
     public void initialize() {
         Shooter.setSpinup(true);
-        Shooter.setPivotPositionSubwoofer();
+        Shooter.setPivotPosition(a);
     }
 
     @Override

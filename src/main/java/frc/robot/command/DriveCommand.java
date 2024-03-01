@@ -7,35 +7,34 @@ import frc.robot.subsystem.swerve.Swerve;
 
 public class DriveCommand extends Command {
 
+    Timer timer;
+
     double dx;
     double dy;
     double dr;
-    double dtime;
+    double dt;
 
-    private final Timer timer;
-
-    public DriveCommand(double x, double y, double r, double time) {
-        addRequirements(Swerve.instance);
+    public DriveCommand(double x, double y, double r, double t) {
+        timer = new Timer();
         dx = x;
         dy = y;
         dr = r;
-        dtime = time;
-        timer = new Timer();
+        dt = t;
     }
 
     @Override
     public void initialize() {
-        Swerve.driveSpeeds(new Translation2d(dx, dy), dr, false);
         timer.start();
+        Swerve.driveSpeeds(new Translation2d(dx, dy), dr, false);
     }
 
     @Override
     public boolean isFinished() {
-        return timer.get() >= dtime;
+        return timer.get() >= dt;
     }
 
     @Override
-    public void end(boolean interrupted) {
+    public void end(boolean wasInterrupted) {
         Swerve.driveSpeeds(new Translation2d(0, 0), 0, false);
     }
 }

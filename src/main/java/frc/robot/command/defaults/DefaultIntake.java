@@ -1,7 +1,6 @@
 package frc.robot.command.defaults;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants;
 import frc.robot.subsystem.intake.Intake;
 
 public class DefaultIntake extends Command {
@@ -12,7 +11,7 @@ public class DefaultIntake extends Command {
 
     @Override
     public void initialize() {
-        if (Intake.noteCaptured())
+        if (Intake.hasNote())
             Intake.setIntakePercentHold();
         else
             Intake.setIntakePercent(0);

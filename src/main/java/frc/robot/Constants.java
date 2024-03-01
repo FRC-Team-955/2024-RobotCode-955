@@ -20,47 +20,51 @@ public class Constants {
     public static final class Shooter {
         public static final class Setpoints {
             public static final double tuck = 0;
+            public static final double load = 35;
+            public static final double hover = 60;
+            public static final double subwoofer = 40; // TODO
+            public static final double amp = 117; // TODO
             public static final double trap = 20; // TODO
-            public static final double load = 30;
-            public static final double amp = 135; // TODO
+            public static final double source = 70;
             public static final double max = 150;
 
             public static final double autoShootShort = 15;
             public static final double autoShootLong = 15;
         }
         public static final class Voltages {
-            public static final double feedUp = 6;
+            public static final double feedUp = 3;
         }
         public static final class Control {
-            public static final double kp = 1; // TODO
-            public static final double ki = 1; // TODO
-            public static final double kd = 1; // TODO
-            public static final double kg = 1; // TODO
+            public static final double kp = 0.1; // TODO
+            public static final double ki = 0; // TODO
+            public static final double kd = 0.011; // TODO
+            public static final double kg = 0.59; // TODO
             public static final double kv = 0;
             public static final double ka = 0;
             public static final double ks = 0;
-            public static final double comAngleCompensation = -20; // TODO
+            public static final double comAngleCompensation = -15; // TODO
         }
         public static final class Tolerances {
-            public static final double pivot = 1;
+            public static final double pivot = 5;
         }
         public static final class GearRatios {
-            public static final double pivot = 1; // TODO
-            public static final double feed = 1; // TODO
-            public static final double flywheel = 1; // TODO
+            public static final double pivot = 1 / 40.0;
+            public static final double feed = 1;
+            public static final double flywheel = 1;
         }
         public static final class Ids {
             public static final int pivot = 7;
-            public static final int feed = 8;
-            public static final int flywheelTop = 9;
-            public static final int flywheelBottom = 10;
+            public static final int feed = 9;
+            public static final int flywheelTop = 10;
+            public static final int flywheelBottom = 8;
+            public static final int beamBreak = 6;
         }
     }
 
     /** Constants relating to the Intake **/
     public static final class Intake {
         /** The gear reduction from the deploy motor to the pivot **/
-        public static final double gearRatioDeploy = 1.0 / 75.0;
+        public static final double gearRatioDeploy = 1.0 / 45.0;
 
         /** The gear reduction from the intake motor to the intake rollers **/
         public static final double gearRatioIntake = 1.0 / 75.0;
@@ -74,6 +78,8 @@ public class Constants {
         /** The default error tolerance for setpoints in degrees **/
         public static final double tolerance = 5;
 
+        public static final int limitSwitchDenoiseLength = 25;
+
         /** CAN ID for the deploy motor **/
         public static final int deployId = 3;
 
@@ -81,18 +87,20 @@ public class Constants {
         public static final int intakeId = 16;
 
         /** Serial ID for the ultrasonic sensor ping channel **/
-        public static final int ultrasonicId = 1; // TODO
+        public static final int limitSwitchId = 4; // TODO
 
         /** The setpoints for the intake deployment pivot **/
         public static final class Setpoints {
             /** Able to give note to the shooter **/
-            public static final double handoff = 0;
+            public static final double handoff = 10;
 
             /** In the frame but out of the shooter's way **/
             public static final double hover = 60;
 
             /** Able to intake from the ground **/
             public static final double intake = 175;
+
+            public static final double start = 17;
         }
 
         /** Percentages for the intake motor **/
@@ -101,10 +109,10 @@ public class Constants {
             public static final double intake = 1;
 
             /** Keep the note in the intake **/
-            public static final double hold = 0.15;
+            public static final double hold = 0;
 
             /** Pass the note to the shooter **/
-            public static final double handoff = -1;
+            public static final double handoff = -0.6;
         }
 
         /** The ranges reported by the ultrasonic sensor for different note distances within the intake **/
@@ -225,13 +233,13 @@ public class Constants {
         /** The values relating to the physical limits of the robot **/
         public static final class Constraints {
             /** The max free speed of the robot in meters per second **/
-            public static final double maxFreeSpeed = 4.60248;
+            public static final double maxFreeSpeed = 3.707;
 
             /** The max acceleration of the robot in meters per second squared **/
-            public static final double maxAcceleration = 2;
+            public static final double maxAcceleration = 6.000;
 
             /** The max rotational velocity in degrees per second **/
-            public static final double maxRotationSpeed = 1;
+            public static final double maxRotationSpeed = 360;
 
             /** The max rotational acceleration in rotations per second squared **/
             public static final double maxRotationalAcceleration = 1;
@@ -410,8 +418,8 @@ public class Constants {
     }
 
     public static final class Vision {
-        public static final Transform3d distancePosition = new Transform3d(new Translation3d(0, 0, 0),
-                new Rotation3d(0, 0, 0));
+        public static final Transform3d distancePosition = new Transform3d(new Translation3d(0.1524, -0.2794 - 0.5, 0.381),
+                new Rotation3d(0, Math.PI / 6.0, Math.PI));
         public static final Transform3d verticalPosition = new Transform3d(new Translation3d(0, 0, 0),
                 new Rotation3d(0, 0, 0));
     }

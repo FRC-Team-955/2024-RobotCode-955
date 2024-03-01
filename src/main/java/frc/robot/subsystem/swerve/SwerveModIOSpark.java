@@ -31,7 +31,6 @@ public class SwerveModIOSpark extends SwerveModIO {
         driveEncoder.setVelocityConversionFactor(Constants.Swerve.driveGearRatio * Constants.Swerve.relativeConversion);
         angleEncoder.setPositionConversionFactor(Constants.Swerve.angleGearRatio * Constants.Swerve.relativeConversion);
         angleEncoder.setVelocityConversionFactor(Constants.Swerve.angleGearRatio * Constants.Swerve.relativeConversion);
-        System.out.println(driveEncoder.getCountsPerRevolution());
         angle.setIdleMode(CANSparkBase.IdleMode.kBrake);
     }
 

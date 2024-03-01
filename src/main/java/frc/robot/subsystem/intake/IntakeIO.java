@@ -13,9 +13,8 @@ public abstract class IntakeIO {
         public double positionSetpoint;
         public double velocity;
         public double intakePercent;
-        public double intakeVelocity;
-        public double intakeAmpDraw;
-        public double ultrasonicRange;
+        public boolean limitSwitch;
+        public boolean hasNote;
         public double voltsAppliedDeploy;
         public double voltsAppliedIntake;
         public boolean brakeDeploy;

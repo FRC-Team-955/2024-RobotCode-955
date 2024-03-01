@@ -1,5 +1,6 @@
 package frc.robot.sensor.pose;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -14,6 +15,7 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.subsystem.swerve.Swerve;
 import frc.robot.subsystem.swerve.SwerveMod;
+import frc.robot.utility.conversion.AngleUtil;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -45,7 +47,7 @@ public class Odometry {
      * Updates the odometry position estimate. Called periodically by the {@link Swerve} {@link Subsystem}
      */
     public static void updateEstimatePositions() {
-        estimator.update(Gyro.getHeading(), Swerve.getPositions());
+        estimator.update(Rotation2d.fromDegrees(AngleUtil.unsignedRangeDegrees(Gyro.getHeading().getDegrees() + 0)), Swerve.getPositions());
     }
 
     /**
@@ -56,6 +58,9 @@ public class Odometry {
      */
     public static void updateEstimateVision(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {
         estimator.addVisionMeasurement(pose, timestamp, stdDevs);
+    }
+    public static void updateEstimateVision(Pose2d pose, double timestamp) {
+        estimator.addVisionMeasurement(pose, timestamp);
     }
 
     /**

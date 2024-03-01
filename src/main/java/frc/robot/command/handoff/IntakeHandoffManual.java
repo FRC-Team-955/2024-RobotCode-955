@@ -3,6 +3,7 @@ package frc.robot.command.handoff;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystem.intake.Intake;
+import frc.robot.subsystem.shooter.Shooter;
 import frc.robot.subsystem.shooterV1.ShooterV1;
 
 import java.util.function.BooleanSupplier;
@@ -10,13 +11,13 @@ import java.util.function.BooleanSupplier;
 public class IntakeHandoffManual extends Command {
 
     private int state = 0;
-    private final BooleanSupplier r;
-    private final Timer timer;
+    private BooleanSupplier r;
+    private Timer timer;
 
     public IntakeHandoffManual(BooleanSupplier control) {
+        addRequirements(Intake.instance, Shooter.instance);
         r = control;
         timer = new Timer();
-        addRequirements(Intake.instance, ShooterV1.instance);
     }
 
     @Override
@@ -24,16 +25,14 @@ public class IntakeHandoffManual extends Command {
         state = 0;
         Intake.movePositionIntake();
         Intake.setIntakePercent(1);
-        ShooterV1.setPivotPositionLoad();
-        ShooterV1.setFlywheelVelocityZero();
-        ShooterV1.setFlywheelIndexing(false);
+        Shooter.setPivotPositionHover();
     }
 
     @Override
     public void execute() {
         switch (state) {
             case 0: {
-                if (!r.getAsBoolean()) {
+                if (!r.getAsBoolean() && Intake.atSetpoint()) {
                     Intake.movePositionHandoff();
                     Intake.setIntakePercent(1);
                     state++;
@@ -41,39 +40,55 @@ public class IntakeHandoffManual extends Command {
             }
             break;
             case 1: {
-                if (Intake.atSetpoint() && ShooterV1.atPivotSetpoint()) {
-                    Intake.setIntakePercentHandoff();
-                    ShooterV1.setFeedPercent(1);
-                    timer.start();
+                if (Intake.atSetpoint()) {
+                    Shooter.setPivotPositionLoad();
                     state++;
                 }
             }
             break;
             case 2: {
-                if (timer.get() >= 0.3) {
-                    timer.stop();
-                    Intake.movePositionHover();
-                    ShooterV1.setPivotPositionTuck();
-                    Intake.setIntakePercent(0);
-                    ShooterV1.setFeedPercent(0);
+                if (Intake.atSetpoint() && Shooter.atPivotSetpoint()) {
+                    Intake.setIntakePercentHandoff();
+                    Shooter.setIntaking(true);
+                    timer.start();
                     state++;
                 }
             }
             break;
-            case 3: break;
+            case 3: {
+                if (Shooter.hasNote() || timer.get() > 2) {
+                    Shooter.setPivotPositionHover();
+                    Intake.movePositionHover();
+                    Intake.setIntakePercent(0);
+                    state++;
+                }
+            }
+            break;
+            case 4: {
+                if (Intake.atSetpoint()) {
+                    Shooter.setPivotPositionTuck();
+                    state++;
+                }
+            }
+            break;
+            case 5: break;
         }
     }
 
     @Override
     public boolean isFinished() {
-        return state == 3;
+        return state == 5;
     }
 
     @Override
     public void end(boolean interrupted) {
-        System.out.println("IAGSND: " + interrupted);
-        state = 0;
         timer.stop();
         timer.reset();
+        state = 0;
+    }
+
+    @Override
+    public InterruptionBehavior getInterruptionBehavior() {
+        return InterruptionBehavior.kCancelIncoming;
     }
 }

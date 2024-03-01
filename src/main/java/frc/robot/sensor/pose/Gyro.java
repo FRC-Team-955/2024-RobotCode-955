@@ -50,7 +50,7 @@ public class Gyro {
         } else {
             try {
                 pigeon = new Pigeon2(Constants.Swerve.gyroId);
-                pigeon.setYaw(90);
+                pigeon.setYaw(0);
             }
             catch (Exception e) {
                 mode = GyroMode.Secondary;

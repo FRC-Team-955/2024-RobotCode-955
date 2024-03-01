@@ -6,6 +6,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants;
 import frc.robot.utility.object.MaxbotixUltrasonic;
 
@@ -18,32 +19,27 @@ public class IntakeIOSparkMax extends IntakeIO {
     private final CANSparkBase intake;
 
     private final RelativeEncoder deployEncoder;
-//    private final RelativeEncoder intakeEncoder;
 
-    private final MaxbotixUltrasonic ultrasonic;
-    private final LinearFilter ultrasonicFilter;
+    private final DigitalInput limitSwitch;
 
     public IntakeIOSparkMax(IntakeIOInputsAutoLogged input) {
         inputs = input;
         deploy = new CANSparkMax(Constants.Intake.deployId, CANSparkBase.MotorType.kBrushless);
         intake = new CANSparkMax(Constants.Intake.intakeId, CANSparkLowLevel.MotorType.kBrushed);
-        deploy.setInverted(true);
+        deploy.setInverted(false);
         intake.setInverted(true);
         deployEncoder = deploy.getEncoder();
-//        intakeEncoder = intake.getEncoder();
         deployEncoder.setPositionConversionFactor(Constants.Intake.gearRatioDeploy * 360);
         deployEncoder.setVelocityConversionFactor(Constants.Intake.gearRatioDeploy * 360);
-        ultrasonic = new MaxbotixUltrasonic(Constants.Intake.ultrasonicId);
-        ultrasonicFilter = LinearFilter.movingAverage(3);
+        deployEncoder.setPosition(Constants.Intake.Setpoints.start);
+        limitSwitch = new DigitalInput(Constants.Intake.limitSwitchId);
     }
 
     @Override
     public void updateInputs() {
         inputs.position = deployEncoder.getPosition();
         inputs.velocity = deployEncoder.getVelocity();
-        inputs.ultrasonicRange = ultrasonicFilter.calculate(ultrasonic.getRangeInches());
-//        inputs.intakeVelocity = intakeEncoder.getVelocity();
-        inputs.intakeAmpDraw = intake.getOutputCurrent();
+        inputs.limitSwitch = limitSwitch.get();
     }
 
     @Override

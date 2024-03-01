@@ -19,6 +19,8 @@ public class ClimberIOSparkMax extends ClimberIO {
         inputs = input;
         left = new CANSparkMax(Constants.Climber.leftId, CANSparkLowLevel.MotorType.kBrushless);
         right = new CANSparkMax(Constants.Climber.rightId, CANSparkLowLevel.MotorType.kBrushless);
+        left.setIdleMode(CANSparkBase.IdleMode.kBrake);
+        right.setIdleMode(CANSparkBase.IdleMode.kBrake);
         left.setInverted(false);
         right.setInverted(false);
         encoderLeft = left.getEncoder();

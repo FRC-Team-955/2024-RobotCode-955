@@ -5,12 +5,12 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.command.defaults.Drive;
 import frc.robot.sensor.pose.Odometry;
+import frc.robot.subsystem.climber.Climber;
 import frc.robot.subsystem.intake.Intake;
 import frc.robot.subsystem.intake.IntakeIOSparkMax;
-import frc.robot.subsystem.shooterV1.ShooterV1;
-import frc.robot.subsystem.shooterV1.ShooterIOV1SparkMax;
+import frc.robot.subsystem.shooter.Shooter;
+import frc.robot.subsystem.shooter.ShooterIOSparkMax;
 import frc.robot.subsystem.swerve.Swerve;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -33,17 +33,19 @@ public class Robot extends LoggedRobot {
 
     new Swerve();
 //    Swerve.init();
-    ShooterV1.init();
+    Shooter.init();
     Intake.init();
-//    Climber.init();
+    Climber.init();
 
-    Swerve.instance.setDefaultCommand(new Drive());
-    ShooterV1.instance.setDefaultCommand(Commands.idle(ShooterV1.instance));
-    Intake.instance.setDefaultCommand(Commands.idle(Intake.instance));
-//    Climber.instance.setDefaultCommand(Commands.idle(Climber.instance));
+    Shooter.instance.setDefaultCommand(Commands.idle(Shooter.instance));
+    Intake.instance.setDefaultCommand(Commands.run(Intake::movePositionHover, Intake.instance));
+    Climber.instance.setDefaultCommand(Commands.idle(Climber.instance));
 
-    ShooterIOV1SparkMax.paralyzedPivot = false;
+    ShooterIOSparkMax.paralyzedPivot = false;
+    ShooterIOSparkMax.paralyzedFeed = false;
+    ShooterIOSparkMax.paralyzedFlywheel = false;
     IntakeIOSparkMax.paralyzedDeploy = false;
+    IntakeIOSparkMax.paralyzedIntake = false;
 
     robotContainer = new RobotContainer();
 //    Logger.addDataReceiver(new WPILOGWriter(Filesystem.getDeployDirectory().getPath() + "/logs"));
@@ -54,9 +56,9 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     Swerve.instance.updateInputs();
-    ShooterV1.instance.updateInputs();
+    Shooter.instance.updateInputs();
     Intake.instance.updateInputs();
-//    Climber.instance.updateInputs();
+    Climber.instance.updateInputs();
 
     // Periodic Actions
     CommandScheduler.getInstance().run();
