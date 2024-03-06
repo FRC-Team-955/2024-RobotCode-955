@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import java.util.Map;
 import frc.robot.subsystem.swerve.SwerveMod;
 
 public class Constants {
@@ -59,6 +60,9 @@ public class Constants {
             public static final int flywheelBottom = 8;
             public static final int beamBreak = 6;
         }
+
+        //Add values of for distance, then angle
+        public static final Map<Double, Double> interpolationMap = Map.of();
     }
 
     /** Constants relating to the Intake **/
@@ -418,7 +422,7 @@ public class Constants {
     }
 
     public static final class Vision {
-        public static final Transform3d distancePosition = new Transform3d(new Translation3d(0.1524, -0.2794 - 0.5, 0.381),
+        public static final Transform3d distancePosition = new Transform3d(new Translation3d(-0.254, -0.1143, 0.3429),
                 new Rotation3d(0, Math.PI / 6.0, Math.PI));
         public static final Transform3d verticalPosition = new Transform3d(new Translation3d(0, 0, 0),
                 new Rotation3d(0, 0, 0));

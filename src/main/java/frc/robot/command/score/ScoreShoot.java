@@ -2,21 +2,24 @@ package frc.robot.command.score;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystem.shooter.Shooter;
+import frc.robot.utility.conversion.ShooterKinematics;
+
+import java.util.function.BooleanSupplier;
 
 public class ScoreShoot extends Command {
 
-    double a;
+    double d;
 
     int state = 0;
 
-    public ScoreShoot(double angle) {
-        a = angle;
+    public ScoreShoot(double distance) {
+        d = distance;
         addRequirements(Shooter.instance);
     }
 
     @Override
     public void initialize() {
-        Shooter.setPivotPositionSubwoofer();
+        Shooter.setPivotPosition(ShooterKinematics.getAngleForRange(d));
     }
 
     @Override
@@ -48,6 +51,10 @@ public class ScoreShoot extends Command {
     @Override
     public void end(boolean wasInterrupted) {
         state = 0;
+        if(wasInterrupted) {
+            Shooter.setSpinup(false);
+            Shooter.setPivotPositionTuck();
+        }
     }
 
     @Override

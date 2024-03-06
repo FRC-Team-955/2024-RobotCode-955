@@ -11,10 +11,8 @@ public class InterpolationTableDouble {
     InterpolatingTreeMap<Double, Double> map = new InterpolatingTreeMap<>(
             (startValue, endValue, q) -> (q - startValue) / (endValue - startValue), (t, t1, v) -> t + ((t1 - t) * v));
 
-    public InterpolationTableDouble(Map.Entry<Double, Double>[] table) {
-        for (Map.Entry<Double, Double> doubleDoubleEntry : table) {
-            map.put(doubleDoubleEntry.getKey(), doubleDoubleEntry.getValue());
-        }
+    public InterpolationTableDouble(Map<Double, Double> table) {
+        table.forEach(map::put);
     }
 
     public double get(double key) {

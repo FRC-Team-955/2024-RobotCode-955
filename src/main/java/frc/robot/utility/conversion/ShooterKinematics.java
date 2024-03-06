@@ -1,17 +1,16 @@
 package frc.robot.utility.conversion;
 
-import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
-import edu.wpi.first.math.interpolation.InverseInterpolator;
+import frc.robot.Constants;
+import frc.robot.utility.object.InterpolationTableDouble;
 
 public class ShooterKinematics {
-
-//    public static final InterpolatingTreeMap<Double, Double> map;
+    public static final InterpolationTableDouble map;
 
     static {
-//        map = new InterpolatingTreeMap<Double, Double>();
+        map = new InterpolationTableDouble(Constants.Shooter.interpolationMap);
     }
 
-//    public static double getAngleForRange(double range) {
-//        return map.get(range);
-//    }
+    public static double getAngleForRange(double range) {
+        return map.get(range);
+    }
 }
