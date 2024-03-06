@@ -35,11 +35,11 @@ public class Robot extends LoggedRobot {
 //    Swerve.init();
     Shooter.init();
     Intake.init();
-    Climber.init();
+//    Climber.init();
 
     Shooter.instance.setDefaultCommand(Commands.idle(Shooter.instance));
     Intake.instance.setDefaultCommand(Commands.run(Intake::movePositionHover, Intake.instance));
-    Climber.instance.setDefaultCommand(Commands.idle(Climber.instance));
+//    Climber.instance.setDefaultCommand(Commands.idle(Climber.instance));
 
     ShooterIOSparkMax.paralyzedPivot = false;
     ShooterIOSparkMax.paralyzedFeed = false;
@@ -58,7 +58,7 @@ public class Robot extends LoggedRobot {
     Swerve.instance.updateInputs();
     Shooter.instance.updateInputs();
     Intake.instance.updateInputs();
-    Climber.instance.updateInputs();
+//    Climber.instance.updateInputs();
 
     // Periodic Actions
     CommandScheduler.getInstance().run();

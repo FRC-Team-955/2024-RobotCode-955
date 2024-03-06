@@ -50,7 +50,7 @@ public class RobotContainer {
 
     controllerRaw.setRumble(GenericHID.RumbleType.kBothRumble, 0);
 
-//    registerAutoCommands();
+    registerAutoCommands();
     configureBindings();
 
   }
@@ -71,17 +71,25 @@ public class RobotContainer {
 //    controller.y().onTrue(new AbortHandoff());
 //    controller.x().onTrue(new SpitOutIntake());
     controller.povUp().onTrue(Commands.runOnce(Gyro::resetGyro));
+    controller.leftTrigger().onTrue(new ShooterIntakeSource(controller.leftTrigger()));
 //
-    controller2.rightTrigger().onTrue(new IntakeGroundManual(controller2.rightBumper()));
+    controller2.rightTrigger().onTrue(new IntakeGroundManual(controller2.rightTrigger()));
     controller2.leftTrigger().onTrue(new Handoff());
-    controller2.rightTrigger().onTrue(new Spit());
-    controller2.rightBumper().whileTrue(new FunctionalCommand(Intake::setIntakePercentIntake, ()->{},
-            (b)->{Intake.setIntakePercent(0);},()->{return false;}, Intake.instance));
-    Climber.instance.setDefaultCommand(new ClimbManual(() -> {
-      return -InputUtil.deadzone(controller2.getLeftY(), 0.3);
-    }));
+    controller2.leftBumper().onTrue(new Spit());
+    controller2.rightBumper().onTrue(new RunIntakeIn(controller2.rightBumper()));
+//    Climber.instance.setDefaultCommand(new ClimbManual(() -> {
+//      //return -InputUtil.deadzone(controller2.getLeftY(), 0.3);
+//      return 0;
+//    }));
 
     controller.povDown().onTrue(Commands.runOnce(CommandScheduler.getInstance()::cancelAll));
+    controller.povDown().onTrue(Commands.runOnce(() -> {
+      Shooter.setSpinup(false);
+      Intake.setIntakePercent(0);
+      Shooter.setIntaking(false);
+      Shooter.setIntakingSource(false);
+    }));
+    controller.povDown().onTrue(new Reset());
   }
 
   private void registerAutoCommands() {
@@ -93,19 +101,14 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return Commands.idle();
-
-//    return new SequentialCommandGroup(Commands.runOnce(Intake::movePositionHover, Intake.instance),
-//            new WaitCommand(1),
-//            Commands.runOnce(Shooter::setPivotPositionSubwoofer, Shooter.instance),
-//            new WaitCommand(3),
-//            Commands.runOnce(Shooter::shoot, Shooter.instance),
-//            new WaitCommand(2),
-//            Commands.runOnce(Shooter::setPivotPositionTuck, Shooter.instance),
-//            new DriveCommand(0.5, 0, 0, 2));
+    return new SequentialCommandGroup(new WaitCommand(2), Commands.runOnce(() -> {
+      Shooter.setPivotPositionSubwoofer();
+      Shooter.setSpinup(true);
+    }), new WaitCommand(2), Commands.runOnce(Shooter::shoot), new WaitCommand(2),
+            Commands.runOnce(Shooter::setPivotPositionTuck));
   }
 
   public void rumbleControllers(boolean rumble) {
-//    controllerRaw.setRumble(GenericHID.RumbleType.kBothRumble, 0.6);
+    //controllerRaw.setRumble(GenericHID.RumbleType.kBothRumble, 0.6);
   }
 }

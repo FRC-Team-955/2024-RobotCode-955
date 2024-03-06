@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.35,
-      "y": 5.55
+      "x": 0.6889403462409973,
+      "y": 4.397637367248535
     },
-    "rotation": 7.183323197549297e-38
+    "rotation": -58.76078376927616
   },
   "command": {
     "type": "sequential",
@@ -14,37 +14,37 @@
         {
           "type": "path",
           "data": {
-            "pathName": "CTo2"
+            "pathName": "RTo8"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "2ToC"
+            "pathName": "8ToW"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "CTo1"
+            "pathName": "WTo7"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "1ToC"
+            "pathName": "7ToW"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "CTo3"
+            "pathName": "WTo6"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "3ToC"
+            "pathName": "6ToW"
           }
         }
       ]

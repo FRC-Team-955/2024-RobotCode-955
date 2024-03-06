@@ -12,13 +12,18 @@ public class Reset extends Command {
 
     @Override
     public void initialize() {
-        Shooter.setPivotPositionTuck();
+        Shooter.setPivotPositionHover();
         Intake.movePositionHover();
     }
 
     @Override
     public boolean isFinished() {
         return Shooter.atPivotSetpoint() && Intake.atSetpoint();
+    }
+
+    @Override
+    public void end(boolean wasInterrupted) {
+        Shooter.setPivotPositionTuck();
     }
 
     @Override

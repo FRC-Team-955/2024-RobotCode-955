@@ -1,9 +1,6 @@
 package frc.robot.subsystem.intake;
 
-import com.revrobotics.CANSparkBase;
-import com.revrobotics.CANSparkLowLevel;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
+import com.revrobotics.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -19,18 +16,23 @@ public class IntakeIOSparkMax extends IntakeIO {
     private final CANSparkBase intake;
 
     private final RelativeEncoder deployEncoder;
+    private final SparkAbsoluteEncoder absolute;
 
     private final DigitalInput limitSwitch;
 
     public IntakeIOSparkMax(IntakeIOInputsAutoLogged input) {
         inputs = input;
         deploy = new CANSparkMax(Constants.Intake.deployId, CANSparkBase.MotorType.kBrushless);
-        intake = new CANSparkMax(Constants.Intake.intakeId, CANSparkLowLevel.MotorType.kBrushed);
+        intake = new CANSparkMax(Constants.Intake.intakeId, CANSparkLowLevel.MotorType.kBrushless);
         deploy.setInverted(false);
         intake.setInverted(true);
         deployEncoder = deploy.getEncoder();
+        absolute = deploy.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
+        deploy.setIdleMode(CANSparkBase.IdleMode.kCoast);
         deployEncoder.setPositionConversionFactor(Constants.Intake.gearRatioDeploy * 360);
         deployEncoder.setVelocityConversionFactor(Constants.Intake.gearRatioDeploy * 360);
+        absolute.setPositionConversionFactor(Constants.Intake.gearRatioDeploy * 360);
+        absolute.setVelocityConversionFactor(Constants.Intake.gearRatioDeploy * 360);
         deployEncoder.setPosition(Constants.Intake.Setpoints.start);
         limitSwitch = new DigitalInput(Constants.Intake.limitSwitchId);
     }
@@ -40,6 +42,7 @@ public class IntakeIOSparkMax extends IntakeIO {
         inputs.position = deployEncoder.getPosition();
         inputs.velocity = deployEncoder.getVelocity();
         inputs.limitSwitch = limitSwitch.get();
+        System.out.println(inputs.position);
     }
 
     @Override

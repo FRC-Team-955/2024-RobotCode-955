@@ -112,7 +112,7 @@ public class Swerve extends SubsystemBase {
 
         Gyro.updateEstimateDelta(Rotation2d.fromRadians(kinematics.toTwist2d(deltas).dtheta));
         Odometry.updateEstimatePositions();
-//        VisionAprilTag.update();
+        VisionAprilTag.update();
     }
 
     @Override

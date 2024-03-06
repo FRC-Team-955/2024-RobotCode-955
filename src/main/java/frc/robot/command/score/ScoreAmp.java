@@ -46,4 +46,9 @@ public class ScoreAmp extends Command {
     public void end(boolean wasInterrupted) {
         state = 0;
     }
+
+    @Override
+    public InterruptionBehavior getInterruptionBehavior() {
+        return InterruptionBehavior.kCancelIncoming;
+    }
 }

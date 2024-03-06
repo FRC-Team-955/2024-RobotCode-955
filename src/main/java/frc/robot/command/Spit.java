@@ -12,6 +12,7 @@ public class Spit extends Command {
     public void initialize() {
         Intake.setIntakePercent(-1);
         timer = new Timer();
+        addRequirements(Intake.instance);
         timer.start();
     }
 
@@ -25,5 +26,10 @@ public class Spit extends Command {
         Intake.setIntakePercent(0);
         timer.stop();
         timer.reset();
+    }
+
+    @Override
+    public InterruptionBehavior getInterruptionBehavior() {
+        return InterruptionBehavior.kCancelIncoming;
     }
 }

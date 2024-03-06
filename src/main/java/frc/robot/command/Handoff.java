@@ -26,6 +26,7 @@ public class Handoff extends Command {
     public void execute() {
         switch (state) {
             case 0: {
+                Intake.setIntakePercent(0);
                 if (Shooter.atPivotSetpoint()) {
                     Intake.movePositionHandoff();
                     state++;
@@ -36,7 +37,6 @@ public class Handoff extends Command {
                 Intake.movePositionHandoff();
                 if (Intake.atSetpoint()) {
                     Shooter.setPivotPositionLoad();
-                    Intake.setIntakePercent(0);
                     state++;
                 }
             }
@@ -55,7 +55,6 @@ public class Handoff extends Command {
                 if (Shooter.hasNote() || timer.get() > 3) {
                     Shooter.setPivotPositionHover();
                     Intake.movePositionHover();
-                    Intake.setIntakePercent(0);
                     state++;
                 }
             }
@@ -78,6 +77,7 @@ public class Handoff extends Command {
 
     @Override
     public void end(boolean interrupted) {
+        Intake.setIntakePercent(0);
         timer.stop();
         timer.reset();
         state = 0;

@@ -13,6 +13,7 @@ public class ScoreSubwooferManual extends Command {
 
     public ScoreSubwooferManual(BooleanSupplier control) {
         r = control;
+        addRequirements(Shooter.instance);
     }
 
     @Override
@@ -48,5 +49,10 @@ public class ScoreSubwooferManual extends Command {
         Shooter.setPivotPositionTuck();
         state = 0;
         aligned = false;
+    }
+
+    @Override
+    public InterruptionBehavior getInterruptionBehavior() {
+        return InterruptionBehavior.kCancelIncoming;
     }
 }

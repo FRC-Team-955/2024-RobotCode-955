@@ -64,8 +64,10 @@ public class Shooter extends SubsystemBase {
 
         inputs.pivotPositionSetpoint = pivotSetpoint;
 
-        if (isIntaking && inputs.beamBreak) {
+        if (inputs.beamBreak && !hasNote)
             hasNote = true;
+
+        if (isIntaking && hasNote) {
             isIntaking = false;
             intakeCounter = 3;
         }
@@ -106,7 +108,7 @@ public class Shooter extends SubsystemBase {
         }
 
         if (isShooting || flywheelSpinup)
-            io.setFlywheelVolts(4);
+            io.setFlywheelVolts(8);
         else if (isIntakingSource)
             io.setFlywheelVolts(-3);
         else
@@ -179,7 +181,10 @@ public class Shooter extends SubsystemBase {
         instance.setIntakingI(intaking);
     }
     private void setIntakingI(boolean intaking) {
-        isIntaking = intaking;
+        if (!hasNote)
+            isIntaking = intaking;
+        else
+            isIntaking = false;
     }
     public static void setIntakingSource(boolean intaking) { instance.setIntakingSourceI(intaking); }
     private void setIntakingSourceI(boolean intaking) { isIntakingSource = intaking; }
@@ -193,8 +198,14 @@ public class Shooter extends SubsystemBase {
         instance.shootI();
     }
     private void shootI() {
-        flywheelSpinup = false;
-        isShooting = true;
+        if (hasNote) {
+            flywheelSpinup = false;
+            isShooting = true;
+        }
+        else {
+            flywheelSpinup = false;
+            isShooting = false;
+        }
     }
 
     public static void abortHandoff() {

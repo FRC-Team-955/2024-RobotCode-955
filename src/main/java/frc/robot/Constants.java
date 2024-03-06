@@ -22,7 +22,7 @@ public class Constants {
             public static final double tuck = 0;
             public static final double load = 35;
             public static final double hover = 60;
-            public static final double subwoofer = 40; // TODO
+            public static final double subwoofer = 45; // TODO
             public static final double amp = 117; // TODO
             public static final double trap = 20; // TODO
             public static final double source = 70;
@@ -106,13 +106,13 @@ public class Constants {
         /** Percentages for the intake motor **/
         public static final class Percents {
             /** Intake the note from the ground **/
-            public static final double intake = 1;
+            public static final double intake = 0.1;
 
             /** Keep the note in the intake **/
             public static final double hold = 0;
 
             /** Pass the note to the shooter **/
-            public static final double handoff = -0.6;
+            public static final double handoff = -0.25;
         }
 
         /** The ranges reported by the ultrasonic sensor for different note distances within the intake **/
@@ -125,7 +125,7 @@ public class Constants {
         /** Values for pid, feedforward, and other controllers **/
         public static final class Control {
             /** Extend PID kp **/
-            public static final double kp = 0.2; // TODO
+            public static final double kp = 0.17; // TODO
             /** Extend PID ki **/
             public static final double ki = 0; // TODO
             /** Extend PID kd **/
