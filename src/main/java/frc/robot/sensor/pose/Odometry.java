@@ -27,6 +27,8 @@ public class Odometry {
     private static ChassisSpeeds fieldRel;
     private static final Timer timer;
 
+    private static Pose2d targetPose = new Pose2d(-100, -100, new Rotation2d(0));
+
 
 
     static {
@@ -75,6 +77,13 @@ public class Odometry {
         fieldRel = estimate;
     }
 
+    public static void setTargetPose(Pose2d pose) {
+        targetPose = pose;
+    }
+    public static void removeTargetPose() {
+        targetPose = new Pose2d(-100, -100, new Rotation2d(0));
+    }
+
 
 
     /**
@@ -97,5 +106,6 @@ public class Odometry {
     public static void log() {
        Logger.recordOutput("Odom/Pose", estimator.getEstimatedPosition());
        Logger.recordOutput("Gyro", Gyro.getHeading());
+       Logger.recordOutput("AutoAlign/Target Pose", targetPose);
     }
 }

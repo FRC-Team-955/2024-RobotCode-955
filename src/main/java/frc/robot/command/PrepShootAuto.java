@@ -8,6 +8,7 @@ public class PrepShootAuto extends Command {
     double a;
 
     public PrepShootAuto(double angle) {
+        a = angle;
         addRequirements(Shooter.instance);
     }
 
@@ -19,6 +20,6 @@ public class PrepShootAuto extends Command {
 
     @Override
     public boolean isFinished() {
-        return Shooter.atPivotSetpoint();
+        return Shooter.atPivotSetpoint() && Shooter.getFlywheelVelocity() > 3500;
     }
 }

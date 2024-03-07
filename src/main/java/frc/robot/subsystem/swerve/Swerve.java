@@ -68,7 +68,7 @@ public class Swerve extends SubsystemBase {
                 this::getSpeedsRelativeI,
                 this::driveChassisSpeedsI,
                 new HolonomicPathFollowerConfig(
-                        new PIDConstants(0.1, 0, 0),
+                        new PIDConstants(0.07, 0, 0.003),
                         new PIDConstants(0.075, 0, 0.003),
                         Constants.Swerve.Constraints.maxFreeSpeed,
                         Math.hypot(Constants.frameX - Constants.Swerve.wheelInset,
@@ -147,6 +147,7 @@ public class Swerve extends SubsystemBase {
 
         Logger.recordOutput("SwerveStates/Target", getTargetStatesI());
         Logger.recordOutput("SwerveStates/Current", getStatesI());
+        Logger.recordOutput("Swerve/Speed", getSpeedsRelativeI());
     }
 
 

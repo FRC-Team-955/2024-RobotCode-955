@@ -21,9 +21,9 @@ public class Constants {
     public static final class Shooter {
         public static final class Setpoints {
             public static final double tuck = 0;
-            public static final double load = 35;
+            public static final double load = 37;
             public static final double hover = 60;
-            public static final double subwoofer = 45; // TODO
+            public static final double subwoofer = 37; // TODO
             public static final double amp = 117; // TODO
             public static final double trap = 20; // TODO
             public static final double source = 70;
@@ -62,7 +62,11 @@ public class Constants {
         }
 
         //Add values of for distance, then angle
-        public static final Map<Double, Double> interpolationMap = Map.of();
+        public static final Map<Double, Double> interpolationMap = Map.of(
+                2.3876, 60.0,
+                3.556, 70.0,
+                5.3594, 76.0
+        );
     }
 
     /** Constants relating to the Intake **/
@@ -423,7 +427,7 @@ public class Constants {
 
     public static final class Vision {
         public static final Transform3d distancePosition = new Transform3d(new Translation3d(-0.254, -0.1143, 0.3429),
-                new Rotation3d(0, Math.PI / 6.0, Math.PI));
+                new Rotation3d(0, -Math.PI / 6.0, Math.PI));
         public static final Transform3d verticalPosition = new Transform3d(new Translation3d(0, 0, 0),
                 new Rotation3d(0, 0, 0));
     }

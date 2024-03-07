@@ -36,7 +36,10 @@ public class ShooterIOSparkMax extends ShooterIO {
         feedEncoder = feed.getEncoder();
         flywheelTopEncoder = flywheelTop.getEncoder();
         flywheelBottomEncoder = flywheelBottom.getEncoder();
+        flywheelTopEncoder.setVelocityConversionFactor(1);
+        flywheelBottomEncoder.setVelocityConversionFactor(1);
         pivotEncoder.setPositionConversionFactor(Constants.Shooter.GearRatios.pivot * 360);
+        pivotEncoder.setPosition(0);
         beamBreak = new DigitalInput(Constants.Shooter.Ids.beamBreak);
     }
 

@@ -37,6 +37,7 @@ public class Handoff extends Command {
                 Intake.movePositionHandoff();
                 if (Intake.atSetpoint()) {
                     Shooter.setPivotPositionLoad();
+                    Shooter.setIntaking(true);
                     state++;
                 }
             }
@@ -44,7 +45,6 @@ public class Handoff extends Command {
                 Intake.movePositionHandoff();
                 if (Intake.atSetpoint() && Shooter.atPivotSetpoint()) {
                     Intake.setIntakePercentHandoff();
-                    Shooter.setIntaking(true);
                     timer.start();
                     state++;
                 }

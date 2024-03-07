@@ -1,17 +1,23 @@
 package frc.robot.command.score;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.sensor.pose.Odometry;
 import frc.robot.subsystem.shooter.Shooter;
+import frc.robot.utility.conversion.ShooterKinematics;
 
 import java.util.function.BooleanSupplier;
 
-public class ScoreSubwooferManual extends Command {
+public class ScoreSpeakerManual extends Command {
 
     int state = 0;
     private final BooleanSupplier r;
     private boolean aligned = false;
 
-    public ScoreSubwooferManual(BooleanSupplier control) {
+    public ScoreSpeakerManual(BooleanSupplier control) {
         r = control;
         addRequirements(Shooter.instance);
     }
@@ -24,6 +30,11 @@ public class ScoreSubwooferManual extends Command {
 
     @Override
     public void execute() {
+        Pose2d relative = Odometry.getPose().relativeTo(
+                new Pose2d(new Translation2d(0, 5.5), new Rotation2d(0)));
+        double range = Math.hypot(relative.getX(), relative.getY());
+        Shooter.setPivotPosition(ShooterKinematics.getAngleForRange(range));
+
         if (!r.getAsBoolean())
             aligned = true;
 

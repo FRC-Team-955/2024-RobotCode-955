@@ -29,7 +29,7 @@ public class IntakeGroundManual extends Command {
 
     @Override
     public boolean isFinished() {
-        return !r.getAsBoolean() && Intake.atSetpoint();
+        return (!r.getAsBoolean() || Intake.hasNote()) && Intake.atSetpoint();
     }
 
     @Override

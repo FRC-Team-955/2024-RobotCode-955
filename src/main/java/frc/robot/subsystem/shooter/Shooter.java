@@ -2,6 +2,7 @@ package frc.robot.subsystem.shooter;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -21,6 +22,9 @@ public class Shooter extends SubsystemBase {
 
     private final PIDController pivotPid;
     private final ArmFeedforward pivotFf;
+
+    private final PIDController flywheelPid;
+    private final SimpleMotorFeedforward flywheelFf;
 
     private double pivotSetpoint = 0;
 
@@ -44,6 +48,9 @@ public class Shooter extends SubsystemBase {
                 Constants.Shooter.Control.kd);
         pivotFf = new ArmFeedforward(Constants.Shooter.Control.ks, Constants.Shooter.Control.kg,
                 Constants.Shooter.Control.kv, Constants.Shooter.Control.ka);
+
+        flywheelPid = new PIDController(0.0015, 0, 0);
+        flywheelFf = new SimpleMotorFeedforward(0, 0.0021);
     }
     /**
      * Initialize the subsystem
@@ -108,7 +115,8 @@ public class Shooter extends SubsystemBase {
         }
 
         if (isShooting || flywheelSpinup)
-            io.setFlywheelVolts(8);
+            io.setFlywheelVolts(flywheelPid.calculate(getFlywheelVelocityI(), 4000) +
+                    flywheelFf.calculate(getFlywheelVelocityI()));
         else if (isIntakingSource)
             io.setFlywheelVolts(-3);
         else
@@ -256,7 +264,7 @@ public class Shooter extends SubsystemBase {
         return instance.getFlywheelVelocityI();
     }
     private double getFlywheelVelocityI() {
-        return (inputs.flywheelVelocityTop + inputs.flywheelVelocityBottom) / 2;
+        return (Math.abs(inputs.flywheelVelocityTop) + Math.abs(inputs.flywheelVelocityBottom)) / 2;
     }
 
 

@@ -19,6 +19,8 @@ public class SwerveModIOSpark extends SwerveModIO {
 
     private final CANcoder absoluteEncoder;
 
+    private double drivePositionLast = 0;
+
     public SwerveModIOSpark(final SwerveModIOInputsAutoLogged input, final int id) {
         inputs = input;
         drive = new CANSparkMax(Constants.Swerve.driveIds[id], CANSparkLowLevel.MotorType.kBrushless);
@@ -41,7 +43,8 @@ public class SwerveModIOSpark extends SwerveModIO {
         inputs.anglePositionDeg = AngleUtil.unsignedRangeDegrees(angleEncoder.getPosition());
         inputs.angleVelocityDegSec = angleEncoder.getVelocity();
         inputs.drivePositionDeg = driveEncoder.getPosition();
-        inputs.driveVelocityDegSec = driveEncoder.getVelocity();
+        inputs.driveVelocityDegSec = (driveEncoder.getPosition() - drivePositionLast) * 50;
+        drivePositionLast = driveEncoder.getPosition();
     }
 
     @Override
@@ -65,6 +68,6 @@ public class SwerveModIOSpark extends SwerveModIO {
     public void setBrakeMode(final boolean brake) {
         final CANSparkBase.IdleMode m = brake ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast;
         drive.setIdleMode(m);
-        angle.setIdleMode(m);
+        angle.setIdleMode(CANSparkBase.IdleMode.kBrake);
     }
 }

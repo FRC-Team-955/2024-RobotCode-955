@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -21,6 +22,7 @@ import frc.robot.command.reset.AbortHandoff;
 import frc.robot.command.reset.Reset;
 import frc.robot.command.reset.SpitOutIntake;
 import frc.robot.command.score.ScoreAmpManual;
+import frc.robot.command.score.ScoreSpeakerManual;
 import frc.robot.command.score.ScoreSubwooferManual;
 import frc.robot.sensor.pose.Gyro;
 import frc.robot.subsystem.climber.Climber;
@@ -67,20 +69,21 @@ public class RobotContainer {
 //    controller.rightBumper().onTrue(AutoAlign.amp());
 //    controller.rightTrigger().onTrue(AutoAlign.subwoofer());
     controller.rightBumper().onTrue(new ScoreAmpManual(controller.rightBumper()));
-    controller.rightTrigger().onTrue(new ScoreSubwooferManual(controller.rightTrigger()));
+    controller.rightTrigger().onTrue(new ScoreSpeakerManual(controller.rightTrigger()));
 //    controller.y().onTrue(new AbortHandoff());
 //    controller.x().onTrue(new SpitOutIntake());
     controller.povUp().onTrue(Commands.runOnce(Gyro::resetGyro));
-    controller.leftTrigger().onTrue(new ShooterIntakeSource(controller.leftTrigger()));
-//
+//    controller.leftTrigger().onTrue(new ShooterIntakeSource(controller.leftTrigger()));
+    controller.leftTrigger().onTrue(AutoAlign.align(new Pose2d(1.3321382999420166, 5.586578369140625,
+            Rotation2d.fromRadians(0.0))));
+
     controller2.rightTrigger().onTrue(new IntakeGroundManual(controller2.rightTrigger()));
     controller2.leftTrigger().onTrue(new Handoff());
     controller2.leftBumper().onTrue(new Spit());
     controller2.rightBumper().onTrue(new RunIntakeIn(controller2.rightBumper()));
-//    Climber.instance.setDefaultCommand(new ClimbManual(() -> {
-//      //return -InputUtil.deadzone(controller2.getLeftY(), 0.3);
-//      return 0;
-//    }));
+    Climber.instance.setDefaultCommand(new ClimbManual(() -> {
+      return -InputUtil.deadzone(controller2.getLeftY(), 0.3);
+    }));
 
     controller.povDown().onTrue(Commands.runOnce(CommandScheduler.getInstance()::cancelAll));
     controller.povDown().onTrue(Commands.runOnce(() -> {
@@ -93,19 +96,24 @@ public class RobotContainer {
   }
 
   private void registerAutoCommands() {
-    NamedCommands.registerCommand("intake", new IntakeHandoffAuto());
+    NamedCommands.registerCommand("intake", new IntakeHandoff());
     NamedCommands.registerCommand("shoot", new ShootAuto());
     NamedCommands.registerCommand("prepShootSubwoofer", new PrepShootAuto(Constants.Shooter.Setpoints.subwoofer));
     NamedCommands.registerCommand("prepShootShort", new PrepShootAuto(Constants.Shooter.Setpoints.autoShootShort));
     NamedCommands.registerCommand("prepShootLong", new PrepShootAuto(Constants.Shooter.Setpoints.autoShootLong));
+    NamedCommands.registerCommand("checkAlign", AutoAlign.align(new Pose2d(1.3321382999420166, 5.586578369140625,
+            Rotation2d.fromRadians(0.0))));
   }
 
   public Command getAutonomousCommand() {
-    return new SequentialCommandGroup(new WaitCommand(2), Commands.runOnce(() -> {
-      Shooter.setPivotPositionSubwoofer();
-      Shooter.setSpinup(true);
-    }), new WaitCommand(2), Commands.runOnce(Shooter::shoot), new WaitCommand(2),
-            Commands.runOnce(Shooter::setPivotPositionTuck));
+//    return new SequentialCommandGroup(new WaitCommand(2), Commands.runOnce(() -> {
+//      Shooter.setPivotPositionSubwoofer();
+//      Shooter.setSpinup(true);
+//    }), new WaitCommand(2), Commands.runOnce(Shooter::shoot), new WaitCommand(2),
+//            Commands.runOnce(Shooter::setPivotPositionTuck));
+
+    return new SequentialCommandGroup(new WaitCommand(0.5), AutoBuilder.buildAuto("Test"),
+            new WaitCommand(0.5));
   }
 
   public void rumbleControllers(boolean rumble) {
