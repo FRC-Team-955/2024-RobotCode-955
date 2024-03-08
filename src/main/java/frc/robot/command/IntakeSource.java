@@ -4,14 +4,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsystem.shooter.Shooter;
 
-import java.lang.constant.Constable;
 import java.util.function.BooleanSupplier;
 
-public class ShooterIntakeSource extends Command {
+public class IntakeSource extends Command {
 
     private final BooleanSupplier r;
 
-    public ShooterIntakeSource(BooleanSupplier control) {
+    public IntakeSource(BooleanSupplier control) {
         r = control;
         addRequirements(Shooter.instance);
     }

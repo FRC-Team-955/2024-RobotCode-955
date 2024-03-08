@@ -42,7 +42,6 @@ public class IntakeIOSparkMax extends IntakeIO {
         inputs.position = deployEncoder.getPosition();
         inputs.velocity = deployEncoder.getVelocity();
         inputs.limitSwitch = limitSwitch.get();
-        System.out.println(inputs.position);
     }
 
     @Override

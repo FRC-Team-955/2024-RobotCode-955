@@ -68,6 +68,8 @@ public class Intake extends SubsystemBase {
         inputs.positionSetpoint = targetPosition;
         inputs.intakePercent = intakePercent;
 
+        System.out.println(targetPosition);
+
         if (slam) {
             if (slamOut && inputs.position < targetPosition) {
                 io.setDeployMotor(12.0);

@@ -35,13 +35,13 @@ public class AutoAlign {
 //                new GoalEndState(0.0, alignmentPose.getRotation()));
     }
 
-    public static Command correct(Pose2d alignmentPose, double tolerance) {
-        return new FunctionalCommand(()->{}, () -> {
-            Swerve.driveSpeeds(new Translation2d(
-
-            ));
-        })
-    }
+//    public static Command correct(Pose2d alignmentPose, double tolerance) {
+//        return new FunctionalCommand(()->{}, () -> {
+//            Swerve.driveSpeeds(new Translation2d(
+//
+//            ));
+//        })
+//    }
 
     public static Command amp() {
         return new SequentialCommandGroup(

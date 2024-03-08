@@ -79,12 +79,9 @@ public class Shooter extends SubsystemBase {
             intakeCounter = 3;
         }
 
-        if (isIntakingSource && !inputs.beamBreak && hasNote) {
+        if (isIntakingSource && hasNote) {
             isIntakingSource = false;
-            isIntaking = true;
         }
-        else if (isIntakingSource && !hasNote)
-            hasNote = true;
 
         if (isShooting && inputs.beamBreak)
             outCounter = 25;
