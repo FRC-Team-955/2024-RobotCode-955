@@ -23,7 +23,7 @@ public class Constants {
             public static final double tuck = 0;
             public static final double load = 37;
             public static final double hover = 60;
-            public static final double subwoofer = 37; // TODO
+            public static final double subwoofer = 40; // TODO
             public static final double amp = 117; // TODO
             public static final double trap = 20; // TODO
             public static final double source = 70;

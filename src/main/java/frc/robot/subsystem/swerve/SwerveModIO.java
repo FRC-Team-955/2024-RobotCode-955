@@ -18,6 +18,9 @@ public abstract class SwerveModIO {
         public double anglePositionDeg;
         public double anglePositionAbsoluteDeg;
         public double angleVelocityDegSec;
+
+        public double driveAmperage;
+        public double angleAmperage;
     }
 
     /**

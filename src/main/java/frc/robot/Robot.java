@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import com.revrobotics.CANSparkBase;
+import com.revrobotics.CANSparkLowLevel;
+import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.sensor.pose.Odometry;
 import frc.robot.subsystem.climber.Climber;
@@ -40,6 +43,9 @@ public class Robot extends LoggedRobot {
     Shooter.instance.setDefaultCommand(Commands.idle(Shooter.instance));
     Intake.instance.setDefaultCommand(Commands.run(Intake::movePositionHover, Intake.instance));
     Climber.instance.setDefaultCommand(Commands.idle(Climber.instance));
+
+    Climber.setLeftBrake(true);
+    Climber.setRightBrake(true);
 
     ShooterIOSparkMax.paralyzedPivot = false;
     ShooterIOSparkMax.paralyzedFeed = false;

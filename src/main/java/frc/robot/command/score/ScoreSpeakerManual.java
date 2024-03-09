@@ -5,9 +5,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants;
 import frc.robot.sensor.pose.Odometry;
 import frc.robot.subsystem.shooter.Shooter;
 import frc.robot.utility.conversion.ShooterKinematics;
+import frc.robot.utility.information.FieldUtil;
 
 import java.util.function.BooleanSupplier;
 
@@ -25,15 +27,14 @@ public class ScoreSpeakerManual extends Command {
     @Override
     public void initialize() {
         Shooter.setSpinup(true);
-        Shooter.setPivotPosition(73.5);
+        Shooter.setPivotPosition(Constants.Shooter.Setpoints.subwoofer);
     }
 
     @Override
     public void execute() {
-        Pose2d relative = Odometry.getPose().relativeTo(
-                new Pose2d(new Translation2d(0, 5.5), new Rotation2d(0)));
-        double range = Math.hypot(relative.getX(), relative.getY());
-        Shooter.setPivotPosition(ShooterKinematics.getAngleForRange(range));
+//        Pose2d relative = Odometry.getPose().relativeTo(FieldUtil.speakerPose());
+//        double range = Math.hypot(relative.getX(), relative.getY());
+//        Shooter.setPivotPosition(ShooterKinematics.getAngleForRange(range));
 
         if (!r.getAsBoolean())
             aligned = true;

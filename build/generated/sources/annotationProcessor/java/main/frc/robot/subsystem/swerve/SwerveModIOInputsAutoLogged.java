@@ -13,6 +13,8 @@ public class SwerveModIOInputsAutoLogged extends SwerveModIO.SwerveModIOInputs i
     table.put("AnglePositionDeg", anglePositionDeg);
     table.put("AnglePositionAbsoluteDeg", anglePositionAbsoluteDeg);
     table.put("AngleVelocityDegSec", angleVelocityDegSec);
+    table.put("DriveAmperage", driveAmperage);
+    table.put("AngleAmperage", angleAmperage);
   }
 
   @Override
@@ -22,6 +24,8 @@ public class SwerveModIOInputsAutoLogged extends SwerveModIO.SwerveModIOInputs i
     anglePositionDeg = table.get("AnglePositionDeg", anglePositionDeg);
     anglePositionAbsoluteDeg = table.get("AnglePositionAbsoluteDeg", anglePositionAbsoluteDeg);
     angleVelocityDegSec = table.get("AngleVelocityDegSec", angleVelocityDegSec);
+    driveAmperage = table.get("DriveAmperage", driveAmperage);
+    angleAmperage = table.get("AngleAmperage", angleAmperage);
   }
 
   public SwerveModIOInputsAutoLogged clone() {
@@ -31,6 +35,8 @@ public class SwerveModIOInputsAutoLogged extends SwerveModIO.SwerveModIOInputs i
     copy.anglePositionDeg = this.anglePositionDeg;
     copy.anglePositionAbsoluteDeg = this.anglePositionAbsoluteDeg;
     copy.angleVelocityDegSec = this.angleVelocityDegSec;
+    copy.driveAmperage = this.driveAmperage;
+    copy.angleAmperage = this.angleAmperage;
     return copy;
   }
 }

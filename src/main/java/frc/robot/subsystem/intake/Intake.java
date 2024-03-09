@@ -60,15 +60,13 @@ public class Intake extends SubsystemBase {
     public void updateInputs() {
         io.updateInputs();
         inputs.hasNote = limitSwitchDebouncer.calculate(inputs.limitSwitch);
-        Logger.processInputs("Intake", inputs);
+//        Logger.processInputs("Intake", inputs);
     }
 
     @Override
     public void periodic() {
         inputs.positionSetpoint = targetPosition;
         inputs.intakePercent = intakePercent;
-
-        System.out.println(targetPosition);
 
         if (slam) {
             if (slamOut && inputs.position < targetPosition) {

@@ -31,11 +31,13 @@ public class Shooter extends SubsystemBase {
     private boolean hasNote = false;
     private boolean isIntaking = false;
     private int intakeCounter = 0;
+    private int intakeSourceCounter = 10;
     private boolean isIntakingSource = false;
     private boolean flywheelSpinup = false;
+    private boolean ampSpinup = false;
     private boolean isShooting = false;
     private int abort = 0;
-    private int outCounter = 25;
+    private int outCounter = 5;
 
 
 
@@ -63,7 +65,7 @@ public class Shooter extends SubsystemBase {
 
     public void updateInputs() {
         io.updateInputs();
-        Logger.processInputs("Shooter", inputs);
+//        Logger.processInputs("Shooter", inputs);
     }
 
     @Override
@@ -80,7 +82,10 @@ public class Shooter extends SubsystemBase {
         }
 
         if (isIntakingSource && hasNote) {
-            isIntakingSource = false;
+            intakeSourceCounter--;
+            if (intakeSourceCounter == 0) {
+                isIntakingSource = false;
+            }
         }
 
         if (isShooting && inputs.beamBreak)
@@ -101,7 +106,7 @@ public class Shooter extends SubsystemBase {
             io.setFeedVolts(12);
         }
         else if (isIntakingSource) {
-            io.setFeedVolts(-Constants.Shooter.Voltages.feedUp);
+            io.setFeedVolts(-6);
         }
         else if (intakeCounter > 0) {
             io.setFeedVolts(-12);
@@ -112,8 +117,10 @@ public class Shooter extends SubsystemBase {
         }
 
         if (isShooting || flywheelSpinup)
-            io.setFlywheelVolts(flywheelPid.calculate(getFlywheelVelocityI(), 4000) +
+            io.setFlywheelVolts(flywheelPid.calculate(getFlywheelVelocityI(), 4100) +
                     flywheelFf.calculate(getFlywheelVelocityI()));
+        else if (ampSpinup)
+            io.setFlywheelVolts(3);
         else if (isIntakingSource)
             io.setFlywheelVolts(-3);
         else
@@ -192,23 +199,30 @@ public class Shooter extends SubsystemBase {
             isIntaking = false;
     }
     public static void setIntakingSource(boolean intaking) { instance.setIntakingSourceI(intaking); }
-    private void setIntakingSourceI(boolean intaking) { isIntakingSource = intaking; }
+    private void setIntakingSourceI(boolean intaking) {
+        isIntakingSource = intaking;
+        intakeSourceCounter = 4;
+    }
     public static void setSpinup(boolean spinup) {
         instance.setSpinupI(spinup);
     }
     private void setSpinupI(boolean spinup) {
         flywheelSpinup = spinup;
     }
+    public static void setAmpSpinup(boolean spinup) { instance.setAmpSpinupI(spinup); }
+    private void setAmpSpinupI(boolean spinup) { ampSpinup = spinup; }
     public static void shoot() {
         instance.shootI();
     }
     private void shootI() {
         if (hasNote) {
             flywheelSpinup = false;
+            ampSpinup = false;
             isShooting = true;
         }
         else {
             flywheelSpinup = false;
+            ampSpinup = false;
             isShooting = false;
         }
     }

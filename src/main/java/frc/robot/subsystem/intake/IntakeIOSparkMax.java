@@ -35,6 +35,8 @@ public class IntakeIOSparkMax extends IntakeIO {
         absolute.setVelocityConversionFactor(Constants.Intake.gearRatioDeploy * 360);
         deployEncoder.setPosition(Constants.Intake.Setpoints.start);
         limitSwitch = new DigitalInput(Constants.Intake.limitSwitchId);
+        deploy.setSmartCurrentLimit(50);
+        intake.setSmartCurrentLimit(50);
     }
 
     @Override

@@ -77,17 +77,19 @@ public class RobotContainer {
 //    controller.leftTrigger().onTrue(AutoAlign.align(new Pose2d(1.3321382999420166, 5.586578369140625,
 //            Rotation2d.fromRadians(0.0))));
 
-//    controller2.rightTrigger().onTrue(new IntakeGroundManual(controller2.rightTrigger()));
-//    controller2.leftTrigger().onTrue(new Handoff());
-//    controller2.leftBumper().onTrue(new Spit());
-//    controller2.rightBumper().onTrue(new RunIntakeIn(controller2.rightBumper()));
-//    Climber.instance.setDefaultCommand(new ClimbManual(() -> {
-//      return -InputUtil.deadzone(controller2.getLeftY(), 0.3);
-//    }));
+    controller2.rightTrigger().onTrue(new IntakeGroundManual(controller2.rightTrigger()));
+    controller2.leftTrigger().onTrue(new Handoff());
+    controller2.leftBumper().onTrue(new Spit());
+    controller2.rightBumper().onTrue(new SequentialCommandGroup(Commands.runOnce(() -> { Shooter.setSpinup(true); }),
+            new WaitCommand(1), Commands.runOnce(() -> { Shooter.setSpinup(false); })));
+    Climber.instance.setDefaultCommand(new ClimbManual(() -> {
+      return -InputUtil.deadzone(controller2.getLeftY(), 0.3);
+    }));
 
     controller.povDown().onTrue(Commands.runOnce(CommandScheduler.getInstance()::cancelAll));
     controller.povDown().onTrue(Commands.runOnce(() -> {
       Shooter.setSpinup(false);
+      Shooter.setAmpSpinup(false);
       Intake.setIntakePercent(0);
       Shooter.setIntaking(false);
       Shooter.setIntakingSource(false);
@@ -101,19 +103,19 @@ public class RobotContainer {
     NamedCommands.registerCommand("prepShootSubwoofer", new PrepShootAuto(Constants.Shooter.Setpoints.subwoofer));
     NamedCommands.registerCommand("prepShootShort", new PrepShootAuto(Constants.Shooter.Setpoints.autoShootShort));
     NamedCommands.registerCommand("prepShootLong", new PrepShootAuto(Constants.Shooter.Setpoints.autoShootLong));
-    NamedCommands.registerCommand("checkAlign", AutoAlign.align(new Pose2d(1.3321382999420166, 5.586578369140625,
+    NamedCommands.registerCommand("checkAlign", AutoAlign.alignCorrect(new Pose2d(1.3321382999420166, 5.586578369140625,
             Rotation2d.fromRadians(0.0))));
   }
 
   public Command getAutonomousCommand() {
-//    return new SequentialCommandGroup(new WaitCommand(2), Commands.runOnce(() -> {
-//      Shooter.setPivotPositionSubwoofer();
-//      Shooter.setSpinup(true);
-//    }), new WaitCommand(2), Commands.runOnce(Shooter::shoot), new WaitCommand(2),
-//            Commands.runOnce(Shooter::setPivotPositionTuck));
+    return new SequentialCommandGroup(new WaitCommand(2), Commands.runOnce(() -> {
+      Shooter.setPivotPositionSubwoofer();
+      Shooter.setSpinup(true);
+    }), new WaitCommand(2), Commands.runOnce(Shooter::shoot), new WaitCommand(2),
+            Commands.runOnce(Shooter::setPivotPositionTuck));
 
-    return new SequentialCommandGroup(new WaitCommand(0.5), AutoBuilder.buildAuto("Test"),
-            new WaitCommand(0.5));
+//    return new SequentialCommandGroup(new WaitCommand(0.5), AutoBuilder.buildAuto("2 Note Long"),
+//            new WaitCommand(0.5));
   }
 
   public void rumbleControllers(boolean rumble) {

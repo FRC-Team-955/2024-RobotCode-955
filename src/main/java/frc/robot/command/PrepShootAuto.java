@@ -20,6 +20,6 @@ public class PrepShootAuto extends Command {
 
     @Override
     public boolean isFinished() {
-        return Shooter.atPivotSetpoint() && Shooter.getFlywheelVelocity() > 3500;
+        return Shooter.atPivotSetpoint() && Shooter.getFlywheelVelocity() > 2500;
     }
 }

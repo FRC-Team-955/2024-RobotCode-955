@@ -21,17 +21,18 @@ public class ClimberIOSparkMax extends ClimberIO {
         right = new CANSparkMax(Constants.Climber.rightId, CANSparkLowLevel.MotorType.kBrushless);
         left.setIdleMode(CANSparkBase.IdleMode.kBrake);
         right.setIdleMode(CANSparkBase.IdleMode.kBrake);
-        left.setInverted(false);
-        right.setInverted(false);
+        left.setInverted(true);
+        right.setInverted(true);
         encoderLeft = left.getEncoder();
         encoderRight = right.getEncoder();
 
-        // TODO relative encoder unit conversion
-        // Conversion factors will be set to convert directly to meters of extension length
-        encoderLeft.setPositionConversionFactor(Constants.Climber.gearRatio * 2 * Math.PI * Constants.Climber.radius);
-        encoderLeft.setVelocityConversionFactor(Constants.Climber.gearRatio * 2 * Math.PI * Constants.Climber.radius);
-        encoderRight.setPositionConversionFactor(Constants.Climber.gearRatio * 2 * Math.PI * Constants.Climber.radius);
-        encoderRight.setVelocityConversionFactor(Constants.Climber.gearRatio * 2 * Math.PI * Constants.Climber.radius);
+        encoderLeft.setPositionConversionFactor(1);
+        encoderLeft.setVelocityConversionFactor(1);
+        encoderRight.setPositionConversionFactor(1);
+        encoderRight.setVelocityConversionFactor(1);
+
+        left.setSmartCurrentLimit(50);
+        right.setSmartCurrentLimit(50);
     }
 
     @Override

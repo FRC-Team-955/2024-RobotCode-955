@@ -5,10 +5,14 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.command.prep.PrepAmp;
 import frc.robot.command.prep.PrepShoot;
 import frc.robot.command.score.ScoreAmp;
@@ -35,13 +39,28 @@ public class AutoAlign {
 //                new GoalEndState(0.0, alignmentPose.getRotation()));
     }
 
-//    public static Command correct(Pose2d alignmentPose, double tolerance) {
-//        return new FunctionalCommand(()->{}, () -> {
-//            Swerve.driveSpeeds(new Translation2d(
-//
-//            ));
-//        })
-//    }
+    public static Command correct(Pose2d alignmentPose, double tolerance) {
+        PIDController xPid = new PIDController(0.1, 0, 0);
+        PIDController yPid = new PIDController(0.1, 0, 0);
+        return new FunctionalCommand(() -> {
+            Swerve.setTargetHeading(alignmentPose.getRotation().getDegrees());
+        }, () -> {
+            boolean flip = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
+            Swerve.driveSpeeds(new Translation2d(
+                xPid.calculate(Odometry.getPose().getX(), alignmentPose.getX()) * (flip ? -1 : 1),
+                yPid.calculate(Odometry.getPose().getY(), alignmentPose.getY()) * (flip ? -1 : 1)
+            ), 0, true);
+        }, (wasInterrupted) -> {
+            Swerve.disableHeadingOverride();
+        }, () -> {
+            return Math.abs(Odometry.getPose().getX() - alignmentPose.getX()) < tolerance &&
+                    Math.abs(Odometry.getPose().getY() - alignmentPose.getY()) < tolerance;
+        }, Swerve.instance);
+    }
+
+    public static Command alignCorrect(Pose2d alignmentPose) {
+        return new SequentialCommandGroup(align(alignmentPose), correct(alignmentPose, 0.25));
+    }
 
     public static Command amp() {
         return new SequentialCommandGroup(

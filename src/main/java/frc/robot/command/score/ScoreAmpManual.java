@@ -22,6 +22,8 @@ public class ScoreAmpManual extends Command {
     @Override
     public void initialize() {
         Shooter.setPivotPositionAmp();
+        timer.start();
+        Shooter.setSpinup(true);
     }
 
     @Override
@@ -32,14 +34,12 @@ public class ScoreAmpManual extends Command {
         switch (state) {
             case 0: {
                 if (aligned && Shooter.atPivotSetpoint()) {
-                    timer.start();
-                    Shooter.setSpinup(true);
                     state++;
                 }
             }
             break;
             case 1: {
-                if (timer.get() > 1.5) {
+                if (timer.get() > 2) {
                     Shooter.shoot();
                     state++;
                 }
