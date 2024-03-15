@@ -21,6 +21,8 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
+import java.lang.reflect.Array;
+
 public class Robot extends LoggedRobot {
   private Command autonomousCommand;
 
@@ -33,7 +35,14 @@ public class Robot extends LoggedRobot {
     for (var field : clazz.getFields()) {
       var key = parent + clazz.getSimpleName() + "." + field.getName();
       try {
-        Logger.recordMetadata(key, field.get(null).toString());
+        var value = field.get(null);
+        if (value.getClass().isArray()) {
+          for (int i = 0; i < Array.getLength(value); i++) {
+            Logger.recordMetadata(key + "[" + i + "]", Array.get(value, i).toString());
+          }
+        } else {
+          Logger.recordMetadata(key, value.toString());
+        }
       } catch (IllegalAccessException | IllegalArgumentException e) {
         Logger.recordMetadata(key, "Unknown");
       }
