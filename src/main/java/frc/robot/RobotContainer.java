@@ -47,8 +47,8 @@ public class RobotContainer {
 
     controller = new CommandXboxController(0);
     controller2 = new CommandXboxController(1);
-    controllerRaw = new XboxController(0);
-    controller2Raw = new XboxController(1);
+    controllerRaw = controller.getHID();
+    controller2Raw = controller2.getHID();
 
     controllerRaw.setRumble(GenericHID.RumbleType.kBothRumble, 0);
 

@@ -65,7 +65,7 @@ public class Shooter extends SubsystemBase {
 
     public void updateInputs() {
         io.updateInputs();
-//        Logger.processInputs("Shooter", inputs);
+        Logger.processInputs("Inputs/Shooter", inputs);
     }
 
     @Override

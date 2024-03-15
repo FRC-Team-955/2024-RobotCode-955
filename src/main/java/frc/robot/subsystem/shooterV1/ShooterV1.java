@@ -60,6 +60,7 @@ public class ShooterV1 extends SubsystemBase {
 
     public void updateInputs() {
         io.updateInputs();
+        Logger.processInputs("Inputs/ShooterV1", inputs);
     }
 
     @Override

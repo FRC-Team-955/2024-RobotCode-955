@@ -12,8 +12,6 @@ import frc.robot.utility.conversion.AngleUtil;
 import frc.robot.utility.information.MatchUtil;
 import org.littletonrobotics.junction.Logger;
 
-import java.util.Stack;
-
 /**
  * The Intake {@link Subsystem} for collecting notes from the ground
  */
@@ -60,7 +58,7 @@ public class Intake extends SubsystemBase {
     public void updateInputs() {
         io.updateInputs();
         inputs.hasNote = limitSwitchDebouncer.calculate(inputs.limitSwitch);
-//        Logger.processInputs("Intake", inputs);
+        Logger.processInputs("Inputs/Intake", inputs);
     }
 
     @Override

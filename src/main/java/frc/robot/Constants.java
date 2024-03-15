@@ -4,8 +4,9 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import java.util.Map;
 import frc.robot.subsystem.swerve.SwerveMod;
+
+import java.util.Map;
 
 public class Constants {
 
@@ -17,6 +18,8 @@ public class Constants {
 
     /** The time in seconds between each code loop **/
     public static final double loopTime = 0.02;
+
+    public static final int pdhId = -1;
 
     public static final class Shooter {
         public static final class Setpoints {
@@ -439,5 +442,35 @@ public class Constants {
             public static final double warningTime = 1;
             public static final double dangerTime = 0.5;
         }
+    }
+
+    public static final class Simulation {
+        public static final boolean shouldReplay = false;
+        /**
+         * If true, replay will run as fast as your computer can go
+         * and log to a log file instead of NetworkTables. You will have
+         * to open the log file to see anything.
+         */
+        public static final boolean replayRunAsFastAsPossible = true;
+    }
+
+    /**
+     * Automatically determined based on if code is running on a real robot and if {@link Simulation#shouldReplay} is enabled
+     */
+    public static final Mode mode = RobotBase.isReal() ? Mode.REAL : (Simulation.shouldReplay ? Mode.REPLAY : Mode.SIM);
+
+    public enum Mode {
+        /**
+         * Real robot
+         */
+        REAL,
+        /**
+         * Simulation
+         */
+        SIM,
+        /**
+         * Log replay
+         */
+        REPLAY,
     }
 }
