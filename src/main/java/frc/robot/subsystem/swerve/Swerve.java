@@ -119,10 +119,6 @@ public class Swerve extends SubsystemBase {
 
     @Override
     public void periodic() {
-        for (var module : SwerveMod.instance) {
-            module.periodic();
-        }
-
         if (headingController.get().isPresent())
             driveHeading = Gyro.getHeading().getDegrees();
 

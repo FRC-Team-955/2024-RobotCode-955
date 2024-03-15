@@ -5,12 +5,13 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.utility.conversion.AngleUtil;
 import org.littletonrobotics.junction.Logger;
 
-public class SwerveMod {
+public class SwerveMod extends SubsystemBase {
 
     public static SwerveMod[] instance;
 
@@ -58,6 +59,7 @@ public class SwerveMod {
         Logger.processInputs("Inputs/Swerve/Mod" + modId, inputs);
     }
 
+    @Override
     public void periodic() {
         SwerveModuleState target = SwerveModuleState.optimize(targetState, Rotation2d.fromDegrees(inputs.anglePositionDeg));
 
