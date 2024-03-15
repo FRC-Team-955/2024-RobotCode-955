@@ -41,10 +41,10 @@ public class ShooterIOSparkMax extends ShooterIO {
         pivotEncoder.setPositionConversionFactor(Constants.Shooter.GearRatios.pivot * 360);
         pivotEncoder.setPosition(0);
         beamBreak = new DigitalInput(Constants.Shooter.Ids.beamBreak);
-        pivot.setSmartCurrentLimit(50);
-        feed.setSmartCurrentLimit(50);
-        flywheelTop.setSmartCurrentLimit(50);
-        flywheelBottom.setSmartCurrentLimit(50);
+        pivot.setSmartCurrentLimit(38);
+        feed.setSmartCurrentLimit(38);
+        flywheelTop.setSmartCurrentLimit(38);
+        flywheelBottom.setSmartCurrentLimit(38);
     }
 
     @Override

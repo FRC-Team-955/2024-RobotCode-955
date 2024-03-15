@@ -21,9 +21,9 @@ public class Constants {
     public static final class Shooter {
         public static final class Setpoints {
             public static final double tuck = 0;
-            public static final double load = 37;
+            public static final double load = 40;
             public static final double hover = 60;
-            public static final double subwoofer = 40; // TODO
+            public static final double subwoofer = 44; // TODO
             public static final double amp = 117; // TODO
             public static final double trap = 20; // TODO
             public static final double source = 70;
@@ -114,7 +114,7 @@ public class Constants {
         /** Percentages for the intake motor **/
         public static final class Percents {
             /** Intake the note from the ground **/
-            public static final double intake = 0.1;
+            public static final double intake = .08;
 
             /** Keep the note in the intake **/
             public static final double hold = 0;

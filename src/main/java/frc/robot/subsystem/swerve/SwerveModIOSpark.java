@@ -34,8 +34,8 @@ public class SwerveModIOSpark extends SwerveModIO {
         angleEncoder.setPositionConversionFactor(Constants.Swerve.angleGearRatio * Constants.Swerve.relativeConversion);
         angleEncoder.setVelocityConversionFactor(Constants.Swerve.angleGearRatio * Constants.Swerve.relativeConversion);
         angle.setIdleMode(CANSparkBase.IdleMode.kBrake);
-        drive.setSmartCurrentLimit(50);
-        angle.setSmartCurrentLimit(50);
+        drive.setSmartCurrentLimit(38);
+        angle.setSmartCurrentLimit(38);
     }
 
     @Override
@@ -73,8 +73,5 @@ public class SwerveModIOSpark extends SwerveModIO {
         final CANSparkBase.IdleMode m = brake ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast;
         drive.setIdleMode(m);
         angle.setIdleMode(CANSparkBase.IdleMode.kBrake);
-        if (drive.getDeviceId() == 11) {
-            drive.setIdleMode(CANSparkBase.IdleMode.kCoast);
-        }
     }
 }

@@ -79,12 +79,14 @@ public class RobotContainer {
 
     controller2.rightTrigger().onTrue(new IntakeGroundManual(controller2.rightTrigger()));
     controller2.leftTrigger().onTrue(new Handoff());
-    controller2.leftBumper().onTrue(new Spit());
-    controller2.rightBumper().onTrue(new SequentialCommandGroup(Commands.runOnce(() -> { Shooter.setSpinup(true); }),
+    controller2.rightBumper().onTrue(new Spit());
+    controller2.leftBumper().onTrue(new SequentialCommandGroup(Commands.runOnce(() -> { Shooter.setSpinup(true); }),
             new WaitCommand(1), Commands.runOnce(() -> { Shooter.setSpinup(false); })));
     Climber.instance.setDefaultCommand(new ClimbManual(() -> {
       return -InputUtil.deadzone(controller2.getLeftY(), 0.3);
     }));
+
+
 
     controller.povDown().onTrue(Commands.runOnce(CommandScheduler.getInstance()::cancelAll));
     controller.povDown().onTrue(Commands.runOnce(() -> {

@@ -21,8 +21,8 @@ public class ClimberIOSparkMax extends ClimberIO {
         right = new CANSparkMax(Constants.Climber.rightId, CANSparkLowLevel.MotorType.kBrushless);
         left.setIdleMode(CANSparkBase.IdleMode.kBrake);
         right.setIdleMode(CANSparkBase.IdleMode.kBrake);
-        left.setInverted(true);
-        right.setInverted(true);
+        left.setInverted(false);
+        right.setInverted(false);
         encoderLeft = left.getEncoder();
         encoderRight = right.getEncoder();
 
@@ -31,8 +31,8 @@ public class ClimberIOSparkMax extends ClimberIO {
         encoderRight.setPositionConversionFactor(1);
         encoderRight.setVelocityConversionFactor(1);
 
-        left.setSmartCurrentLimit(50);
-        right.setSmartCurrentLimit(50);
+        left.setSmartCurrentLimit(38);
+        right.setSmartCurrentLimit(38);
     }
 
     @Override
