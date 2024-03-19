@@ -20,6 +20,7 @@ public class Constants {
 
     public static final class Shooter {
         public static final class Setpoints {
+            public static final double min = 0;
             public static final double tuck = 0;
             public static final double load = 40;
             public static final double hover = 60;
@@ -32,18 +33,40 @@ public class Constants {
             public static final double autoShootShort = 15;
             public static final double autoShootLong = 15;
         }
+        public static final class Dimensions {
+            public static final double feedRadius = 1;
+            public static final double flywheelRadius = 1.5;
+        }
         public static final class Voltages {
             public static final double feedUp = 3;
         }
         public static final class Control {
-            public static final double kp = 0.1; // TODO
-            public static final double ki = 0; // TODO
-            public static final double kd = 0.011; // TODO
-            public static final double kg = 0.59; // TODO
-            public static final double kv = 0;
-            public static final double ka = 0;
-            public static final double ks = 0;
-            public static final double comAngleCompensation = -15; // TODO
+            public static final class Pivot {
+                public static final double kp = 0.1;
+                public static final double ki = 0;
+                public static final double kd = 0.011;
+                public static final double kg = 0.59;
+                public static final double kv = 0;
+                public static final double ka = 0;
+                public static final double ks = 0;
+                public static final double comAngleCompensation = -15;
+            }
+            public static final class Feed {
+                public static final double kp = 0.1;
+                public static final double ki = 0;
+                public static final double kd = 0.0001;
+                public static final double kv = 0;
+                public static final double ka = 0;
+                public static final double ks = 0;
+            }
+            public static final class Flywheel {
+                public static final double kp = 0.1;
+                public static final double ki = 0;
+                public static final double kd = 0.0001;
+                public static final double kv = 0;
+                public static final double ka = 0;
+                public static final double ks = 0;
+            }
         }
         public static final class Tolerances {
             public static final double pivot = 5;
@@ -61,8 +84,7 @@ public class Constants {
             public static final int beamBreak = 6;
         }
 
-        //Add values of for distance, then angle
-        public static final Map<Double, Double> interpolationMap = Map.of(
+        public static final Map<Double, Double> distanceInterpMap = Map.of(
                 2.3876, 60.0,
                 3.556, 70.0,
                 5.3594, 76.0
@@ -86,7 +108,7 @@ public class Constants {
         /** The default error tolerance for setpoints in degrees **/
         public static final double tolerance = 5;
 
-        public static final int limitSwitchDenoiseLength = 25;
+        public static final double limitSwitchDenoiseTime = 0.1;
 
         /** CAN ID for the deploy motor **/
         public static final int deployId = 3;
@@ -111,6 +133,10 @@ public class Constants {
             public static final double start = 17;
         }
 
+        public static final class Dimensions {
+            public static final double intakeRadius = 1;
+        }
+
         /** Percentages for the intake motor **/
         public static final class Percents {
             /** Intake the note from the ground **/
@@ -132,23 +158,24 @@ public class Constants {
 
         /** Values for pid, feedforward, and other controllers **/
         public static final class Control {
-            /** Extend PID kp **/
-            public static final double kp = 0.17; // TODO
-            /** Extend PID ki **/
-            public static final double ki = 0; // TODO
-            /** Extend PID kd **/
-            public static final double kd = 0.003; // TODO
-            /** Extend FF kg **/
-            public static final double kg = 0.36; // TODO
-            /** Extend FF kv **/
-            public static final double kv = 0; // TODO
-            /** Extend FF ka **/
-            public static final double ka = 0; // TODO
-            /** Extend FF ks **/
-            public static final double ks = 0; // TODO
-            /** The angle the FF input should be offset by to account for the COM not being at the exact angle of the
-             * encoder reading **/
-            public static final double comAngleCompensation = 30;
+            public static final class Deploy {
+                public static final double kp = 0.17; // TODO
+                public static final double ki = 0; // TODO
+                public static final double kd = 0.003; // TODO
+                public static final double kg = 0.36; // TODO
+                public static final double kv = 0; // TODO
+                public static final double ka = 0; // TODO
+                public static final double ks = 0; // TODO
+                public static final double comAngleCompensation = 30;
+            }
+            public static final class Intaking {
+                public static final double kp = 0.17; // TODO
+                public static final double ki = 0; // TODO
+                public static final double kd = 0.003; // TODO
+                public static final double kv = 0; // TODO
+                public static final double ka = 0; // TODO
+                public static final double ks = 0; // TODO
+            }
         }
 
         /** Values needed for simulation **/

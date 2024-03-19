@@ -22,7 +22,7 @@ public class SpitOutIntake extends Command {
     public void execute() {
         switch (state) {
             case 0: {
-                if (Intake.atSetpoint()) {
+                if (Intake.atDeploySetpoint()) {
                     state++;
                     Intake.setIntakePercent(-1);
                     timer.start();

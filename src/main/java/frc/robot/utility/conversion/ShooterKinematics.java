@@ -7,7 +7,7 @@ public class ShooterKinematics {
     public static final InterpolationTableDouble map;
 
     static {
-        map = new InterpolationTableDouble(Constants.Shooter.interpolationMap);
+        map = new InterpolationTableDouble(Constants.Shooter.distanceInterpMap);
     }
 
     public static double getAngleForRange(double range) {

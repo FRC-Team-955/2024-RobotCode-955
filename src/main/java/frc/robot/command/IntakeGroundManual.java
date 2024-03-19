@@ -23,13 +23,13 @@ public class IntakeGroundManual extends Command {
     @Override
     public void execute() {
         Intake.movePositionIntake();
-        if (Intake.atSetpoint() && Intake.hasNote())
+        if (Intake.atDeploySetpoint() && Intake.hasNote())
             RobotContainer.instance.rumbleControllers(true);
     }
 
     @Override
     public boolean isFinished() {
-        return (!r.getAsBoolean() || Intake.hasNote()) && Intake.atSetpoint();
+        return (!r.getAsBoolean() || Intake.hasNote()) && Intake.atDeploySetpoint();
     }
 
     @Override

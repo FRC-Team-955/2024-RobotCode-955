@@ -23,7 +23,7 @@ public class AbortHandoff extends Command {
     public void execute() {
         switch (state) {
             case 0: {
-                if (Intake.atSetpoint()) {
+                if (Intake.atDeploySetpoint()) {
                     state++;
                     Shooter.setPivotPositionTuck();
                 }
@@ -34,7 +34,7 @@ public class AbortHandoff extends Command {
 
     @Override
     public boolean isFinished() {
-        return Intake.atSetpoint() && Shooter.atPivotSetpoint();
+        return Intake.atDeploySetpoint() && Shooter.atPivotSetpoint();
     }
 
     @Override

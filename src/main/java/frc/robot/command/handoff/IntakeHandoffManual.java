@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystem.intake.Intake;
 import frc.robot.subsystem.shooter.Shooter;
-import frc.robot.subsystem.shooterV1.ShooterV1;
 
 import java.util.function.BooleanSupplier;
 
@@ -32,7 +31,7 @@ public class IntakeHandoffManual extends Command {
     public void execute() {
         switch (state) {
             case 0: {
-                if (!r.getAsBoolean() && Intake.atSetpoint()) {
+                if (!r.getAsBoolean() && Intake.atDeploySetpoint()) {
                     Intake.movePositionHandoff();
                     Intake.setIntakePercent(1);
                     state++;
@@ -40,14 +39,14 @@ public class IntakeHandoffManual extends Command {
             }
             break;
             case 1: {
-                if (Intake.atSetpoint()) {
+                if (Intake.atDeploySetpoint()) {
                     Shooter.setPivotPositionLoad();
                     state++;
                 }
             }
             break;
             case 2: {
-                if (Intake.atSetpoint() && Shooter.atPivotSetpoint()) {
+                if (Intake.atDeploySetpoint() && Shooter.atPivotSetpoint()) {
                     Intake.setIntakePercentHandoff();
                     Shooter.setIntaking(true);
                     timer.start();
@@ -65,7 +64,7 @@ public class IntakeHandoffManual extends Command {
             }
             break;
             case 4: {
-                if (Intake.atSetpoint()) {
+                if (Intake.atDeploySetpoint()) {
                     Shooter.setPivotPositionTuck();
                     state++;
                 }

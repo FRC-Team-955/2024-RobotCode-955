@@ -18,7 +18,7 @@ public class Reset extends Command {
 
     @Override
     public boolean isFinished() {
-        return Shooter.atPivotSetpoint() && Intake.atSetpoint();
+        return Shooter.atPivotSetpoint() && Intake.atDeploySetpoint();
     }
 
     @Override

@@ -21,7 +21,7 @@ public class RunIntakeIn extends Command {
     @Override
     public void execute() {
         Intake.movePositionHover();
-        if (Intake.atSetpoint()) {
+        if (Intake.atDeploySetpoint()) {
             Intake.setIntakePercentIntake();
         }
     }

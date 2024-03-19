@@ -27,7 +27,7 @@ public class IntakeHandoffTest extends Command {
     public void execute() {
         switch (state) {
             case 0: {
-                if (Intake.hasNote() && Intake.atSetpoint()) {
+                if (Intake.hasNote() && Intake.atDeploySetpoint()) {
                     Intake.movePositionHandoff();
                     Intake.setIntakePercent(1);
                     state++;
@@ -35,14 +35,14 @@ public class IntakeHandoffTest extends Command {
             }
             break;
             case 1: {
-                if (Intake.atSetpoint()) {
+                if (Intake.atDeploySetpoint()) {
                     Shooter.setPivotPositionLoad();
                     state++;
                 }
             }
             break;
             case 2: {
-                if (Intake.atSetpoint() && Shooter.atPivotSetpoint()) {
+                if (Intake.atDeploySetpoint() && Shooter.atPivotSetpoint()) {
                     Intake.setIntakePercentHandoff();
                     Shooter.setIntaking(true);
                     state++;
@@ -65,7 +65,7 @@ public class IntakeHandoffTest extends Command {
             }
             break;
             case 5: {
-                if (Intake.atSetpoint()) {
+                if (Intake.atDeploySetpoint()) {
                     Shooter.setPivotPositionTuck();
                     state++;
                 }

@@ -7,37 +7,37 @@ import frc.robot.utility.conversion.AngleUtil;
 
 public class IntakeIOSim extends IntakeIO {
 
-    private final SingleJointedArmSim deploy = new SingleJointedArmSim(DCMotor.getNEO(1),
-            Constants.Intake.gearRatioDeploy, Constants.Intake.Simulation.moi, Constants.Intake.Simulation.length,
-            0.0, AngleUtil.degToRad(Constants.Intake.maxAngle), true, 0.0);
-
-    private boolean brakeMode = true;
-
-
-
-    public IntakeIOSim(IntakeIOInputsAutoLogged input) {
-        inputs = input;
-    }
-
-
-
-    @Override
-    public void updateInputs() {
+    public IntakeIOSim(IntakeIOInputs input) {
 
     }
 
     @Override
-    public void setDeployMotor(double volts) {
-        deploy.setInputVoltage(volts);
-    }
-
-    @Override
-    public void setIntakeMotor(double volts) {
+    public void updateSensors() {
 
     }
 
     @Override
-    public void setDeployBrake(boolean brake) {
-        brakeMode = brake;
+    public void updateApplications() {
+
+    }
+
+    @Override
+    public void setDeployController(double setpointDegrees, double feedforwardVolts) {
+
+    }
+
+    @Override
+    public void setIntakeController(double setpointMetersPerSecond, double feedforwardVolts) {
+
+    }
+
+    @Override
+    public void zeroDeployRelative() {
+
+    }
+
+    @Override
+    public void zeroDeployAbsolute() {
+
     }
 }

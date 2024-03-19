@@ -4,32 +4,37 @@ import frc.robot.subsystem.shooterV1.ShooterIOInputsV1AutoLogged;
 
 public class ShooterIOSim extends ShooterIO {
 
-    public ShooterIOSim(ShooterIOInputsAutoLogged input) {
+    public ShooterIOSim(ShooterIOInputs input) {
         inputs = input;
     }
 
     @Override
-    public void updateInputs() {
+    public void updateSensors() {
 
     }
 
     @Override
-    public void setPivotVolts(double volts) {
+    public void updatePivotController(double setpointDegrees, double feedforwardVolts) {
 
     }
 
     @Override
-    public void setFeedVolts(double volts) {
+    public void updateFeedController(double setpointMetersPerSecond, double feedforwardVolts) {
 
     }
 
     @Override
-    public void setFlywheelVolts(double volts) {
+    public void updateFlywheelController(double setpointMetersPerSecond, double feedforwardVolts) {
 
     }
 
     @Override
-    public void setFlywheelBrake(boolean brake) {
+    public void zeroPivotRelative() {
+
+    }
+
+    @Override
+    public void zeroPivotAbsolute() {
 
     }
 }

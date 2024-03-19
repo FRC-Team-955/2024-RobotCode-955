@@ -32,7 +32,7 @@ public class IntakeGround extends Command {
     @Override
     public boolean isFinished() {
 //        return false;
-        return timer.get() > 1 && Intake.atSetpoint();
+        return timer.get() > 1 && Intake.atDeploySetpoint();
     }
 
     @Override

@@ -2,8 +2,10 @@ package frc.robot.subsystem.intake;
 
 import com.revrobotics.*;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import frc.robot.Constants;
 import frc.robot.utility.object.MaxbotixUltrasonic;
 
@@ -16,51 +18,102 @@ public class IntakeIOSparkMax extends IntakeIO {
     private final CANSparkBase intake;
 
     private final RelativeEncoder deployEncoder;
-    private final SparkAbsoluteEncoder absolute;
+    private final RelativeEncoder intakeEncoder;
+
+    private final SparkPIDController deployController;
+    private final SparkPIDController intakeController;
+
+    private final DutyCycleEncoder deployEncoderAbsolute;
 
     private final DigitalInput limitSwitch;
+    private final Debouncer limitSwitchDebouncer;
 
-    public IntakeIOSparkMax(IntakeIOInputsAutoLogged input) {
+    public IntakeIOSparkMax(IntakeIOInputs input) {
         inputs = input;
+
         deploy = new CANSparkMax(Constants.Intake.deployId, CANSparkBase.MotorType.kBrushless);
         intake = new CANSparkMax(Constants.Intake.intakeId, CANSparkLowLevel.MotorType.kBrushless);
+
+        deploy.restoreFactoryDefaults();
+        intake.restoreFactoryDefaults();
+
+        deploy.setSmartCurrentLimit(40);
+        intake.setSmartCurrentLimit(40);
+
         deploy.setInverted(false);
         intake.setInverted(true);
+
         deployEncoder = deploy.getEncoder();
-        absolute = deploy.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
-        deploy.setIdleMode(CANSparkBase.IdleMode.kCoast);
-        deployEncoder.setPositionConversionFactor(Constants.Intake.gearRatioDeploy * 360);
-        deployEncoder.setVelocityConversionFactor(Constants.Intake.gearRatioDeploy * 360);
-        absolute.setPositionConversionFactor(Constants.Intake.gearRatioDeploy * 360);
-        absolute.setVelocityConversionFactor(Constants.Intake.gearRatioDeploy * 360);
-        deployEncoder.setPosition(Constants.Intake.Setpoints.start);
+        intakeEncoder = intake.getEncoder();
+
+        deployEncoderAbsolute = new DutyCycleEncoder(0);
+
+        deployEncoder.setPositionConversionFactor(Constants.Intake.gearRatioDeploy * 360.0);
+        deployEncoder.setVelocityConversionFactor(Constants.Intake.gearRatioDeploy * 360.0 * (1.0/60.0));
+        intakeEncoder.setPositionConversionFactor(Constants.Intake.gearRatioIntake * 2.0 * Math.PI *
+                Constants.Intake.Dimensions.intakeRadius);
+        intakeEncoder.setVelocityConversionFactor(Constants.Intake.gearRatioIntake * 2.0 * Math.PI * (1.0/60.0) *
+                Constants.Intake.Dimensions.intakeRadius);
+
+        deployEncoderAbsolute.setDistancePerRotation(360.0);
+
+        deploy.setIdleMode(CANSparkBase.IdleMode.kBrake);
+        intake.setIdleMode(CANSparkBase.IdleMode.kBrake);
+
+        deployController = deploy.getPIDController();
+        intakeController = intake.getPIDController();
+
+        deployController.setP(Constants.Intake.Control.Deploy.kp, 0);
+        deployController.setI(Constants.Intake.Control.Deploy.ki, 0);
+        deployController.setD(Constants.Intake.Control.Deploy.kd, 0);
+
+        intakeController.setP(Constants.Intake.Control.Intaking.kp, 0);
+        intakeController.setI(Constants.Intake.Control.Intaking.ki, 0);
+        intakeController.setD(Constants.Intake.Control.Intaking.kd, 0);
+
+        deployController.setReference(0, CANSparkBase.ControlType.kPosition);
+        intakeController.setReference(0, CANSparkBase.ControlType.kVelocity);
+
         limitSwitch = new DigitalInput(Constants.Intake.limitSwitchId);
-        deploy.setSmartCurrentLimit(38);
-        intake.setSmartCurrentLimit(30);
+        limitSwitchDebouncer = new Debouncer(Constants.Intake.limitSwitchDenoiseTime, Debouncer.DebounceType.kBoth);
+
+        zeroDeployRelative();
     }
 
     @Override
-    public void updateInputs() {
-        inputs.position = deployEncoder.getPosition();
-        inputs.velocity = deployEncoder.getVelocity();
-        inputs.limitSwitch = limitSwitch.get();
+    public void updateSensors() {
+        inputs.deployPosition = deployEncoder.getPosition();
+        inputs.deployVelocity = deployEncoder.getVelocity();
+        inputs.intakeVelocity = intakeEncoder.getVelocity();
+        inputs.limitSwitch = limitSwitchDebouncer.calculate(limitSwitch.get());
     }
 
     @Override
-    public void setDeployMotor(double volts) {
-        inputs.voltsAppliedDeploy = volts;
-        deploy.setVoltage(paralyzedDeploy ? 0 : MathUtil.clamp(volts, -12.0, 12.0));
+    public void updateApplications() {
+        inputs.voltsAppliedDeploy = deploy.getBusVoltage();
+        inputs.ampsAppliedDeploy = deploy.getOutputCurrent();
+        inputs.voltsAppliedIntake = intake.getBusVoltage();
+        inputs.ampsAppliedIntake = intake.getOutputCurrent();
     }
 
     @Override
-    public void setIntakeMotor(double volts) {
-        inputs.voltsAppliedIntake = volts;
-        intake.setVoltage(paralyzedIntake ? 0 : MathUtil.clamp(volts, -12.0, 12.0));
+    public void setDeployController(double setpointDegrees, double feedforwardVolts) {
+        deployController.setReference(setpointDegrees, CANSparkBase.ControlType.kPosition, 0, feedforwardVolts);
     }
 
     @Override
-    public void setDeployBrake(boolean brake) {
-        inputs.brakeDeploy = brake;
-        deploy.setIdleMode(brake ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast);
+    public void setIntakeController(double setpointMetersPerSecond, double feedforwardVolts) {
+        intakeController.setReference(setpointMetersPerSecond, CANSparkBase.ControlType.kVelocity, 0,
+                feedforwardVolts);
+    }
+
+    @Override
+    public void zeroDeployRelative() {
+        deployEncoder.setPosition(deployEncoderAbsolute.get());
+    }
+
+    @Override
+    public void zeroDeployAbsolute() {
+        deployEncoderAbsolute.reset();
     }
 }
