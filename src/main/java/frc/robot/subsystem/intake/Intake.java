@@ -2,6 +2,7 @@ package frc.robot.subsystem.intake;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -22,6 +23,8 @@ public class Intake extends SubsystemBase {
     private final ArmFeedforward deployFf;
     private final SimpleMotorFeedforward intakeFf;
 
+    private final TrapezoidProfile deployMotionProfile;
+
     private double deploySetpoint = Constants.Intake.Setpoints.hover;
     public double intakeSetpoint = 0;
 
@@ -35,6 +38,9 @@ public class Intake extends SubsystemBase {
                 Constants.Intake.Control.Deploy.kv, Constants.Intake.Control.Deploy.ka);
         intakeFf = new SimpleMotorFeedforward(Constants.Intake.Control.Intaking.ks,
                 Constants.Intake.Control.Intaking.kv, Constants.Intake.Control.Intaking.ka);
+
+        deployMotionProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
+                Constants.Intake.Control.Deploy.maxVelocity, Constants.Intake.Control.Deploy.maxAcceleration));
     }
 
     /**
@@ -52,8 +58,11 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void periodic() {
-        io.setDeployController(deploySetpoint, deployFf.calculate(AngleUtil.degToRad(inputs.deployPosition),
-                AngleUtil.degToRad(inputs.deployVelocity)));
+        TrapezoidProfile.State deployMotionSetpoint = deployMotionProfile.calculate(Constants.loopTime,
+                new TrapezoidProfile.State(inputs.deployPosition, inputs.deployVelocity),
+                new TrapezoidProfile.State(deploySetpoint, 0));
+        io.setDeployController(deployMotionSetpoint.position, deployFf.calculate(
+                AngleUtil.degToRad(deployMotionSetpoint.position), AngleUtil.degToRad(deployMotionSetpoint.velocity)));
         io.setIntakeController(intakeSetpoint, intakeFf.calculate(inputs.intakeVelocity));
 
         io.updateApplications();

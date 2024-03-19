@@ -49,6 +49,8 @@ public class Constants {
                 public static final double kv = 0;
                 public static final double ka = 0;
                 public static final double ks = 0;
+                public static final double maxVelocity = 0;
+                public static final double maxAcceleration = 0;
                 public static final double comAngleCompensation = -15;
             }
             public static final class Feed {
@@ -166,6 +168,8 @@ public class Constants {
                 public static final double kv = 0; // TODO
                 public static final double ka = 0; // TODO
                 public static final double ks = 0; // TODO
+                public static final double maxVelocity = 0;
+                public static final double maxAcceleration = 0;
                 public static final double comAngleCompensation = 30;
             }
             public static final class Intaking {

@@ -3,6 +3,7 @@ package frc.robot.subsystem.shooter;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -24,6 +25,8 @@ public class Shooter extends SubsystemBase {
     private final SimpleMotorFeedforward feedFf;
     private final SimpleMotorFeedforward flywheelFf;
 
+    private final TrapezoidProfile pivotMotionProfile;
+
     private double pivotSetpoint = Constants.Shooter.Setpoints.tuck;
     private double feedSetpoint = 0;
     private double flywheelSetpoint = 0;
@@ -39,6 +42,9 @@ public class Shooter extends SubsystemBase {
                 Constants.Shooter.Control.Feed.kv, Constants.Shooter.Control.Feed.ka);
         flywheelFf = new SimpleMotorFeedforward(Constants.Shooter.Control.Flywheel.ks,
                 Constants.Shooter.Control.Flywheel.kv, Constants.Shooter.Control.Flywheel.ka);
+
+        pivotMotionProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
+                Constants.Shooter.Control.Pivot.maxVelocity, Constants.Shooter.Control.Pivot.maxAcceleration));
     }
     /**
      * Initialize the subsystem
@@ -55,12 +61,15 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-        io.updatePivotController(pivotSetpoint, pivotFf.calculate(
-                Units.Radians.convertFrom(inputs.pivotPosition, Units.Degrees),
-                Units.Radians.convertFrom(inputs.pivotVelocity, Units.Degrees)));
-        io.updateFeedController(feedSetpoint, feedFf.calculate(inputs.feedVelocity));
-        io.updateFlywheelController(flywheelSetpoint, flywheelFf.calculate(inputs.flywheelVelocityTop, 0),
-                flywheelFf.calculate(inputs.flywheelVelocityBottom, 0));
+        TrapezoidProfile.State pivotMotionSetpoint = pivotMotionProfile.calculate(Constants.loopTime,
+                new TrapezoidProfile.State(inputs.pivotPosition, inputs.pivotVelocity),
+                new TrapezoidProfile.State(pivotSetpoint, 0));
+        io.updatePivotController(pivotMotionSetpoint.position, pivotFf.calculate(
+                Units.Radians.convertFrom(pivotMotionSetpoint.position, Units.Degrees),
+                Units.Radians.convertFrom(pivotMotionSetpoint.velocity, Units.Degrees)));
+        io.updateFeedController(feedSetpoint, feedFf.calculate(feedSetpoint));
+        io.updateFlywheelController(flywheelSetpoint, flywheelFf.calculate(flywheelSetpoint, 0),
+                flywheelFf.calculate(flywheelSetpoint, 0));
 
         io.updateApplications();
         inputs.pivotPositionSetpoint = pivotSetpoint;
