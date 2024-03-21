@@ -19,6 +19,10 @@ public abstract class ShooterIO {
     public abstract void updateFlywheelController(double setpointMetersPerSecond,
                                                   double feedforwardVoltsTop, double feedforwardVoltsBottom);
 
+    public abstract void setPivotVolts(double volts);
+    public abstract void setFeedVolts(double volts);
+    public abstract void setFlywheelVolts(double volts);
+
     public abstract void zeroPivotRelative();
     public abstract void zeroPivotAbsolute();
 }

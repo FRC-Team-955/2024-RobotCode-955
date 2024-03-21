@@ -32,6 +32,16 @@ public class IntakeIOSim extends IntakeIO {
     }
 
     @Override
+    public void setDeployVolts(double volts) {
+
+    }
+
+    @Override
+    public void setIntakeVolts(double volts) {
+
+    }
+
+    @Override
     public void zeroDeployRelative() {
 
     }

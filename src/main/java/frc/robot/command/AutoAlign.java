@@ -1,27 +1,16 @@
 package frc.robot.command;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.Constants;
-import frc.robot.Robot;
-import frc.robot.command.prep.PrepAmp;
-import frc.robot.command.prep.PrepShoot;
-import frc.robot.command.score.ScoreAmp;
-import frc.robot.command.score.ScoreShoot;
 import frc.robot.sensor.pose.Odometry;
 import frc.robot.subsystem.swerve.Swerve;
 import frc.robot.utility.information.FieldUtil;
-
-import java.util.List;
 
 public class AutoAlign {
 
@@ -60,20 +49,5 @@ public class AutoAlign {
 
     public static Command alignCorrect(Pose2d alignmentPose) {
         return new SequentialCommandGroup(align(alignmentPose), correct(alignmentPose, 0.25));
-    }
-
-    public static Command amp() {
-        return new SequentialCommandGroup(
-                new ParallelDeadlineGroup(align(FieldUtil.ampScorePose()), new PrepAmp()),
-                new ScoreAmp()
-        );
-    }
-
-    public static Command subwoofer() {
-        return new SequentialCommandGroup(
-                new ParallelDeadlineGroup(align(FieldUtil.subwooferScorePose()),
-                        new PrepShoot(Constants.Shooter.Setpoints.subwoofer)),
-                new ScoreShoot(Constants.Shooter.Setpoints.subwoofer)
-        );
     }
 }

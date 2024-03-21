@@ -108,7 +108,10 @@ public class Constants {
         public static final double maxAngle = 180;
 
         /** The default error tolerance for setpoints in degrees **/
-        public static final double tolerance = 5;
+        public static final double deployTolerance = 5;
+
+        /** Intake speed velocity setpoint in RPM */
+        public static final double velocityTolerance = 1000;
 
         public static final double limitSwitchDenoiseTime = 0.1;
 

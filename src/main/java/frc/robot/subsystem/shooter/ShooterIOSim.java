@@ -14,6 +14,11 @@ public class ShooterIOSim extends ShooterIO {
     }
 
     @Override
+    public void updateApplications() {
+
+    }
+
+    @Override
     public void updatePivotController(double setpointDegrees, double feedforwardVolts) {
 
     }
@@ -24,7 +29,22 @@ public class ShooterIOSim extends ShooterIO {
     }
 
     @Override
-    public void updateFlywheelController(double setpointMetersPerSecond, double feedforwardVolts) {
+    public void updateFlywheelController(double setpointMetersPerSecond, double feedforwardVoltsTop, double feedforwardVoltsBottom) {
+
+    }
+
+    @Override
+    public void setPivotVolts(double volts) {
+
+    }
+
+    @Override
+    public void setFeedVolts(double volts) {
+
+    }
+
+    @Override
+    public void setFlywheelVolts(double volts) {
 
     }
 

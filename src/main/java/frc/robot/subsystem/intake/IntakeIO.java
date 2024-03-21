@@ -22,6 +22,9 @@ public abstract class IntakeIO {
     public abstract void setDeployController(double setpointDegrees, double feedforwardVolts);
     public abstract void setIntakeController(double setpointMetersPerSecond, double feedforwardVolts);
 
+    public abstract void setDeployVolts(double volts);
+    public abstract void setIntakeVolts(double volts);
+
     public abstract void zeroDeployRelative();
     public abstract void zeroDeployAbsolute();
 }

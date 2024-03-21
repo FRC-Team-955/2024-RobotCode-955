@@ -23,7 +23,7 @@ public class IntakeIOSparkMax extends IntakeIO {
     private final SparkPIDController deployController;
     private final SparkPIDController intakeController;
 
-    private final DutyCycleEncoder deployEncoderAbsolute;
+    private final AbsoluteEncoder deployEncoderAbsolute;
 
     private final DigitalInput limitSwitch;
     private final Debouncer limitSwitchDebouncer;
@@ -46,7 +46,7 @@ public class IntakeIOSparkMax extends IntakeIO {
         deployEncoder = deploy.getEncoder();
         intakeEncoder = intake.getEncoder();
 
-        deployEncoderAbsolute = new DutyCycleEncoder(0);
+        deployEncoderAbsolute = deploy.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
 
         deployEncoder.setPositionConversionFactor(Constants.Intake.gearRatioDeploy * 360.0);
         deployEncoder.setVelocityConversionFactor(Constants.Intake.gearRatioDeploy * 360.0 * (1.0/60.0));
@@ -55,7 +55,8 @@ public class IntakeIOSparkMax extends IntakeIO {
         intakeEncoder.setVelocityConversionFactor(Constants.Intake.gearRatioIntake * 2.0 * Math.PI * (1.0/60.0) *
                 Constants.Intake.Dimensions.intakeRadius);
 
-        deployEncoderAbsolute.setDistancePerRotation(360.0);
+        deployEncoderAbsolute.setPositionConversionFactor(360.0);
+        deployEncoderAbsolute.setPositionConversionFactor(360.0 / 60);
 
         deploy.setIdleMode(CANSparkBase.IdleMode.kBrake);
         intake.setIdleMode(CANSparkBase.IdleMode.kBrake);
@@ -90,9 +91,9 @@ public class IntakeIOSparkMax extends IntakeIO {
 
     @Override
     public void updateApplications() {
-        inputs.voltsAppliedDeploy = deploy.getBusVoltage();
+        inputs.voltsAppliedDeploy = deploy.getAppliedOutput() * deploy.getBusVoltage();
         inputs.ampsAppliedDeploy = deploy.getOutputCurrent();
-        inputs.voltsAppliedIntake = intake.getBusVoltage();
+        inputs.voltsAppliedIntake = intake.getAppliedOutput() * intake.getBusVoltage();
         inputs.ampsAppliedIntake = intake.getOutputCurrent();
     }
 
@@ -108,12 +109,23 @@ public class IntakeIOSparkMax extends IntakeIO {
     }
 
     @Override
+    public void setDeployVolts(double volts) {
+        deploy.setVoltage(volts);
+    }
+
+    @Override
+    public void setIntakeVolts(double volts) {
+        intake.setVoltage(volts);
+    }
+
+    @Override
     public void zeroDeployRelative() {
-        deployEncoder.setPosition(deployEncoderAbsolute.get());
+        deployEncoder.setPosition(deployEncoderAbsolute.getPosition());
     }
 
     @Override
     public void zeroDeployAbsolute() {
-        deployEncoderAbsolute.reset();
+
+//        deployEncoderAbsolute.setZeroOffset();
     }
 }

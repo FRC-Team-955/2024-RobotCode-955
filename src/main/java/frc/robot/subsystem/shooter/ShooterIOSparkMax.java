@@ -137,7 +137,10 @@ public class ShooterIOSparkMax extends ShooterIO {
 
     @Override
     public void updatePivotController(double setpointDegrees, double feedforwardVolts) {
-        pivotController.setReference(setpointDegrees, CANSparkBase.ControlType.kPosition, 0, feedforwardVolts);
+        if (paralyzedPivot)
+            pivot.setVoltage(0);
+        else
+            pivotController.setReference(setpointDegrees, CANSparkBase.ControlType.kPosition, 0, feedforwardVolts);
     }
 
     @Override
@@ -152,6 +155,22 @@ public class ShooterIOSparkMax extends ShooterIO {
                 feedforwardVoltsTop);
         flywheelBottomController.setReference(metersPerSecond, CANSparkBase.ControlType.kVelocity, 0,
                 feedforwardVoltsBottom);
+    }
+
+    @Override
+    public void setPivotVolts(double volts) {
+        pivot.setVoltage(paralyzedPivot ? 0 : volts);
+    }
+
+    @Override
+    public void setFeedVolts(double volts) {
+        feed.setVoltage(volts);
+    }
+
+    @Override
+    public void setFlywheelVolts(double volts) {
+        flywheelTop.setVoltage(volts);
+        flywheelBottom.setVoltage(volts);
     }
 
     @Override

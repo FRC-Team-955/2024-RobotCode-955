@@ -8,6 +8,7 @@ import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkLowLevel;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.sensor.pose.Odometry;
 import frc.robot.subsystem.climber.Climber;
 import frc.robot.subsystem.intake.Intake;
@@ -41,7 +42,7 @@ public class Robot extends LoggedRobot {
     Climber.init();
 
     Shooter.instance.setDefaultCommand(Commands.idle(Shooter.instance));
-    Intake.instance.setDefaultCommand(Commands.run(Intake::movePositionHover, Intake.instance));
+//    Intake.instance.setDefaultCommand(Commands.run(Intake::movePositionHover, Intake.instance));
     Climber.instance.setDefaultCommand(Commands.idle(Climber.instance));
 
     Climber.setLeftBrake(true);
@@ -82,15 +83,33 @@ public class Robot extends LoggedRobot {
   @Override
   public void disabledExit() {}
 
+  int counter = 0;
+
   @Override
   public void autonomousInit() {
-    autonomousCommand = robotContainer.getAutonomousCommand();
+//    autonomousCommand = robotContainer.getAutonomousCommand();
+//
+////    Intake.movePositionHover();
+//
+//    if (autonomousCommand != null) {
+//      autonomousCommand.schedule();
+//    }
 
-    Swerve.setBrakeMode(false);
-    Intake.movePositionHover();
+    counter++;
 
-    if (autonomousCommand != null) {
-      autonomousCommand.schedule();
+    switch (counter) {
+      case 2 -> {
+        Intake.Characterization.deploy().quasistatic(SysIdRoutine.Direction.kForward).schedule();
+      }
+      case 1 -> {
+        Intake.Characterization.deploy().quasistatic(SysIdRoutine.Direction.kReverse).schedule();
+      }
+      case 3 -> {
+        Intake.Characterization.deploy().dynamic(SysIdRoutine.Direction.kForward).schedule();
+      }
+      case 4 -> {
+        Intake.Characterization.deploy().dynamic(SysIdRoutine.Direction.kReverse).schedule();
+      }
     }
   }
 
@@ -99,12 +118,12 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void autonomousExit() {
-    Swerve.setBrakeMode(true);
+    CommandScheduler.getInstance().cancelAll();
   }
 
   @Override
   public void teleopInit() {
-    Intake.movePositionHover();
+//    Intake.movePositionHover();
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
