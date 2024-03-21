@@ -32,6 +32,7 @@ import frc.robot.subsystem.swerve.Swerve;
 import frc.robot.utility.information.InputUtil;
 
 import java.util.Optional;
+import frc.robot.utility.simulation.CommandNintendoSwitchProController;
 
 public class RobotContainer {
 
@@ -45,8 +46,8 @@ public class RobotContainer {
   public RobotContainer() {
     instance = this;
 
-    controller = new CommandXboxController(0);
-    controller2 = new CommandXboxController(1);
+    controller = Constants.Simulation.useNintendoSwitchProController ? new CommandNintendoSwitchProController(0) : new CommandXboxController(0);
+    controller2 = Constants.Simulation.useNintendoSwitchProController ? new CommandNintendoSwitchProController(1) : new CommandXboxController(1);
     controllerRaw = controller.getHID();
     controller2Raw = controller2.getHID();
 

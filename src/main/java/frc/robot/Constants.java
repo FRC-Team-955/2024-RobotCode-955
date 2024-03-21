@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.subsystem.swerve.SwerveMod;
 
 import java.util.Map;
@@ -452,6 +453,7 @@ public class Constants {
          * to open the log file to see anything.
          */
         public static final boolean replayRunAsFastAsPossible = true;
+        public static final boolean useNintendoSwitchProController = RobotBase.isSimulation() && System.getProperty("os.name").contains("Mac OS X");
     }
 
     /**
