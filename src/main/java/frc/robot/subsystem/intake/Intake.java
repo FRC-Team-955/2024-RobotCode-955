@@ -90,7 +90,7 @@ public class Intake extends SubsystemBase {
         io.updateApplications();
         inputs.deployPositionSetpoint = deploySetpoint;
         inputs.intakeVelocitySetpoint = intakeSetpoint;
-        Logger.processInputs("Intake", inputs);
+        Logger.processInputs("Inputs/Intake", inputs);
     }
 
     public static void setDeployPositionSetpoint(double degrees) {
