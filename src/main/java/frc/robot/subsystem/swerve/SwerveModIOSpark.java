@@ -54,7 +54,7 @@ public class SwerveModIOSpark extends SwerveModIO {
     @Override
     public void setDriveVolts(final double volts) {
 //        drive.setVoltage(0);
-        drive.setVoltage(MathUtil.clamp(volts, -12.0, 12.0));
+        drive.setVoltage(MathUtil.clamp(volts / 3, -12.0, 12.0));
     }
 
     @Override

@@ -27,7 +27,8 @@ public class Constants {
             public static final double tuck = 0;
             public static final double load = 40;
             public static final double hover = 60;
-            public static final double subwoofer = 44; // TODO
+            public static final double subwoofer = 30; // TODO
+
             public static final double amp = 117; // TODO
             public static final double trap = 20; // TODO
             public static final double source = 70;
@@ -50,7 +51,7 @@ public class Constants {
             public static final double comAngleCompensation = -15; // TODO
         }
         public static final class Tolerances {
-            public static final double pivot = 5;
+            public static final double pivot = 10;
         }
         public static final class GearRatios {
             public static final double pivot = 1 / 40.0;

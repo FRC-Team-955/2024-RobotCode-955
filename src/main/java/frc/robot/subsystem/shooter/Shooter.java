@@ -117,8 +117,8 @@ public class Shooter extends SubsystemBase {
         }
 
         if (isShooting || flywheelSpinup)
-            io.setFlywheelVolts(flywheelPid.calculate(getFlywheelVelocityI(), 4100) +
-                    flywheelFf.calculate(getFlywheelVelocityI()));
+            io.setFlywheelVolts(flywheelPid.calculate(getFlywheelVelocityI(), 2000) +
+                    flywheelFf.calculate(2000));
         else if (ampSpinup)
             io.setFlywheelVolts(3);
         else if (isIntakingSource)

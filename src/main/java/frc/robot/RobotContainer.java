@@ -69,23 +69,23 @@ public class RobotContainer {
 
 //    controller.rightBumper().onTrue(AutoAlign.amp());
 //    controller.rightTrigger().onTrue(AutoAlign.subwoofer());
-    controller.rightBumper().onTrue(new ScoreAmpManual(controller.rightBumper()));
+//    controller.rightBumper().onTrue(new ScoreAmpManual(controller.rightBumper()));
     controller.rightTrigger().onTrue(new ScoreSpeakerManual(controller.rightTrigger()));
 //    controller.y().onTrue(new AbortHandoff());
 //    controller.x().onTrue(new SpitOutIntake());
     controller.povUp().onTrue(Commands.runOnce(Gyro::resetGyro));
-    controller.leftTrigger().onTrue(new IntakeSource(controller.leftTrigger()));
+//    controller.leftTrigger().onTrue(new IntakeSource(controller.leftTrigger()));
 //    controller.leftTrigger().onTrue(AutoAlign.align(new Pose2d(1.3321382999420166, 5.586578369140625,
 //            Rotation2d.fromRadians(0.0))));
 
-    controller2.rightTrigger().onTrue(new IntakeGroundManual(controller2.rightTrigger()));
-    controller2.leftTrigger().onTrue(new Handoff());
-    controller2.rightBumper().onTrue(new Spit());
-    controller2.leftBumper().onTrue(new SequentialCommandGroup(Commands.runOnce(() -> { Shooter.setSpinup(true); }),
-            new WaitCommand(1), Commands.runOnce(() -> { Shooter.setSpinup(false); })));
-    Climber.instance.setDefaultCommand(new ClimbManual(() -> {
-      return -InputUtil.deadzone(controller2.getLeftY(), 0.3);
-    }));
+    controller.leftTrigger().onTrue(new IntakeGroundManual(controller.leftTrigger()));
+    controller.leftBumper().onTrue(new Handoff());
+//    controller2.rightBumper().onTrue(new Spit());
+//    controller2.leftBumper().onTrue(new SequentialCommandGroup(Commands.runOnce(() -> { Shooter.setSpinup(true); }),
+//            new WaitCommand(1), Commands.runOnce(() -> { Shooter.setSpinup(false); })));
+//    Climber.instance.setDefaultCommand(new ClimbManual(() -> {
+//      return -InputUtil.deadzone(controller2.getLeftY(), 0.3);
+//    }));
 
 
 

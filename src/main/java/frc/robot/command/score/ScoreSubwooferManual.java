@@ -19,7 +19,7 @@ public class ScoreSubwooferManual extends Command {
     @Override
     public void initialize() {
         Shooter.setSpinup(true);
-        Shooter.setPivotPosition(73.5);
+        Shooter.setPivotPosition(40);
     }
 
     @Override
