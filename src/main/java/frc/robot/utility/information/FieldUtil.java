@@ -16,11 +16,14 @@ public class FieldUtil {
     }
 
     public static Pose2d speakerPose() {
-        return isRed() ? new Pose2d(new Translation2d(16.55, 5.55), new Rotation2d(0)) :
+        return shouldFlip() ? new Pose2d(new Translation2d(16.55, 5.55), new Rotation2d(0)) :
                 new Pose2d(new Translation2d(0, 5.5), new Rotation2d(0));
     }
 
-    public static boolean isRed() {
+    /**
+     * Returns true if red, false if blue. Blue is the side with the coordinate origin so basically just flip the pose if this returns true
+     */
+    public static boolean shouldFlip() {
         return DriverStation.getAlliance().isPresent() &&
                 DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
     }

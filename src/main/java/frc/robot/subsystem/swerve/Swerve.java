@@ -2,18 +2,20 @@ package frc.robot.subsystem.swerve;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -21,8 +23,10 @@ import frc.robot.sensor.pose.Gyro;
 import frc.robot.sensor.pose.Odometry;
 import frc.robot.sensor.vision.VisionAprilTag;
 import frc.robot.subsystem.shooterV1.ShooterV1;
+import frc.robot.thirdParty.LocalADStarAK;
 import frc.robot.utility.conversion.AngleUtil;
 import frc.robot.utility.conversion.ObjectUtil;
+import frc.robot.utility.information.FieldUtil;
 import frc.robot.utility.information.StageDetector;
 import org.littletonrobotics.junction.Logger;
 
@@ -75,13 +79,12 @@ public class Swerve extends SubsystemBase {
                                 Constants.frameY - Constants.Swerve.wheelInset),
                         new ReplanningConfig()
                 ),
-                () -> {
-//                    Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
-//                    return alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red;
-                    return false; // TODO FIX THIS DO NOT LEAVE THIS HERE YOU IDIOT
-                },
+                FieldUtil::shouldFlip,
                 this
         );
+        Pathfinding.setPathfinder(new LocalADStarAK());
+        PathPlannerLogging.setLogActivePathCallback((activePath) -> Logger.recordOutput("AutoAlign/Trajectory", activePath.toArray(new Pose2d[activePath.size()])));
+        PathPlannerLogging.setLogTargetPoseCallback((targetPose) -> Logger.recordOutput("AutoAlign/TrajectorySetpoint", targetPose));
         PPHolonomicDriveController.setRotationTargetOverride(() -> {
             return headingController.get();
         });
@@ -100,10 +103,9 @@ public class Swerve extends SubsystemBase {
 
 
     public void updateInputs() {
-        SwerveMod.instance[0].updateInputs();
-        SwerveMod.instance[1].updateInputs();
-        SwerveMod.instance[2].updateInputs();
-        SwerveMod.instance[3].updateInputs();
+        for (var module : SwerveMod.instance) {
+            module.updateInputs();
+        }
 
         SwerveModulePosition[] deltas = new SwerveModulePosition[4];
         for (int i = 0; i < 4; i++) {
@@ -117,7 +119,6 @@ public class Swerve extends SubsystemBase {
 
     @Override
     public void periodic() {
-
         if (headingController.get().isPresent())
             driveHeading = Gyro.getHeading().getDegrees();
 

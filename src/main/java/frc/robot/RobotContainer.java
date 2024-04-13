@@ -18,6 +18,8 @@ import frc.robot.subsystem.climber.Climber;
 import frc.robot.subsystem.swerve.Swerve;
 import frc.robot.utility.information.InputUtil;
 
+import java.util.Optional;
+
 public class RobotContainer {
 
   public static RobotContainer instance;
@@ -30,10 +32,10 @@ public class RobotContainer {
   public RobotContainer() {
     instance = this;
 
-    controller = new CommandXboxController(0);
-    controller2 = new CommandXboxController(1);
-    controllerRaw = new XboxController(0);
-    controller2Raw = new XboxController(1);
+    controller = Constants.Simulation.useNintendoSwitchProController ? new CommandNintendoSwitchProController(0) : new CommandXboxController(0);
+    controller2 = Constants.Simulation.useNintendoSwitchProController ? new CommandNintendoSwitchProController(1) : new CommandXboxController(1);
+    controllerRaw = controller.getHID();
+    controller2Raw = controller2.getHID();
 
     controllerRaw.setRumble(GenericHID.RumbleType.kBothRumble, 0);
 

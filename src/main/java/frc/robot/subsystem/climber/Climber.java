@@ -3,9 +3,7 @@ package frc.robot.subsystem.climber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.subsystem.climber.ClimberIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -38,12 +36,11 @@ public class Climber extends SubsystemBase {
 
     public void updateInputs() {
         io.updateInputs();
-//        Logger.processInputs("Climber", inputs);
+        Logger.processInputs("Inputs/Climber", inputs);
     }
 
     @Override
     public void periodic() {
-//        if (io.)
     }
 
     public static void setVoltage(double volts) {

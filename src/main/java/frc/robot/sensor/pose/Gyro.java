@@ -76,7 +76,8 @@ public class Gyro {
     }
 
     public static void resetGyro() {
-        pigeon.setYaw(0);
+        if (Robot.isSimulation()) estimate = new Rotation2d();
+        else pigeon.setYaw(0);
     }
 
     /**

@@ -56,7 +56,7 @@ public class SwerveMod extends SubsystemBase {
         positionLast = getCurrentPosition();
 
         io.updateInputs();
-        Logger.processInputs("Swerve/Mod" + modId, inputs);
+        Logger.processInputs("Inputs/Swerve/Mod" + modId, inputs);
     }
 
     @Override
