@@ -137,12 +137,7 @@ $RECYCLE.BIN/
 
 ### Gradle ###
 .gradle
-/build/classes/
-/build/debug/
-/build/jni/
-/build/libs/
-/build/sim/
-/build/tmp/
+/build/
 
 # Ignore Gradle GUI config
 gradle-app.setting
@@ -174,14 +169,7 @@ out/
 .fleet
 
 # Simulation GUI and other tools window save file
-*-window.json
+simgui*.json
 
-# Simulation data log directory
-*.wpilog
-logs/
-
-# Folder that has CTRE Phoenix Sim device config storage
-ctre_sim/
-
-# GVersion Build Constants (Used for Advantage Kit)
+# Version file
 src/main/java/frc/robot/BuildConstants.java

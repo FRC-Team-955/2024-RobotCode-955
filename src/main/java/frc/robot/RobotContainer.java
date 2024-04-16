@@ -1,106 +1,144 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.command.*;
-import frc.robot.sensor.pose.Gyro;
-import frc.robot.subsystem.climber.Climber;
-import frc.robot.subsystem.swerve.Swerve;
-import frc.robot.utility.information.InputUtil;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.flywheel.Flywheel;
+import frc.robot.subsystems.flywheel.FlywheelIO;
+import frc.robot.subsystems.flywheel.FlywheelIOSim;
+import frc.robot.subsystems.flywheel.FlywheelIOSparkMax;
+import frc.lib.util.CommandNintendoSwitchProController;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
-import java.util.Optional;
-
+/**
+ * This class is where the bulk of the robot should be declared. Since Command-based is a
+ * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
+ * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
+ * subsystems, commands, and button mappings) should be declared here.
+ */
 public class RobotContainer {
+    private final CommandXboxController controller = Constants.Simulation.useNintendoSwitchProController ? new CommandNintendoSwitchProController(0) : new CommandXboxController(0);
 
-  public static RobotContainer instance;
+    private final LoggedDashboardChooser<Command> autoChooser;
+    private final LoggedDashboardNumber flywheelSpeedInput =
+            new LoggedDashboardNumber("Flywheel Speed", 1500.0);
 
-  CommandXboxController controller;
-  XboxController controllerRaw;
-  CommandXboxController controller2;
-  XboxController controller2Raw;
+    public RobotContainer() {
+        switch (Constants.mode) {
+            case REAL -> {
+                Util.registerFieldsForAutoLogOutput(
+                        new Drive(
+                                new GyroIOPigeon2(),
+                                new ModuleIOSparkMax(0),
+                                new ModuleIOSparkMax(1),
+                                new ModuleIOSparkMax(2),
+                                new ModuleIOSparkMax(3)
+                        ),
+                        new Flywheel(new FlywheelIOSparkMax())
+                );
+            }
 
-  public RobotContainer() {
-    instance = this;
+            case SIM -> {
+                Util.registerFieldsForAutoLogOutput(
+                        new Drive(
+                                new GyroIO(),
+                                new ModuleIOSim(),
+                                new ModuleIOSim(),
+                                new ModuleIOSim(),
+                                new ModuleIOSim()
+                        ),
+                        new Flywheel(new FlywheelIOSim())
+                );
+            }
 
-    controller = Constants.Simulation.useNintendoSwitchProController ? new CommandNintendoSwitchProController(0) : new CommandXboxController(0);
-    controller2 = Constants.Simulation.useNintendoSwitchProController ? new CommandNintendoSwitchProController(1) : new CommandXboxController(1);
-    controllerRaw = controller.getHID();
-    controller2Raw = controller2.getHID();
+            case REPLAY -> {
+                Util.registerFieldsForAutoLogOutput(
+                        new Drive(
+                                new GyroIO(),
+                                new ModuleIO(),
+                                new ModuleIO(),
+                                new ModuleIO(),
+                                new ModuleIO()
+                        ),
+                        new Flywheel(new FlywheelIO())
+                );
+            }
+        }
 
-    controllerRaw.setRumble(GenericHID.RumbleType.kBothRumble, 0);
+        // Set up auto routines
+        NamedCommands.registerCommand(
+                "Run Flywheel",
+                Flywheel.get()
+                        .startEnd(
+                                () -> Flywheel.get().runVelocity(flywheelSpeedInput.get()), Flywheel.get()::stop)
+                        .withTimeout(5.0)
+        );
+        autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-    registerAutoCommands();
-    configureBindings();
+        // Set up SysId routines
+        autoChooser.addOption(
+                "Drive SysId (Quasistatic Forward)",
+                Drive.get().sysIdQuasistatic(SysIdRoutine.Direction.kForward)
+        );
+        autoChooser.addOption(
+                "Drive SysId (Quasistatic Reverse)",
+                Drive.get().sysIdQuasistatic(SysIdRoutine.Direction.kReverse)
+        );
+        autoChooser.addOption(
+                "Drive SysId (Dynamic Forward)",
+                Drive.get().sysIdDynamic(SysIdRoutine.Direction.kForward)
+        );
+        autoChooser.addOption(
+                "Drive SysId (Dynamic Reverse)",
+                Drive.get().sysIdDynamic(SysIdRoutine.Direction.kReverse)
+        );
+        autoChooser.addOption(
+                "Flywheel SysId (Quasistatic Forward)",
+                Flywheel.get().sysIdQuasistatic(SysIdRoutine.Direction.kForward)
+        );
+        autoChooser.addOption(
+                "Flywheel SysId (Quasistatic Reverse)",
+                Flywheel.get().sysIdQuasistatic(SysIdRoutine.Direction.kReverse)
+        );
+        autoChooser.addOption(
+                "Flywheel SysId (Dynamic Forward)",
+                Flywheel.get().sysIdDynamic(SysIdRoutine.Direction.kForward)
+        );
+        autoChooser.addOption(
+                "Flywheel SysId (Dynamic Reverse)",
+                Flywheel.get().sysIdDynamic(SysIdRoutine.Direction.kReverse)
+        );
 
-  }
+        // Configure the button bindings
+        configureButtonBindings();
+    }
 
-  private void configureBindings() {
-//    Swerve.setPidHeadingControl(true);
-    Swerve.setPidHeadingControl(false);
-    Swerve.instance.setDefaultCommand(Commands.run(() -> {
-      Swerve.drivePercents(new Translation2d(-InputUtil.deadzone(controller.getLeftY(), 0.1),
-              -InputUtil.deadzone(controller.getLeftX(), 0.1)),
-              -InputUtil.deadzone(controller.getRightX(), 0.1), true);
-    }, Swerve.instance));
+    private void configureButtonBindings() {
+        Drive.get().setDefaultCommand(
+                Drive.get().joystickDrive(
+                        controller::getLeftY,
+                        controller::getLeftX,
+                        () -> -controller.getRightX()
+                )
+        );
 
-//    controller.rightBumper().onTrue(AutoAlign.amp());
-//    controller.rightTrigger().onTrue(AutoAlign.subwoofer());
-//    controller.rightBumper().onTrue(new ScoreAmpManual(controller.rightBumper()));
-//    controller.rightTrigger().onTrue(new ScoreSpeakerManual(controller.rightTrigger()));
-//    controller.y().onTrue(new AbortHandoff());
-//    controller.x().onTrue(new SpitOutIntake());
-    controller.povUp().onTrue(Commands.runOnce(Gyro::resetGyro));
-//    controller.leftTrigger().onTrue(new IntakeSource(controller.leftTrigger()));
-////    controller.leftTrigger().onTrue(AutoAlign.align(new Pose2d(1.3321382999420166, 5.586578369140625,
-////            Rotation2d.fromRadians(0.0))));
-//
-//    controller2.rightTrigger().onTrue(new IntakeGroundManual(controller2.rightTrigger()));
-//    controller2.leftTrigger().onTrue(new Handoff());
-//    controller2.rightBumper().onTrue(new Spit());
-//    controller2.leftBumper().onTrue(new SequentialCommandGroup(Commands.runOnce(() -> { Shooter.setSpinup(true); }),
-//            new WaitCommand(1), Commands.runOnce(() -> { Shooter.setSpinup(false); })));
-    Climber.instance.setDefaultCommand(new ClimbManual(() -> {
-      return -InputUtil.deadzone(controller2.getLeftY(), 0.3);
-    }));
+        controller.x().onTrue(Drive.get().stopWithXCommand());
+        controller.rightBumper().onTrue(Drive.get().resetRotationCommand());
+        controller
+                .a()
+                .whileTrue(
+                        Flywheel.get()
+                                .startEnd(
+                                        () -> Flywheel.get().runVelocity(flywheelSpeedInput.get()),
+                                        Flywheel.get()::stop));
+    }
 
-
-
-    controller.povDown().onTrue(Commands.runOnce(CommandScheduler.getInstance()::cancelAll));
-    controller.povDown().onTrue(Commands.runOnce(() -> {
-//      Shooter.setSpinup(false);
-//      Shooter.setAmpSpinup(false);
-//      Intake.setIntakePercent(0);
-//      Shooter.setIntaking(false);
-//      Shooter.setIntakingSource(false);
-    }));
-//    controller.povDown().onTrue(new Reset());
-  }
-
-  private void registerAutoCommands() {
-//    NamedCommands.registerCommand("intake", new IntakeHandoff());
-//    NamedCommands.registerCommand("shoot", new ShootAuto());
-//    NamedCommands.registerCommand("prepShootSubwoofer", new PrepShootAuto(Constants.Shooter.Setpoints.subwoofer));
-//    NamedCommands.registerCommand("prepShootShort", new PrepShootAuto(Constants.Shooter.Setpoints.autoShootShort));
-//    NamedCommands.registerCommand("prepShootLong", new PrepShootAuto(Constants.Shooter.Setpoints.autoShootLong));
-    NamedCommands.registerCommand("checkAlign", AutoAlign.alignCorrect(new Pose2d(1.3321382999420166, 5.586578369140625,
-            Rotation2d.fromRadians(0.0))));
-  }
-
-  public Command getAutonomousCommand() {
-    return Commands.idle();
-  }
-
-  public void rumbleControllers(boolean rumble) {
-    //controllerRaw.setRumble(GenericHID.RumbleType.kBothRumble, 0.6);
-  }
+    public Command getAutonomousCommand() {
+        // Return null to do nothing.
+        return autoChooser.get();
+    }
 }
