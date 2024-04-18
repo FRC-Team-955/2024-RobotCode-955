@@ -1,9 +1,36 @@
 {
   "NTProvider": {
     "types": {
+      "/AdvantageKit/RealOutputs/Intake/Mechanism": "Mechanism2d",
       "/FMSInfo": "FMSInfo",
-      "/SmartDashboard/Auto Choices": "String Chooser"
+      "/SmartDashboard/Auto Choices": "String Chooser",
+      "/SmartDashboard/Command Scheduler": "Scheduler"
+    },
+    "windows": {
+      "/AdvantageKit/RealOutputs/Intake/Mechanism": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Command Scheduler": {
+        "window": {
+          "visible": true
+        }
+      }
     }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "AdvantageKit": {
+        "RealOutputs": {
+          "open": true
+        },
+        "open": true
+      }
+    }
+  },
+  "NetworkTables Info": {
+    "visible": true
   },
   "NetworkTables View": {
     "visible": false

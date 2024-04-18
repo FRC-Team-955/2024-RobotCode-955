@@ -19,16 +19,14 @@ public final class Constants {
          */
         public static final boolean replayRunAsFastAsPossible = true;
 
-        public static final boolean useNintendoSwitchProController =
-                RobotBase.isSimulation() && System.getProperty("os.name").contains("Mac OS X");
+        public static final boolean useNintendoSwitchProController = RobotBase.isSimulation() && System.getProperty("os.name").contains("Mac OS X");
     }
 
     /**
      * Automatically determined based on if code is running on a real robot and if {@link
      * Simulation#shouldReplay} is enabled
      */
-    public static final Mode mode =
-            RobotBase.isReal() ? Mode.REAL : (Simulation.shouldReplay ? Mode.REPLAY : Mode.SIM);
+    public static final Mode mode = RobotBase.isReal() ? Mode.REAL : (Simulation.shouldReplay ? Mode.REPLAY : Mode.SIM);
 
     public enum Mode {
         /**
@@ -42,6 +40,14 @@ public final class Constants {
         /**
          * Log replay
          */
-        REPLAY,
+        REPLAY;
+
+        public boolean isReal() {
+            return this == REAL || this == REPLAY;
+        }
+
+        public boolean isSim() {
+            return this == REAL;
+        }
     }
 }

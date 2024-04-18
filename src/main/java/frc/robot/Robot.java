@@ -71,24 +71,18 @@ public class Robot extends LoggedRobot {
             case REAL -> {
                 Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
                 Logger.addDataReceiver(new NT4Publisher()); // Log to NetworkTables
-                // SmartDashboard.putData("PowerDistribution", new PowerDistribution(Constants.pdhId,
-                // PowerDistribution.ModuleType.kRev)); // Enables power distribution logging
+                // SmartDashboard.putData("PowerDistribution", new PowerDistribution(Constants.pdhId, PowerDistribution.ModuleType.kRev)); // Enables power distribution logging
             }
             case SIM -> {
                 Logger.addDataReceiver(new NT4Publisher());
             }
             case REPLAY -> {
                 setUseTiming(!Constants.Simulation.replayRunAsFastAsPossible); // Run as fast as possible
-                String logPath =
-                        LogFileUtil
-                                .findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
+                String logPath = LogFileUtil.findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
                 Logger.setReplaySource(new WPILOGReader(logPath)); // Read replay log
-                Logger.addDataReceiver(
-                        new WPILOGWriter(
-                                LogFileUtil.addPathSuffix(logPath, "_sim"))); // Save outputs to a new log
+                Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim"))); // Save outputs to a new log
                 if (!Constants.Simulation.replayRunAsFastAsPossible)
-                    Logger.addDataReceiver(
-                            new NT4Publisher()); // Log to NetworkTables if we are replaying in real time
+                    Logger.addDataReceiver(new NT4Publisher()); // Log to NetworkTables if we are replaying in real time
             }
         }
 

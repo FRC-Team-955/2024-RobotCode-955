@@ -1,5 +1,6 @@
 package frc.lib.subsystems.wheel;
 
+import com.pathplanner.lib.util.PIDConstants;
 import org.littletonrobotics.junction.AutoLog;
 
 public class WheelIO {
@@ -12,5 +13,23 @@ public class WheelIO {
     }
 
     public void updateInputs(WheelIOInputs inputs) {
+    }
+
+    public void setVoltage(double volts) {
+    }
+
+    public void setSetpoint(double setpointVelocityRadPerSec, double ffVolts) {
+    }
+
+    public void stop() {
+    }
+
+    public void setBrakeMode(boolean enabled) {
+    }
+
+    public void configurePID(PIDConstants pidConstants) {
+    }
+
+    public void setGearRatio(double gearRatio) {
     }
 }

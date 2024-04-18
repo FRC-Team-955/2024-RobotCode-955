@@ -2,6 +2,7 @@ package frc.lib.subsystems.arm;
 
 import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.RobotState;
@@ -12,21 +13,31 @@ import org.littletonrobotics.junction.Logger;
 import static edu.wpi.first.units.Units.Radians;
 
 public final class Arm {
+    private static final double SETPOINT_TOLERANCE = Units.degreesToRadians(5);
+
     private final SubsystemBase parent;
     private final String inputsName;
     public final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
     private final ArmIO io;
 
     private final ArmFeedforward ff;
-    private Double setpointRad = null;
     private final Measure<Angle> initialPosition;
+    private Double setpointRad = null;
 
     /**
-     * @param inputName Example: Intake/Pivot
-     * @param gearRatio          >1 means a reduction, <1 means a upduction
-     * @param initialPositionRad Initial position of the arm. 0 means parallel to the ground
+     * @param inputName       Example: Intake/Pivot
+     * @param gearRatio       >1 means a reduction, <1 means a upduction
+     * @param initialPosition Initial position of the arm. 0 means parallel to the ground
      */
-    public Arm(SubsystemBase parent, String inputName, ArmIO io, ArmFeedforward ff, PIDConstants pidConstants, double gearRatio, Measure<Angle> initialPosition) {
+    public Arm(
+            SubsystemBase parent,
+            String inputName,
+            ArmIO io,
+            ArmFeedforward ff,
+            PIDConstants pidConstants,
+            double gearRatio,
+            Measure<Angle> initialPosition
+    ) {
         this.parent = parent;
         this.inputsName = inputName;
         this.io = io;
@@ -36,14 +47,24 @@ public final class Arm {
         io.configurePID(pidConstants);
         io.setGearRatio(gearRatio);
         io.setPosition(initialPosition.in(Radians));
+
+        // Immediately start closed loop with the starting position as our setpoint
+        setpointRad = initialPosition.in(Radians);
     }
 
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Inputs/" + inputsName, inputs);
 
-        if (RobotState.isEnabled() && setpointRad != null) {
-            io.setSetpoint(setpointRad, ff.calculate(setpointRad, 0));
+        Logger.recordOutput(inputsName + "/ClosedLoop", setpointRad != null);
+        if (setpointRad != null) {
+            Logger.recordOutput(inputsName + "/Setpoint", setpointRad);
+
+            if (RobotState.isEnabled()) {
+                var ffVolts = ff.calculate(setpointRad, 0);
+                Logger.recordOutput(inputsName + "/FFVolts", ffVolts);
+                io.setSetpoint(setpointRad, ffVolts);
+            }
         }
     }
 
@@ -52,21 +73,27 @@ public final class Arm {
         setpointRad = null;
     }
 
+    /**
+     * 0 means parallel to the ground
+     */
     public void setSetpoint(Measure<Angle> setpoint) {
-        this.setpointRad = setpoint.in(Radians);
+        setpointRad = setpoint.in(Radians);
     }
 
     public boolean atSetpoint() {
-        return Math.abs(inputs.positionRad - setpointRad) <= 5;
+        return Math.abs(inputs.positionRad - setpointRad) <= SETPOINT_TOLERANCE;
     }
 
     /**
-     * Zeros to the initial position.
+     * Tells the encoder the current position is the initial position.
      */
     public void setPosition() {
         setPosition(initialPosition);
     }
 
+    /**
+     * Tells the encoder the current position is the one specified.
+     */
     public void setPosition(Measure<Angle> position) {
         io.setPosition(position.in(Radians));
     }
@@ -82,25 +109,36 @@ public final class Arm {
         );
     }
 
+    /**
+     * 0 means parallel to the ground
+     */
     public Command setSetpointCommand(Measure<Angle> setpoint) {
         return parent.runOnce(() -> setSetpoint(setpoint));
     }
 
-    public Command pivotTo(Measure<Angle> position) {
+    /**
+     * The returned command ends once the setpoint is reached.
+     * <p>
+     * 0 means parallel to the ground
+     */
+    public Command reachSetpointCommand(Measure<Angle> setpoint) {
         return parent.startEnd(
-                () -> setSetpoint(position),
+                () -> setSetpoint(setpoint),
                 () -> {
                 }
         ).until(this::atSetpoint);
     }
 
     /**
-     * Zeros to the initial position.
+     * Tells the encoder the current position is the initial position.
      */
     public Command setPositionCommand() {
         return parent.runOnce(this::setPosition);
     }
 
+    /**
+     * Tells the encoder the current position is the one specified.
+     */
     public Command setPositionCommand(Measure<Angle> position) {
         return parent.runOnce(() -> setPosition(position));
     }

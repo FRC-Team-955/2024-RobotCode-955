@@ -1,27 +1,20 @@
-package frc.lib.subsystems.arm;
+package frc.lib.subsystems.wheel;
 
 import com.pathplanner.lib.util.PIDConstants;
 import com.revrobotics.*;
 import edu.wpi.first.math.util.Units;
-import frc.lib.util.absoluteencoder.AbsoluteEncoder;
 
-import static edu.wpi.first.units.Units.Radians;
-
-public class ArmIOSparkMax extends ArmIO {
+public class WheelIOSparkMax extends WheelIO {
     private final CANSparkMax motor;
     private final RelativeEncoder encoder;
     private final SparkPIDController pid;
 
-    private final AbsoluteEncoder absoluteEncoder;
-
     private double gearRatio;
 
-    public ArmIOSparkMax(int canID, AbsoluteEncoder absoluteEncoder) {
-        this.absoluteEncoder = absoluteEncoder;
-
+    public WheelIOSparkMax(int canID, boolean brakeModeEnabled) {
         motor = new CANSparkMax(canID, CANSparkLowLevel.MotorType.kBrushless);
         motor.restoreFactoryDefaults();
-        motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
+        motor.setIdleMode(brakeModeEnabled ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast);
         motor.setCANTimeout(250);
         motor.enableVoltageCompensation(12.0);
         motor.setSmartCurrentLimit(40);
@@ -33,14 +26,11 @@ public class ArmIOSparkMax extends ArmIO {
     }
 
     @Override
-    public void updateInputs(ArmIOInputs inputs) {
+    public void updateInputs(WheelIOInputs inputs) {
         inputs.positionRad = Units.rotationsToRadians(encoder.getPosition()) / gearRatio;
         inputs.velocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(encoder.getVelocity()) / gearRatio;
         inputs.appliedVolts = motor.getAppliedOutput() * motor.getBusVoltage();
         inputs.currentAmps = motor.getOutputCurrent();
-
-        inputs.absoluteEncoderConnected = absoluteEncoder.isConnected();
-        inputs.absoluteEncoderPositionRad = absoluteEncoder.getAbsolutePosition().in(Radians) / gearRatio;
     }
 
     @Override
@@ -49,10 +39,10 @@ public class ArmIOSparkMax extends ArmIO {
     }
 
     @Override
-    public void setSetpoint(double setpointPositionRad, double ffVolts) {
+    public void setSetpoint(double setpointVelocityRadPerSec, double ffVolts) {
         pid.setReference(
-                Units.radiansToRotations(setpointPositionRad * gearRatio),
-                CANSparkBase.ControlType.kPosition,
+                Units.radiansPerSecondToRotationsPerMinute(setpointVelocityRadPerSec * gearRatio),
+                CANSparkBase.ControlType.kVelocity,
                 0,
                 ffVolts,
                 SparkPIDController.ArbFFUnits.kVoltage
@@ -62,11 +52,6 @@ public class ArmIOSparkMax extends ArmIO {
     @Override
     public void stop() {
         motor.stopMotor();
-    }
-
-    @Override
-    public void setPosition(double currentPositionRad) {
-        encoder.setPosition(Units.radiansToRotations(currentPositionRad * gearRatio));
     }
 
     @Override

@@ -17,8 +17,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Util;
 import frc.lib.util.LocalADStarAK;
+import frc.robot.Util;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -82,10 +82,10 @@ public class Drive extends SubsystemBase {
                 this::setPose,
                 () -> kinematics.toChassisSpeeds(getModuleStates()),
                 this::runVelocity,
-                new HolonomicPathFollowerConfig(
-                        MAX_LINEAR_SPEED, DRIVE_BASE_RADIUS, new ReplanningConfig()),
+                new HolonomicPathFollowerConfig(MAX_LINEAR_SPEED, DRIVE_BASE_RADIUS, new ReplanningConfig()),
                 Util::shouldFlip,
-                this);
+                this
+        );
         Pathfinding.setPathfinder(new LocalADStarAK());
         PathPlannerLogging.setLogActivePathCallback((activePath) -> Logger.recordOutput("Drive/Trajectory", activePath.toArray(new Pose2d[activePath.size()])));
         PathPlannerLogging.setLogTargetPoseCallback((targetPose) -> Logger.recordOutput("Drive/TrajectorySetpoint", targetPose));
@@ -305,40 +305,36 @@ public class Drive extends SubsystemBase {
      */
     public Command joystickDrive(
             DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
-        return run(
-                () -> {
-                    // Apply deadband
-                    double linearMagnitude =
-                            MathUtil.applyDeadband(
-                                    Math.hypot(xSupplier.getAsDouble(), ySupplier.getAsDouble()), JOYSTICK_DRIVE_DEADBAND);
-                    Rotation2d linearDirection =
-                            new Rotation2d(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-                    double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), JOYSTICK_DRIVE_DEADBAND);
+        return run(() -> {
+            // Apply deadband
+            double linearMagnitude = MathUtil.applyDeadband(
+                    Math.hypot(xSupplier.getAsDouble(), ySupplier.getAsDouble()),
+                    JOYSTICK_DRIVE_DEADBAND
+            );
+            Rotation2d linearDirection = new Rotation2d(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+            double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), JOYSTICK_DRIVE_DEADBAND);
 
-                    // Square values
-                    linearMagnitude = linearMagnitude * linearMagnitude;
-                    omega = Math.copySign(omega * omega, omega);
+            // Square values
+            linearMagnitude = linearMagnitude * linearMagnitude;
+            omega = Math.copySign(omega * omega, omega);
 
-                    // Calcaulate new linear velocity
-                    Translation2d linearVelocity =
-                            new Pose2d(new Translation2d(), linearDirection)
-                                    .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
-                                    .getTranslation();
+            // Calcaulate new linear velocity
+            Translation2d linearVelocity = new Pose2d(new Translation2d(), linearDirection)
+                    .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
+                    .getTranslation();
 
-                    // Convert to field relative speeds & send command
-                    boolean isFlipped = Util.shouldFlip();
-                    get()
-                            .runVelocity(
-                                    ChassisSpeeds.fromFieldRelativeSpeeds(
-                                            linearVelocity.getX() * Drive.get().getMaxLinearSpeedMetersPerSec(),
-                                            linearVelocity.getY() * Drive.get().getMaxLinearSpeedMetersPerSec(),
-                                            omega * Drive.get().getMaxAngularSpeedRadPerSec(),
-                                            isFlipped
-                                                    ? getRotation().plus(new Rotation2d(Math.PI))
-                                                    : getRotation()
-                                    )
-                            );
-                }
-        );
+            // Convert to field relative speeds & send command
+            boolean isFlipped = Util.shouldFlip();
+            runVelocity(
+                    ChassisSpeeds.fromFieldRelativeSpeeds(
+                            linearVelocity.getX() * Drive.get().getMaxLinearSpeedMetersPerSec(),
+                            linearVelocity.getY() * Drive.get().getMaxLinearSpeedMetersPerSec(),
+                            omega * Drive.get().getMaxAngularSpeedRadPerSec(),
+                            isFlipped
+                                    ? getRotation().plus(new Rotation2d(Math.PI))
+                                    : getRotation()
+                    )
+            );
+        });
     }
 }

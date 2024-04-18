@@ -1,12 +1,12 @@
-package frc.lib.subsystems.arm;
+package frc.lib.subsystems.wheel;
 
 import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
-public class ArmIOSim extends ArmIO {
-    private SingleJointedArmSim sim;
+public class WheelIOSim extends WheelIO {
+    private FlywheelSim sim;
     private PIDController pid;
 
     private double appliedVolts;
@@ -15,29 +15,27 @@ public class ArmIOSim extends ArmIO {
 
     private final DCMotor motor;
     private final double jKgMetersSquared;
-    private final double armLength;
 
-    public ArmIOSim(DCMotor motor, double armLengthMeters) {
-        this(motor, 0.0001, armLengthMeters);
+    public WheelIOSim(DCMotor motor) {
+        this(motor, 0.004);
     }
 
-    public ArmIOSim(DCMotor motor, double jKgMetersSquared, double armLengthMeters) {
+    public WheelIOSim(DCMotor motor, double jKgMetersSquared) {
         this.motor = motor;
         this.jKgMetersSquared = jKgMetersSquared;
-        this.armLength = armLengthMeters;
     }
 
     @Override
-    public void updateInputs(ArmIOInputs inputs) {
+    public void updateInputs(WheelIOInputs inputs) {
         if (closedLoop) {
-            appliedVolts = pid.calculate(sim.getAngleRads()) + ffVolts;
+            appliedVolts = pid.calculate(sim.getAngularVelocityRadPerSec()) + ffVolts;
             sim.setInputVoltage(appliedVolts);
         }
 
         sim.update(0.02);
 
-        inputs.positionRad = sim.getAngleRads();
-        inputs.velocityRadPerSec = sim.getVelocityRadPerSec();
+        inputs.positionRad = 0.0;
+        inputs.velocityRadPerSec = sim.getAngularVelocityRadPerSec();
         inputs.appliedVolts = appliedVolts;
         inputs.currentAmps = sim.getCurrentDrawAmps();
     }
@@ -50,15 +48,10 @@ public class ArmIOSim extends ArmIO {
     }
 
     @Override
-    public void setSetpoint(double setpointPositionRad, double ffVolts) {
+    public void setSetpoint(double setpointVelocityRadPerSec, double ffVolts) {
         this.ffVolts = ffVolts;
-        pid.setSetpoint(setpointPositionRad);
+        pid.setSetpoint(setpointVelocityRadPerSec);
         closedLoop = true;
-    }
-
-    @Override
-    public void setPosition(double currentPositionRad) {
-        sim.setState(currentPositionRad, 0);
     }
 
     @Override
@@ -74,15 +67,6 @@ public class ArmIOSim extends ArmIO {
 
     @Override
     public void setGearRatio(double gearRatio) {
-        sim = new SingleJointedArmSim(
-                motor,
-                gearRatio,
-                jKgMetersSquared,
-                armLength,
-                -Math.PI * 2,
-                Math.PI * 2,
-                true,
-                0.0
-        );
+        sim = new FlywheelSim(motor, gearRatio, jKgMetersSquared);
     }
 }
