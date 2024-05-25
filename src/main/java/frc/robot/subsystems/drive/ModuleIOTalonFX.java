@@ -46,7 +46,7 @@ public class ModuleIOTalonFX extends ModuleIO {
     private final double TURN_GEAR_RATIO = 150.0 / 7.0;
 
     private final boolean isTurnMotorInverted = true;
-    private final Rotation2d absoluteEncoderOffset;
+    private final double absoluteEncoderOffsetRad;
 
     public ModuleIOTalonFX(int index) {
         switch (index) {
@@ -54,25 +54,25 @@ public class ModuleIOTalonFX extends ModuleIO {
                 driveTalon = new TalonFX(0);
                 turnTalon = new TalonFX(1);
                 cancoder = new CANcoder(2);
-                absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
+                absoluteEncoderOffsetRad = 0.0; // MUST BE CALIBRATED
             }
             case 1 -> {
                 driveTalon = new TalonFX(3);
                 turnTalon = new TalonFX(4);
                 cancoder = new CANcoder(5);
-                absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
+                absoluteEncoderOffsetRad = 0.0; // MUST BE CALIBRATED
             }
             case 2 -> {
                 driveTalon = new TalonFX(6);
                 turnTalon = new TalonFX(7);
                 cancoder = new CANcoder(8);
-                absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
+                absoluteEncoderOffsetRad = 0.0; // MUST BE CALIBRATED
             }
             case 3 -> {
                 driveTalon = new TalonFX(9);
                 turnTalon = new TalonFX(10);
                 cancoder = new CANcoder(11);
-                absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
+                absoluteEncoderOffsetRad = 0.0; // MUST BE CALIBRATED
             }
             default -> throw new RuntimeException("Invalid module index");
         }
@@ -138,8 +138,8 @@ public class ModuleIOTalonFX extends ModuleIO {
         inputs.driveAppliedVolts = driveAppliedVolts.getValueAsDouble();
         inputs.driveCurrentAmps = driveCurrent.getValueAsDouble();
 
-        inputs.turnAbsolutePosition = Rotation2d.fromRotations(turnAbsolutePosition.getValueAsDouble()).minus(absoluteEncoderOffset);
-        inputs.turnPosition = Rotation2d.fromRotations(turnPosition.getValueAsDouble() / TURN_GEAR_RATIO);
+        inputs.turnAbsolutePositionRad = Units.rotationsToRadians(turnAbsolutePosition.getValueAsDouble()) - absoluteEncoderOffsetRad;
+        inputs.turnPositionRad = Units.rotationsToRadians(turnPosition.getValueAsDouble() / TURN_GEAR_RATIO);
         inputs.turnVelocityRadPerSec = Units.rotationsToRadians(turnVelocity.getValueAsDouble()) / TURN_GEAR_RATIO;
         inputs.turnAppliedVolts = turnAppliedVolts.getValueAsDouble();
         inputs.turnCurrentAmps = turnCurrent.getValueAsDouble();

@@ -8,6 +8,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.util.absoluteencoder.AbsoluteEncoder;
 import org.littletonrobotics.junction.Logger;
 
 import static edu.wpi.first.units.Units.Radians;
@@ -17,17 +18,42 @@ public final class Arm {
 
     private final SubsystemBase parent;
     private final String inputsName;
-    public final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
+    private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
     private final ArmIO io;
 
     private final ArmFeedforward ff;
-    private final Measure<Angle> initialPosition;
-    private Double setpointRad = null;
+    private final AbsoluteEncoder absoluteEncoder;
+    private Measure<Angle> initialPosition;
+    private Double setpointRad;
+
+    /**
+     * @param inputName Example: Intake/Pivot
+     * @param gearRatio >1 means a reduction, <1 means a upduction
+     */
+    public Arm(
+            SubsystemBase parent,
+            String inputName,
+            ArmIO io,
+            ArmFeedforward ff,
+            PIDConstants pidConstants,
+            double gearRatio,
+            AbsoluteEncoder absoluteEncoder
+    ) {
+        this.parent = parent;
+        this.inputsName = inputName;
+        this.io = io;
+        this.ff = ff;
+        this.absoluteEncoder = absoluteEncoder;
+        this.initialPosition = null;
+
+        io.configurePID(pidConstants);
+        io.setGearRatio(gearRatio);
+    }
 
     /**
      * @param inputName       Example: Intake/Pivot
      * @param gearRatio       >1 means a reduction, <1 means a upduction
-     * @param initialPosition Initial position of the arm. 0 means parallel to the ground
+     * @param initialPosition Initial position of the arm. 0 means parallel to the ground.
      */
     public Arm(
             SubsystemBase parent,
@@ -42,6 +68,7 @@ public final class Arm {
         this.inputsName = inputName;
         this.io = io;
         this.ff = ff;
+        this.absoluteEncoder = null;
         this.initialPosition = initialPosition;
 
         io.configurePID(pidConstants);
@@ -53,8 +80,25 @@ public final class Arm {
     }
 
     public void periodic() {
+        // initialize initialPosition if we have an absolute encoder
+        // must go before arm IO update so that the IO position is set
+        if (initialPosition == null) {
+            // if initialPosition is null, then absoluteEncoder is not null
+            absoluteEncoder.periodic();
+            initialPosition = absoluteEncoder.getPosition();
+            io.setPosition(initialPosition.in(Radians));
+
+            // Immediately start closed loop with the initial position as our setpoint
+            setpointRad = initialPosition.in(Radians);
+        }
+
         io.updateInputs(inputs);
         Logger.processInputs("Inputs/" + inputsName, inputs);
+
+        // we don't really need to update the absolute encoder after the initial update
+//        if (initialPosition != null && absoluteEncoder != null) {
+//            absoluteEncoder.periodic();
+//        }
 
         Logger.recordOutput(inputsName + "/ClosedLoop", setpointRad != null);
         if (setpointRad != null) {
@@ -66,6 +110,10 @@ public final class Arm {
                 io.setSetpoint(setpointRad, ffVolts);
             }
         }
+    }
+
+    public Measure<Angle> getPosition() {
+        return Radians.of(inputs.positionRad);
     }
 
     public void setPercent(double percent) {
@@ -82,6 +130,11 @@ public final class Arm {
 
     public boolean atSetpoint() {
         return Math.abs(inputs.positionRad - setpointRad) <= SETPOINT_TOLERANCE;
+    }
+
+    public void stop() {
+        io.stop();
+        setpointRad = null;
     }
 
     /**
@@ -127,6 +180,10 @@ public final class Arm {
                 () -> {
                 }
         ).until(this::atSetpoint);
+    }
+
+    public Command stopCommand() {
+        return parent.runOnce(this::stop);
     }
 
     /**

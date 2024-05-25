@@ -16,7 +16,7 @@ public class ModuleIOSim extends ModuleIO {
     private final DCMotorSim driveSim = new DCMotorSim(DCMotor.getNEO(1), ModuleIOSparkMax.DRIVE_GEAR_RATIO, 0.025);
     private final DCMotorSim turnSim = new DCMotorSim(DCMotor.getNEO(1), ModuleIOSparkMax.TURN_GEAR_RATIO, 0.004);
 
-    private final Rotation2d turnAbsoluteInitPosition = new Rotation2d(Math.random() * 2.0 * Math.PI);
+    private final double turnAbsoluteInitPosition = Math.random() * 2.0 * Math.PI;
     private double driveAppliedVolts = 0.0;
     private double turnAppliedVolts = 0.0;
 
@@ -30,9 +30,8 @@ public class ModuleIOSim extends ModuleIO {
         inputs.driveAppliedVolts = driveAppliedVolts;
         inputs.driveCurrentAmps = Math.abs(driveSim.getCurrentDrawAmps());
 
-        inputs.turnAbsolutePosition =
-                new Rotation2d(turnSim.getAngularPositionRad()).plus(turnAbsoluteInitPosition);
-        inputs.turnPosition = new Rotation2d(turnSim.getAngularPositionRad());
+        inputs.turnAbsolutePositionRad = turnSim.getAngularPositionRad() + turnAbsoluteInitPosition;
+        inputs.turnPositionRad = turnSim.getAngularPositionRad();
         inputs.turnVelocityRadPerSec = turnSim.getAngularVelocityRadPerSec();
         inputs.turnAppliedVolts = turnAppliedVolts;
         inputs.turnCurrentAmps = Math.abs(turnSim.getCurrentDrawAmps());

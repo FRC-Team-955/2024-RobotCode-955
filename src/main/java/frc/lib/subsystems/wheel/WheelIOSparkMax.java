@@ -11,13 +11,14 @@ public class WheelIOSparkMax extends WheelIO {
 
     private double gearRatio;
 
-    public WheelIOSparkMax(int canID, boolean brakeModeEnabled) {
+    public WheelIOSparkMax(int canID, boolean brakeModeEnabled, boolean inverted) {
         motor = new CANSparkMax(canID, CANSparkLowLevel.MotorType.kBrushless);
         motor.restoreFactoryDefaults();
         motor.setIdleMode(brakeModeEnabled ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast);
         motor.setCANTimeout(250);
         motor.enableVoltageCompensation(12.0);
         motor.setSmartCurrentLimit(40);
+        motor.setInverted(inverted);
         motor.burnFlash();
 
         encoder = motor.getEncoder();

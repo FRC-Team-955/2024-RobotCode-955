@@ -33,33 +33,33 @@ public class ModuleIOSparkMax extends ModuleIO {
     private final StatusSignal<Double> turnAbsolutePosition;
 
     private final boolean isTurnMotorInverted = true;
-    private final Rotation2d absoluteEncoderOffset;
+    private final double absoluteEncoderOffsetRad;
 
     public ModuleIOSparkMax(int index) {
         switch (index) {
-            case 0 -> {
+            case 0 -> { // FL
                 driveSparkMax = new CANSparkMax(2, MotorType.kBrushless);
                 turnSparkMax = new CANSparkMax(1, MotorType.kBrushless);
-                cancoder = new CANcoder(11);
-                absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
+                cancoder = new CANcoder(18);
+                absoluteEncoderOffsetRad = 0.230;
             }
-            case 1 -> {
+            case 1 -> { // FR
                 driveSparkMax = new CANSparkMax(14, MotorType.kBrushless);
                 turnSparkMax = new CANSparkMax(15, MotorType.kBrushless);
-                cancoder = new CANcoder(12);
-                absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
+                cancoder = new CANcoder(19);
+                absoluteEncoderOffsetRad = -1.425;
             }
-            case 2 -> {
+            case 2 -> { // BL
                 driveSparkMax = new CANSparkMax(5, MotorType.kBrushless);
                 turnSparkMax = new CANSparkMax(6, MotorType.kBrushless);
-                cancoder = new CANcoder(14);
-                absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
+                cancoder = new CANcoder(20);
+                absoluteEncoderOffsetRad = 3.114;
             }
-            case 3 -> {
+            case 3 -> { // BR
                 driveSparkMax = new CANSparkMax(11, MotorType.kBrushless);
                 turnSparkMax = new CANSparkMax(12, MotorType.kBrushless);
-                cancoder = new CANcoder(13);
-                absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
+                cancoder = new CANcoder(21);
+                absoluteEncoderOffsetRad = -2.824;
             }
             default -> throw new RuntimeException("unreachable");
         }
@@ -99,28 +99,21 @@ public class ModuleIOSparkMax extends ModuleIO {
 
     @Override
     public void updateInputs(ModuleIOInputs inputs) {
-        inputs.drivePositionRad =
-                Units.rotationsToRadians(driveEncoder.getPosition()) / DRIVE_GEAR_RATIO;
-        inputs.driveVelocityRadPerSec =
-                Units.rotationsPerMinuteToRadiansPerSecond(driveEncoder.getVelocity()) / DRIVE_GEAR_RATIO;
+        inputs.drivePositionRad = Units.rotationsToRadians(driveEncoder.getPosition()) / DRIVE_GEAR_RATIO;
+        inputs.driveVelocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(driveEncoder.getVelocity()) / DRIVE_GEAR_RATIO;
         inputs.driveAppliedVolts = driveSparkMax.getAppliedOutput() * driveSparkMax.getBusVoltage();
         inputs.driveCurrentAmps = driveSparkMax.getOutputCurrent();
 
-        inputs.turnAbsolutePosition =
-                Rotation2d.fromRotations(turnAbsolutePosition.getValueAsDouble())
-                        .minus(absoluteEncoderOffset);
-        inputs.turnPosition =
-                Rotation2d.fromRotations(turnRelativeEncoder.getPosition() / TURN_GEAR_RATIO);
-        inputs.turnVelocityRadPerSec =
-                Units.rotationsPerMinuteToRadiansPerSecond(turnRelativeEncoder.getVelocity())
-                        / TURN_GEAR_RATIO;
+        inputs.turnAbsolutePositionRad = Units.rotationsToRadians(turnAbsolutePosition.getValueAsDouble()) - absoluteEncoderOffsetRad;
+        inputs.turnPositionRad = Units.rotationsToRadians(turnRelativeEncoder.getPosition() / TURN_GEAR_RATIO);
+        inputs.turnVelocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(turnRelativeEncoder.getVelocity()) / TURN_GEAR_RATIO;
         inputs.turnAppliedVolts = turnSparkMax.getAppliedOutput() * turnSparkMax.getBusVoltage();
         inputs.turnCurrentAmps = turnSparkMax.getOutputCurrent();
     }
 
     @Override
     public void setDriveVoltage(double volts) {
-        driveSparkMax.setVoltage(volts);
+        driveSparkMax.setVoltage(volts / 4);
     }
 
     @Override

@@ -10,9 +10,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.util.Units;
-import frc.lib.util.absoluteencoder.AbsoluteEncoder;
-
-import static edu.wpi.first.units.Units.Radians;
 
 public class ArmIOTalonFX extends ArmIO {
     private final TalonFX motor;
@@ -22,13 +19,9 @@ public class ArmIOTalonFX extends ArmIO {
     private final StatusSignal<Double> appliedVolts;
     private final StatusSignal<Double> current;
 
-    private final AbsoluteEncoder absoluteEncoder;
-
     private double gearRatio;
 
-    public ArmIOTalonFX(int canID, AbsoluteEncoder absoluteEncoder) {
-        this.absoluteEncoder = absoluteEncoder;
-
+    public ArmIOTalonFX(int canID) {
         motor = new TalonFX(canID);
         var config = new TalonFXConfiguration();
         config.CurrentLimits.SupplyCurrentLimit = 40.0;
@@ -52,9 +45,6 @@ public class ArmIOTalonFX extends ArmIO {
         inputs.velocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(velocity.getValue()) / gearRatio;
         inputs.appliedVolts = appliedVolts.getValue();
         inputs.currentAmps = current.getValue();
-
-        inputs.absoluteEncoderConnected = absoluteEncoder.isConnected();
-        inputs.absoluteEncoderPositionRad = absoluteEncoder.getAbsolutePosition().in(Radians) / gearRatio;
     }
 
     @Override

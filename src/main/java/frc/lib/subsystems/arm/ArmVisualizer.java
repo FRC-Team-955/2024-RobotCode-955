@@ -6,6 +6,8 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 public class ArmVisualizer {
     public final Mechanism2d mechanism;
     public final MechanismLigament2d ligament;
@@ -17,6 +19,6 @@ public class ArmVisualizer {
     }
 
     public void update(Arm arm) {
-        ligament.setAngle(Units.radiansToDegrees(arm.inputs.positionRad));
+        ligament.setAngle(arm.getPosition().in(Degrees));
     }
 }

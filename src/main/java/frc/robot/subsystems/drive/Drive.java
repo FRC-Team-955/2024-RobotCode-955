@@ -137,9 +137,9 @@ public class Drive extends SubsystemBase {
         }
 
         // Update gyro angle
-        if (gyroInputs.connected) {
+        if (gyroInputs.isConnected) {
             // Use the real gyro angle
-            rawGyroRotation = gyroInputs.yawPosition;
+            rawGyroRotation = new Rotation2d(gyroInputs.yawPositionRad);
         } else {
             // Use the angle delta from the kinematics and module deltas
             Twist2d twist = kinematics.toTwist2d(moduleDeltas);
@@ -324,13 +324,12 @@ public class Drive extends SubsystemBase {
                     .getTranslation();
 
             // Convert to field relative speeds & send command
-            boolean isFlipped = Util.shouldFlip();
             runVelocity(
                     ChassisSpeeds.fromFieldRelativeSpeeds(
                             linearVelocity.getX() * Drive.get().getMaxLinearSpeedMetersPerSec(),
                             linearVelocity.getY() * Drive.get().getMaxLinearSpeedMetersPerSec(),
                             omega * Drive.get().getMaxAngularSpeedRadPerSec(),
-                            isFlipped
+                            Util.shouldFlip()
                                     ? getRotation().plus(new Rotation2d(Math.PI))
                                     : getRotation()
                     )

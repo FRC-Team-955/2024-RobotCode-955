@@ -3,22 +3,15 @@ package frc.lib.subsystems.arm;
 import com.pathplanner.lib.util.PIDConstants;
 import com.revrobotics.*;
 import edu.wpi.first.math.util.Units;
-import frc.lib.util.absoluteencoder.AbsoluteEncoder;
-
-import static edu.wpi.first.units.Units.Radians;
 
 public class ArmIOSparkMax extends ArmIO {
     private final CANSparkMax motor;
     private final RelativeEncoder encoder;
     private final SparkPIDController pid;
 
-    private final AbsoluteEncoder absoluteEncoder;
-
     private double gearRatio;
 
-    public ArmIOSparkMax(int canID, AbsoluteEncoder absoluteEncoder) {
-        this.absoluteEncoder = absoluteEncoder;
-
+    public ArmIOSparkMax(int canID) {
         motor = new CANSparkMax(canID, CANSparkLowLevel.MotorType.kBrushless);
         motor.restoreFactoryDefaults();
         motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
@@ -38,9 +31,6 @@ public class ArmIOSparkMax extends ArmIO {
         inputs.velocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(encoder.getVelocity()) / gearRatio;
         inputs.appliedVolts = motor.getAppliedOutput() * motor.getBusVoltage();
         inputs.currentAmps = motor.getOutputCurrent();
-
-        inputs.absoluteEncoderConnected = absoluteEncoder.isConnected();
-        inputs.absoluteEncoderPositionRad = absoluteEncoder.getAbsolutePosition().in(Radians) / gearRatio;
     }
 
     @Override

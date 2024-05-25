@@ -18,14 +18,18 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 public class Wheel {
     private final SubsystemBase parent;
     private final String inputsName;
-    public final WheelIOInputsAutoLogged inputs = new WheelIOInputsAutoLogged();
-    public final WheelIO io;
+    private final WheelIOInputsAutoLogged inputs = new WheelIOInputsAutoLogged();
+    private final WheelIO io;
 
 
     private final SimpleMotorFeedforward ff;
     private final Measure<Velocity<Angle>> setpointTolerance;
     private Double setpointRadPerSec = null;
 
+    /**
+     * @param inputName Example: Intake/Feed
+     * @param gearRatio >1 means a reduction, <1 means a upduction
+     */
     public Wheel(
             SubsystemBase parent,
             String inputName,
@@ -77,6 +81,11 @@ public class Wheel {
         return Math.abs(inputs.velocityRadPerSec - setpointRadPerSec) <= setpointTolerance.in(RadiansPerSecond);
     }
 
+    public void stop() {
+        io.stop();
+        setpointRadPerSec = null;
+    }
+
     public void setBreakMode(boolean enabled) {
         io.setBrakeMode(enabled);
     }
@@ -88,17 +97,12 @@ public class Wheel {
         );
     }
 
-    /**
-     * 0 means parallel to the ground
-     */
     public Command setSetpointCommand(Measure<Velocity<Angle>> setpoint) {
         return parent.runOnce(() -> setSetpoint(setpoint));
     }
 
     /**
      * The returned command ends once the setpoint is reached.
-     * <p>
-     * 0 means parallel to the ground
      */
     public Command reachSetpointCommand(Measure<Velocity<Angle>> setpoint) {
         return parent.startEnd(
@@ -106,6 +110,10 @@ public class Wheel {
                 () -> {
                 }
         ).until(this::atSetpoint);
+    }
+
+    public Command stopCommand() {
+        return parent.runOnce(this::stop);
     }
 
     public Command setBreakModeCommand(boolean enabled) {

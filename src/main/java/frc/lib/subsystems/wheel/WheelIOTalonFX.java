@@ -7,6 +7,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.util.Units;
@@ -21,12 +22,13 @@ public class WheelIOTalonFX extends WheelIO {
 
     private double gearRatio;
 
-    public WheelIOTalonFX(int canID, boolean brakeModeEnabled) {
+    public WheelIOTalonFX(int canID, boolean brakeModeEnabled, boolean inverted) {
         motor = new TalonFX(canID);
         var config = new TalonFXConfiguration();
         config.CurrentLimits.SupplyCurrentLimit = 40.0;
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
         config.MotorOutput.NeutralMode = brakeModeEnabled ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+        config.MotorOutput.Inverted = inverted ? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive;
         motor.getConfigurator().apply(config);
 
         position = motor.getPosition();

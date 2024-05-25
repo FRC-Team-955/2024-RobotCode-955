@@ -14,17 +14,16 @@ public class ArmIOSim extends ArmIO {
     private double ffVolts;
 
     private final DCMotor motor;
-    private final double jKgMetersSquared;
     private final double armLength;
+    private final double jKgMetersSquared;
 
-    public ArmIOSim(DCMotor motor, double armLengthMeters) {
-        this(motor, 0.0001, armLengthMeters);
-    }
-
-    public ArmIOSim(DCMotor motor, double jKgMetersSquared, double armLengthMeters) {
+    /**
+     * @param jKgMetersSquared This can be calculated in Onshape with the "Display mass properties" button in the bottom left. If unsure, you can use 0.1 temporarily.
+     */
+    public ArmIOSim(DCMotor motor, double armLengthMeters, double jKgMetersSquared) {
         this.motor = motor;
-        this.jKgMetersSquared = jKgMetersSquared;
         this.armLength = armLengthMeters;
+        this.jKgMetersSquared = jKgMetersSquared;
     }
 
     @Override
