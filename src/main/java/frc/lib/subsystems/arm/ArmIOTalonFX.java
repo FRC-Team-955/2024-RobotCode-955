@@ -67,11 +67,6 @@ public class ArmIOTalonFX extends ArmIO {
     }
 
     @Override
-    public void stop() {
-        motor.stopMotor();
-    }
-
-    @Override
     public void setPosition(double currentPositionRad) {
         motor.setPosition(Units.radiansToRotations(currentPositionRad * gearRatio));
     }

@@ -16,12 +16,14 @@ import frc.lib.subsystems.wheel.WheelIOSparkMax;
 import frc.lib.util.CommandNintendoSwitchProController;
 import frc.lib.util.absoluteencoder.AbsoluteEncoderIO;
 import frc.lib.util.absoluteencoder.AbsoluteEncoderIOREVThroughBore;
+import frc.lib.util.absoluteencoder.AbsoluteEncoderIOSim;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOReal;
+import frc.robot.subsystems.shooter.ShooterIOSim;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -76,13 +78,13 @@ public class RobotContainer {
                         new Intake(
                                 new IntakeIO(),
                                 new ArmIOSim(DCMotor.getNEO(1), 0.3, 0.045),
-                                new AbsoluteEncoderIO(),
+                                new AbsoluteEncoderIOSim(),
                                 new WheelIOSim(DCMotor.getNEO(1))
                         ),
                         new Shooter(
-                                new ShooterIO(),
+                                new ShooterIOSim(),
                                 new ArmIOSim(DCMotor.getNEO(1), 0.4, 0.083),
-                                new AbsoluteEncoderIO(),
+                                new AbsoluteEncoderIOSim(),
                                 new WheelIOSim(DCMotor.getNEO(1)),
                                 new WheelIOSim(DCMotor.getNEO(1)),
                                 new WheelIOSim(DCMotor.getNEO(1))
@@ -127,7 +129,7 @@ public class RobotContainer {
                 Drive.get().sysIdDynamic(SysIdRoutine.Direction.kReverse)
         );
 
-setDefaultCommands();
+        setDefaultCommands();
         configureButtonBindings();
 
         SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
@@ -161,50 +163,25 @@ setDefaultCommands();
         );
 
         Intake.get().setDefaultCommand(Intake.get().pivotHover());
+        Shooter.get().setDefaultCommand(Shooter.get().pivotHover());
     }
 
     private void configureButtonBindings() {
         operatorController.rightBumper().onTrue(Drive.get().resetRotationCommand());
 
-        driverController.a().whileTrue(
-                Intake.get().pivotIntake()
-                        .andThen(Intake.get().feed.setPercentCommand(0.5))
-                        .finallyDo(() -> {
-                            Intake.get().feed.setPercent(0);
-                        })
-        );
+        driverController.a().whileTrue(Intake.get().intake());
 
         driverController.b().toggleOnTrue(Commands.sequence(
                 Shooter.get().pivotHover(),
                 Intake.get().pivotHandoff(),
                 Shooter.get().pivotHandoff(),
-                Commands.parallel(
-                        Intake.get().feed.setPercentCommand(-0.1),
-                        Shooter.get().feed.setPercentCommand(0.2)
-                ).until(Shooter.get()::hasNote),
-                Commands.waitSeconds(0.75),
-                Shooter.get().runOnce(() -> {
-                    Intake.get().feed.setPercent(0);
-                    Shooter.get().feed.setPercent(0);
-                }),
+                Commands.race(
+                        Intake.get().feedHandoff(),
+                        Shooter.get().feedHandoff()
+                ),
                 Shooter.get().pivotShoot(),
                 Intake.get().pivotHover(),
-                Commands.runOnce(() -> {
-                    Shooter.get().flywheelBottom.setPercent(0.2);
-                    Shooter.get().flywheelTop.setPercent(0.2);
-                }),
-                Commands.waitSeconds(1),
-                Commands.runOnce(() -> {
-                    Shooter.get().flywheelBottom.setPercent(0.2);
-                    Shooter.get().flywheelTop.setPercent(0.2);
-                    Shooter.get().feed.setPercent(1.0);
-                }),
-                Commands.waitSeconds(5),
-                Commands.runOnce(() -> {
-                    Shooter.get().feed.setPercent(0);
-                    Shooter.get().flywheelBottom.setPercent(0);
-                    Shooter.get().flywheelTop.setPercent(0);
-                })
+                Shooter.get().shootPercent(0.2, 1.0)
         ));
 
 //        driverController.povUp().onTrue(Shooter.get().pivotHover());

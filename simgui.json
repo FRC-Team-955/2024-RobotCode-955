@@ -2,12 +2,18 @@
   "NTProvider": {
     "types": {
       "/AdvantageKit/RealOutputs/Intake/Mechanism": "Mechanism2d",
+      "/AdvantageKit/RealOutputs/Shooter/Mechanism": "Mechanism2d",
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Auto Choices": "String Chooser",
       "/SmartDashboard/Command Scheduler": "Scheduler"
     },
     "windows": {
       "/AdvantageKit/RealOutputs/Intake/Mechanism": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/AdvantageKit/RealOutputs/Shooter/Mechanism": {
         "window": {
           "visible": true
         }

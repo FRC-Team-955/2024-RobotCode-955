@@ -69,11 +69,6 @@ public class WheelIOTalonFX extends WheelIO {
     }
 
     @Override
-    public void stop() {
-        motor.stopMotor();
-    }
-
-    @Override
     public void setBrakeMode(boolean enabled) {
         var config = new MotorOutputConfigs();
         config.NeutralMode = enabled ? NeutralModeValue.Brake : NeutralModeValue.Coast;

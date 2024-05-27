@@ -51,11 +51,6 @@ public class WheelIOSparkMax extends WheelIO {
     }
 
     @Override
-    public void stop() {
-        motor.stopMotor();
-    }
-
-    @Override
     public void setBrakeMode(boolean enabled) {
         motor.setIdleMode(enabled ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast);
     }

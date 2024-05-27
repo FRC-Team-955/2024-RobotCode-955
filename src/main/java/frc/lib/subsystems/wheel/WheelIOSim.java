@@ -37,7 +37,7 @@ public class WheelIOSim extends WheelIO {
         inputs.positionRad = 0.0;
         inputs.velocityRadPerSec = sim.getAngularVelocityRadPerSec();
         inputs.appliedVolts = appliedVolts;
-        inputs.currentAmps = sim.getCurrentDrawAmps();
+        inputs.currentAmps = Math.abs(sim.getCurrentDrawAmps());
     }
 
     @Override
@@ -52,11 +52,6 @@ public class WheelIOSim extends WheelIO {
         this.ffVolts = ffVolts;
         pid.setSetpoint(setpointVelocityRadPerSec);
         closedLoop = true;
-    }
-
-    @Override
-    public void stop() {
-        sim.setInputVoltage(0);
     }
 
     @Override

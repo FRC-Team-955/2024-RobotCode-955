@@ -38,7 +38,7 @@ public class ArmIOSim extends ArmIO {
         inputs.positionRad = sim.getAngleRads();
         inputs.velocityRadPerSec = sim.getVelocityRadPerSec();
         inputs.appliedVolts = appliedVolts;
-        inputs.currentAmps = sim.getCurrentDrawAmps();
+        inputs.currentAmps = Math.abs(sim.getCurrentDrawAmps());
     }
 
     @Override
@@ -58,11 +58,6 @@ public class ArmIOSim extends ArmIO {
     @Override
     public void setPosition(double currentPositionRad) {
         sim.setState(currentPositionRad, 0);
-    }
-
-    @Override
-    public void stop() {
-        sim.setInputVoltage(0);
     }
 
     @Override

@@ -21,9 +21,6 @@ public class WheelIO {
     public void setSetpoint(double setpointVelocityRadPerSec, double ffVolts) {
     }
 
-    public void stop() {
-    }
-
     public void setBrakeMode(boolean enabled) {
     }
 

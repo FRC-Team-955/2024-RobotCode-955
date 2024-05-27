@@ -10,20 +10,16 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 
 /**
  * Module IO implementation for Talon FX drive motor controller, Talon FX turn motor controller, and
  * CANcoder
  *
- * <p>NOTE: This implementation should be used as a starting point and adapted to different hardware
- * configurations (e.g. If using an analog encoder, copy from "ModuleIOSparkMax")
- *
  * <p>To calibrate the absolute encoder offsets, point the modules straight (such that forward
  * motion on the drive motor will propel the robot forward) and copy the reported values from the
  * absolute encoders using AdvantageScope. These values are logged under
- * "/Drive/ModuleX/TurnAbsolutePositionRad"
+ * "/Inputs/Drive/ModuleX/TurnAbsolutePositionRad"
  */
 public class ModuleIOTalonFX extends ModuleIO {
     private final TalonFX driveTalon;
@@ -49,6 +45,7 @@ public class ModuleIOTalonFX extends ModuleIO {
     private final double absoluteEncoderOffsetRad;
 
     public ModuleIOTalonFX(int index) {
+        // See class level documentation comment for info on calibrating encoder offsets
         switch (index) {
             case 0 -> {
                 driveTalon = new TalonFX(0);

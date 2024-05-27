@@ -14,7 +14,6 @@ import frc.lib.subsystems.arm.ArmIO;
 import frc.lib.subsystems.arm.ArmVisualizer;
 import frc.lib.subsystems.wheel.Wheel;
 import frc.lib.subsystems.wheel.WheelIO;
-import frc.lib.util.absoluteencoder.AbsoluteEncoder;
 import frc.lib.util.absoluteencoder.AbsoluteEncoderIO;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
@@ -22,10 +21,10 @@ import org.littletonrobotics.junction.Logger;
 import static edu.wpi.first.units.Units.*;
 
 public class Intake extends SubsystemBase {
-    private static final ArmFeedforward PIVOT_FF = Constants.mode.isReal() ? new ArmFeedforward(0, /*0.36 <-- optimized*/0.44, 0) : new ArmFeedforward(0, 0.01, 0);
+    private static final ArmFeedforward PIVOT_FF = Constants.mode.isReal() ? new ArmFeedforward(0, /*0.36 <-- optimized*/0.44, 0) : new ArmFeedforward(0, 0.3, 0);
     private static final PIDConstants PIVOT_PID = Constants.mode.isReal() ? new PIDConstants(/*0.17 <-- optimized*/0.06/*, 0.003*/) : new PIDConstants(2.5, 0);
     private static final double PIVOT_GEAR_RATIO = 45;
-    private static final Measure<Angle> PIVOT_OFFSET = Radians.of(0.0);
+    private static final Measure<Angle> PIVOT_ENCODER_OFFSET = Radians.of(0.0);
     private static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-141);
     private static final Measure<Angle> PIVOT_HOVER = Degrees.of(-60);
     private static final Measure<Angle> PIVOT_HANDOFF = Degrees.of(-142);
@@ -40,9 +39,9 @@ public class Intake extends SubsystemBase {
     private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
     private final IntakeIO io;
 
-    public final Arm pivot;
+    private final Arm pivot;
     private final ArmVisualizer pivotVisualizer = new ArmVisualizer(Color.kOrange, 6, 6, 2.5);
-    public final Wheel feed;
+    private final Wheel feed;
 
     private static Intake instance;
 
@@ -58,22 +57,16 @@ public class Intake extends SubsystemBase {
         this.io = io;
 
         pivot = new Arm(
-                this,
                 "Intake/Pivot",
                 pivotIO,
                 PIVOT_FF,
                 PIVOT_PID,
                 PIVOT_GEAR_RATIO,
                 PIVOT_INITIAL_POSITION
-//                new AbsoluteEncoder(
-//                        "Intake/Pivot/AbsoluteEncoder",
-//                        pivotAbsoluteEncoderIO,
-//                        PIVOT_GEAR_RATIO,
-//                        PIVOT_OFFSET
-//                )
+//                pivotAbsoluteEncoderIO,
+//                PIVOT_OFFSET
         );
         feed = new Wheel(
-                this,
                 "Intake/Feed",
                 feedIO,
                 FEED_FF,
@@ -94,15 +87,42 @@ public class Intake extends SubsystemBase {
         Logger.recordOutput("Intake/Mechanism", pivotVisualizer.mechanism);
     }
 
+    private Command pivotSetpoint(Measure<Angle> setpoint) {
+        return startEnd(
+                () -> pivot.setSetpoint(setpoint),
+                () -> {
+                }
+        ).until(pivot::atSetpoint);
+    }
+
+    private Command feedPercent(double percent) {
+        return startEnd(
+                () -> feed.setPercent(percent),
+                feed::stop
+        );
+    }
+
     public Command pivotHover() {
-        return pivot.reachSetpointCommand(PIVOT_HOVER);
+        return pivotSetpoint(PIVOT_HOVER);
     }
 
     public Command pivotHandoff() {
-        return pivot.reachSetpointCommand(PIVOT_HANDOFF);
+        return pivotSetpoint(PIVOT_HANDOFF);
     }
 
-    public Command pivotIntake() {
-        return pivot.reachSetpointCommand(PIVOT_INTAKE);
+    private Command pivotIntake() {
+        return pivotSetpoint(PIVOT_INTAKE);
+    }
+
+    private Command feedUntilHasNote() {
+        return feedPercent(0.5).until(() -> inputs.hasNote);
+    }
+
+    public Command intake() {
+        return pivotIntake().andThen(feedUntilHasNote());
+    }
+
+    public Command feedHandoff() {
+        return feedPercent(-0.1);
     }
 }

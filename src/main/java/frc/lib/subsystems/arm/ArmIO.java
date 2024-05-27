@@ -21,9 +21,6 @@ public class ArmIO {
     public void setSetpoint(double setpointPositionRad, double ffVolts) {
     }
 
-    public void stop() {
-    }
-
     public void setPosition(double currentPositionRad) {
     }
 

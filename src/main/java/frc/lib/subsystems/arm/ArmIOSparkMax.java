@@ -49,10 +49,6 @@ public class ArmIOSparkMax extends ArmIO {
         );
     }
 
-    @Override
-    public void stop() {
-        motor.stopMotor();
-    }
 
     @Override
     public void setPosition(double currentPositionRad) {

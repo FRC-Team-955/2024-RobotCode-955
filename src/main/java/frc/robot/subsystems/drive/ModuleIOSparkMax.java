@@ -7,7 +7,6 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 
 /**
@@ -17,7 +16,7 @@ import edu.wpi.first.math.util.Units;
  * <p>To calibrate the absolute encoder offsets, point the modules straight (such that forward
  * motion on the drive motor will propel the robot forward) and copy the reported values from the
  * absolute encoders using AdvantageScope. These values are logged under
- * "/Drive/ModuleX/TurnAbsolutePositionRad"
+ * "/Inputs/Drive/ModuleX/TurnAbsolutePositionRad"
  */
 public class ModuleIOSparkMax extends ModuleIO {
     // Gear ratios for SDS MK4i L2, adjust as necessary
@@ -36,6 +35,7 @@ public class ModuleIOSparkMax extends ModuleIO {
     private final double absoluteEncoderOffsetRad;
 
     public ModuleIOSparkMax(int index) {
+        // See class level documentation comment for info on calibrating encoder offsets
         switch (index) {
             case 0 -> { // FL
                 driveSparkMax = new CANSparkMax(2, MotorType.kBrushless);
