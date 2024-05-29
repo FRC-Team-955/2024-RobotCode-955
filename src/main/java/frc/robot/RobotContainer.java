@@ -181,7 +181,12 @@ public class RobotContainer {
                 ),
                 Shooter.get().pivotShoot(),
                 Intake.get().pivotHover(),
-                Shooter.get().shootPercent(0.2, 1.0)
+                Shooter.get().shootPercent(0.2, 0.75)
+        ));
+
+        operatorController.a().toggleOnTrue(Commands.parallel(
+                Shooter.get().eject(),
+                Intake.get().eject()
         ));
 
 //        driverController.povUp().onTrue(Shooter.get().pivotHover());

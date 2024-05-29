@@ -29,6 +29,7 @@ public class Intake extends SubsystemBase {
     private static final Measure<Angle> PIVOT_HOVER = Degrees.of(-60);
     private static final Measure<Angle> PIVOT_HANDOFF = Degrees.of(-142);
     private static final Measure<Angle> PIVOT_INTAKE = Degrees.of(0);
+    private static final Measure<Angle> PIVOT_EJECT = Degrees.of(-70);
 
     private static final SimpleMotorFeedforward FEED_FF = Constants.mode.isReal() ? new SimpleMotorFeedforward(0.5, 1.2) : new SimpleMotorFeedforward(0, 0.058);
     private static final PIDConstants FEED_PID = Constants.mode.isReal() ? new PIDConstants(0, 0) : new PIDConstants(0.1, 0);
@@ -114,6 +115,10 @@ public class Intake extends SubsystemBase {
         return pivotSetpoint(PIVOT_INTAKE);
     }
 
+    private Command pivotEject() {
+        return pivotSetpoint(PIVOT_EJECT);
+    }
+
     private Command feedUntilHasNote() {
         return feedPercent(0.5).until(() -> inputs.hasNote);
     }
@@ -124,5 +129,9 @@ public class Intake extends SubsystemBase {
 
     public Command feedHandoff() {
         return feedPercent(-0.1);
+    }
+
+    public Command eject() {
+        return pivotEject().andThen(feedPercent(-0.5));
     }
 }

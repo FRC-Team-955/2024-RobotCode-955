@@ -32,6 +32,7 @@ public class Shooter extends SubsystemBase {
     private static final Measure<Angle> PIVOT_HOVER = Degrees.of(-10);
     private static final Measure<Angle> PIVOT_HANDOFF = Degrees.of(-45);
     private static final Measure<Angle> PIVOT_SHOOT = Degrees.of(0);
+    private static final Measure<Angle> PIVOT_EJECT = Degrees.of(-15);
 
     private static final SimpleMotorFeedforward FEED_FF = Constants.mode.isReal() ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
     private static final PIDConstants FEED_PID = Constants.mode.isReal() ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
@@ -162,6 +163,10 @@ public class Shooter extends SubsystemBase {
         return pivotSetpoint(PIVOT_SHOOT);
     }
 
+    private Command pivotEject() {
+        return pivotSetpoint(PIVOT_EJECT);
+    }
+
     public Command feedHandoff() {
         return feedPercent(0.2).until(this::hasNoteDebounced);
     }
@@ -172,5 +177,12 @@ public class Shooter extends SubsystemBase {
                 }).withTimeout(spinupTime),
                 feedPercent(1).until(() -> !hasNote())
         ).finallyDo(this::flywheelsStop);
+    }
+
+    public Command eject() {
+        return pivotEject().andThen(Commands.parallel(
+                startEnd(() -> flywheelsPercent(0.1), this::flywheelsStop),
+                feedPercent(1)
+        ));
     }
 }
