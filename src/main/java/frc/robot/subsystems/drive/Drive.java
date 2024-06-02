@@ -21,6 +21,8 @@ import frc.lib.util.LocalADStarAK;
 import frc.robot.Util;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
+import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 import java.util.function.DoubleSupplier;
 
@@ -52,6 +54,9 @@ public class Drive extends SubsystemBase {
             new SwerveModulePosition()
     };
     private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
+
+    public final LoggedDashboardNumber voltageDivider = new LoggedDashboardNumber("Voltage Divider", 4);
+    public final LoggedDashboardBoolean disableDriving = new LoggedDashboardBoolean("Disable Driving", false);
 
     private static Drive instance;
 
