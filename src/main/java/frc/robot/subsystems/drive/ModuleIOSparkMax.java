@@ -41,25 +41,25 @@ public class ModuleIOSparkMax extends ModuleIO {
                 driveSparkMax = new CANSparkMax(2, MotorType.kBrushless);
                 turnSparkMax = new CANSparkMax(1, MotorType.kBrushless);
                 cancoder = new CANcoder(18);
-                absoluteEncoderOffsetRad = 0.230;
+                absoluteEncoderOffsetRad = 0.209;
             }
             case 1 -> { // FR
                 driveSparkMax = new CANSparkMax(14, MotorType.kBrushless);
                 turnSparkMax = new CANSparkMax(15, MotorType.kBrushless);
                 cancoder = new CANcoder(19);
-                absoluteEncoderOffsetRad = -1.425;
+                absoluteEncoderOffsetRad = -1.417;
             }
             case 2 -> { // BL
                 driveSparkMax = new CANSparkMax(5, MotorType.kBrushless);
                 turnSparkMax = new CANSparkMax(6, MotorType.kBrushless);
                 cancoder = new CANcoder(20);
-                absoluteEncoderOffsetRad = 3.114;
+                absoluteEncoderOffsetRad = -0.020;
             }
             case 3 -> { // BR
                 driveSparkMax = new CANSparkMax(11, MotorType.kBrushless);
                 turnSparkMax = new CANSparkMax(12, MotorType.kBrushless);
                 cancoder = new CANcoder(21);
-                absoluteEncoderOffsetRad = -2.824;
+                absoluteEncoderOffsetRad = -2.882;
             }
             default -> throw new RuntimeException("unreachable");
         }
@@ -113,11 +113,11 @@ public class ModuleIOSparkMax extends ModuleIO {
 
     @Override
     public void setDriveVoltage(double volts) {
-        if (!Drive.get().disableDriving.get()) {
+//        if (!Drive.get().disableDriving.get()) {
             driveSparkMax.setVoltage(volts / Drive.get().voltageDivider.get());
-        } else {
-            driveSparkMax.stopMotor();
-        }
+//        } else {
+//            driveSparkMax.stopMotor();
+//        }
     }
 
     @Override

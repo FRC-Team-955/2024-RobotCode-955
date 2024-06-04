@@ -60,8 +60,8 @@ public class RobotContainer {
                                 new ArmIOSparkMax(7),
                                 new AbsoluteEncoderIOREVThroughBore(0),
                                 new WheelIOSparkMax(9, false, false),
-                                new WheelIOSparkMax(10, false, false),
-                                new WheelIOSparkMax(8, false, false)
+                                new WheelIOSparkMax(10, false, true),
+                                new WheelIOSparkMax(8, false, true)
                         )
                 );
             }
@@ -143,14 +143,14 @@ public class RobotContainer {
                                     Math.abs(operatorController.getLeftX()) > 0.1 ||
                                             Math.abs(operatorController.getLeftY()) > 0.1 ||
                                             Math.abs(operatorController.getRightX()) > 0.1;
-                            return override ? operatorController.getLeftY() : driverController.getLeftY();
+                            return -(override ? operatorController.getLeftY() : driverController.getLeftY());
                         },
                         () -> {
                             var override =
                                     Math.abs(operatorController.getLeftX()) > 0.1 ||
                                             Math.abs(operatorController.getLeftY()) > 0.1 ||
                                             Math.abs(operatorController.getRightX()) > 0.1;
-                            return override ? operatorController.getLeftX() : driverController.getLeftX();
+                            return -(override ? operatorController.getLeftX() : driverController.getLeftX());
                         },
                         () -> {
                             var override =
@@ -167,7 +167,7 @@ public class RobotContainer {
     }
 
     private void configureButtonBindings() {
-        operatorController.rightBumper().onTrue(Drive.get().resetRotationCommand());
+        driverController.rightBumper().onTrue(Drive.get().resetRotationCommand());
 
         driverController.a().whileTrue(Intake.get().intake());
 
@@ -181,10 +181,10 @@ public class RobotContainer {
                 ),
                 Shooter.get().pivotShoot(),
                 Intake.get().pivotHover(),
-                Shooter.get().shootPercent(0.2, 0.75)
+                Shooter.get().shootPercent(0.3, 1.0)
         ));
 
-        operatorController.a().toggleOnTrue(Commands.parallel(
+        driverController.x().toggleOnTrue(Commands.parallel(
                 Shooter.get().eject(),
                 Intake.get().eject()
         ));

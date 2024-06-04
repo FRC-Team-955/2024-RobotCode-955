@@ -38,7 +38,7 @@ public class Shooter extends SubsystemBase {
     private static final PIDConstants FEED_PID = Constants.mode.isReal() ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
     private static final double FEED_GEAR_RATIO = 3;
     private static final Measure<Velocity<Angle>> FEED_SETPOINT_TOLERANCE = RPM.of(10);
-    private static final double FEED_BEAM_BRAKE_DEBOUNCE = 0.5;
+    private static final double FEED_BEAM_BRAKE_DEBOUNCE = 0.1;
 
     private static final SimpleMotorFeedforward FLYWHEEL_FF = Constants.mode.isReal() ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
     private static final PIDConstants FLYWHEEL_PID = Constants.mode.isReal() ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
@@ -180,9 +180,12 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command eject() {
-        return pivotEject().andThen(Commands.parallel(
-                startEnd(() -> flywheelsPercent(0.1), this::flywheelsStop),
-                feedPercent(1)
-        ));
+        return pivotEject().andThen(startEnd(() -> {
+            flywheelsPercent(0.1);
+            feed.setPercent(1);
+        }, () -> {
+            flywheelsStop();
+            feed.stop();
+        }));
     }
 }
