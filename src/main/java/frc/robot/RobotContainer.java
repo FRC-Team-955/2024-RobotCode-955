@@ -14,6 +14,7 @@ import frc.lib.subsystems.wheel.WheelIO;
 import frc.lib.subsystems.wheel.WheelIOSim;
 import frc.lib.subsystems.wheel.WheelIOSparkMax;
 import frc.lib.util.CommandNintendoSwitchProController;
+import frc.lib.util.CommonMotorFlags;
 import frc.lib.util.absoluteencoder.AbsoluteEncoderIO;
 import frc.lib.util.absoluteencoder.AbsoluteEncoderIOREVThroughBore;
 import frc.lib.util.absoluteencoder.AbsoluteEncoderIOSim;
@@ -25,6 +26,8 @@ import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOReal;
 import frc.robot.subsystems.shooter.ShooterIOSim;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
+import java.util.EnumSet;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -52,16 +55,15 @@ public class RobotContainer {
                         new Intake(
                                 new IntakeIO(),
                                 new ArmIOSparkMax(3),
-                                new AbsoluteEncoderIO(),//REVThroughBore(0),
-                                new WheelIOSparkMax(16, false, true)
+                                new AbsoluteEncoderIO(),
+                                new WheelIOSparkMax(16, EnumSet.of(CommonMotorFlags.INVERTED))
                         ),
-                        new Shooter(
                                 new ShooterIOReal(6),
                                 new ArmIOSparkMax(7),
                                 new AbsoluteEncoderIOREVThroughBore(0),
-                                new WheelIOSparkMax(9, false, false),
-                                new WheelIOSparkMax(10, false, true),
-                                new WheelIOSparkMax(8, false, true)
+                                new WheelIOSparkMax(9, EnumSet.noneOf(CommonMotorFlags.class)),
+                                new WheelIOSparkMax(10, EnumSet.of(CommonMotorFlags.INVERTED)),
+                                new WheelIOSparkMax(8, EnumSet.of(CommonMotorFlags.INVERTED)
                         )
                 );
             }
