@@ -43,70 +43,65 @@ public class RobotContainer {
 
     public RobotContainer() {
         switch (Constants.mode) {
-            case REAL -> {
-                Util.registerFieldsForAutoLogOutput(
-                        new Drive(
-                                new GyroIOPigeon2(10),
-                                new ModuleIOSparkMax(0),
-                                new ModuleIOSparkMax(1),
-                                new ModuleIOSparkMax(2),
-                                new ModuleIOSparkMax(3)
-                        ),
-                        new Intake(
-                                new IntakeIO(),
-                                new ArmIOSparkMax(3),
-                                new AbsoluteEncoderIO(),
-                                new WheelIOSparkMax(16, EnumSet.of(CommonMotorFlags.INVERTED))
-                        ),
-                                new ShooterIOReal(6),
-                                new ArmIOSparkMax(7),
-                                new AbsoluteEncoderIOREVThroughBore(0),
-                                new WheelIOSparkMax(9, EnumSet.noneOf(CommonMotorFlags.class)),
-                                new WheelIOSparkMax(10, EnumSet.of(CommonMotorFlags.INVERTED)),
-                                new WheelIOSparkMax(8, EnumSet.of(CommonMotorFlags.INVERTED)
-                        )
-                );
-            }
+            case REAL -> Util.registerFieldsForAutoLogOutput(
+                    new Drive(
+                            new GyroIOPigeon2(10),
+                            new ModuleIOSparkMax(0),
+                            new ModuleIOSparkMax(1),
+                            new ModuleIOSparkMax(2),
+                            new ModuleIOSparkMax(3)
+                    ),
+                    new Intake(
+                            new IntakeIO(),
+                            new ArmIOSparkMax(3),
+                            new AbsoluteEncoderIO(),
+                            new WheelIOSparkMax(16, EnumSet.of(CommonMotorFlags.INVERTED))
+                    ),
+                    new Shooter(
+                            new ShooterIOReal(6),
+                            new ArmIOSparkMax(7),
+                            new AbsoluteEncoderIOREVThroughBore(0),
+                            new WheelIOSparkMax(9, EnumSet.noneOf(CommonMotorFlags.class)),
+                            new WheelIOSparkMax(10, EnumSet.of(CommonMotorFlags.INVERTED)),
+                            new WheelIOSparkMax(8, EnumSet.of(CommonMotorFlags.INVERTED))
+                    )
+            );
 
-            case SIM -> {
-                Util.registerFieldsForAutoLogOutput(
-                        new Drive(
-                                new GyroIO(),
-                                new ModuleIOSim(),
-                                new ModuleIOSim(),
-                                new ModuleIOSim(),
-                                new ModuleIOSim()
-                        ),
-                        new Intake(
-                                new IntakeIO(),
-                                new ArmIOSim(DCMotor.getNEO(1), 0.3, 0.045),
-                                new AbsoluteEncoderIOSim(),
-                                new WheelIOSim(DCMotor.getNEO(1))
-                        ),
-                        new Shooter(
-                                new ShooterIOSim(),
-                                new ArmIOSim(DCMotor.getNEO(1), 0.4, 0.083),
-                                new AbsoluteEncoderIOSim(),
-                                new WheelIOSim(DCMotor.getNEO(1)),
-                                new WheelIOSim(DCMotor.getNEO(1)),
-                                new WheelIOSim(DCMotor.getNEO(1))
-                        )
-                );
-            }
+            case SIM -> Util.registerFieldsForAutoLogOutput(
+                    new Drive(
+                            new GyroIO(),
+                            new ModuleIOSim(),
+                            new ModuleIOSim(),
+                            new ModuleIOSim(),
+                            new ModuleIOSim()
+                    ),
+                    new Intake(
+                            new IntakeIO(),
+                            new ArmIOSim(DCMotor.getNEO(1), 0.3, 0.045),
+                            new AbsoluteEncoderIOSim(),
+                            new WheelIOSim(DCMotor.getNEO(1))
+                    ),
+                    new Shooter(
+                            new ShooterIOSim(),
+                            new ArmIOSim(DCMotor.getNEO(1), 0.4, 0.083),
+                            new AbsoluteEncoderIOSim(),
+                            new WheelIOSim(DCMotor.getNEO(1)),
+                            new WheelIOSim(DCMotor.getNEO(1)),
+                            new WheelIOSim(DCMotor.getNEO(1))
+                    )
+            );
 
-            case REPLAY -> {
-                Util.registerFieldsForAutoLogOutput(
-                        new Drive(
-                                new GyroIO(),
-                                new ModuleIO(),
-                                new ModuleIO(),
-                                new ModuleIO(),
-                                new ModuleIO()
-                        ),
-                        new Intake(new IntakeIO(), new ArmIO(), new AbsoluteEncoderIO(), new WheelIO()),
-                        new Shooter(new ShooterIO(), new ArmIO(), new AbsoluteEncoderIO(), new WheelIO(), new WheelIO(), new WheelIO())
-                );
-            }
+            case REPLAY -> Util.registerFieldsForAutoLogOutput(
+                    new Drive(
+                            new GyroIO(),
+                            new ModuleIO(),
+                            new ModuleIO(),
+                            new ModuleIO(),
+                            new ModuleIO()
+                    ),
+                    new Intake(new IntakeIO(), new ArmIO(), new AbsoluteEncoderIO(), new WheelIO()),
+                    new Shooter(new ShooterIO(), new ArmIO(), new AbsoluteEncoderIO(), new WheelIO(), new WheelIO(), new WheelIO())
+            );
         }
 
         // Set up auto routines
