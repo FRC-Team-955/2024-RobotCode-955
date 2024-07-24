@@ -1,6 +1,6 @@
 package frc.lib.util;
 
-public enum CommonMotorFlags {
+public enum MotorFlags {
     /**
      * If specified, the motor's default idle mode will be set to break mode.
      * If not specified, the motor's default idle mode will be set to coast mode.

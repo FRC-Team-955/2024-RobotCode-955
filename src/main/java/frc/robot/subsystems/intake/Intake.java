@@ -21,12 +21,13 @@ import org.littletonrobotics.junction.Logger;
 import static edu.wpi.first.units.Units.*;
 
 public class Intake extends SubsystemBase {
-    private static final ArmFeedforward PIVOT_FF = Constants.mode.isReal() ? new ArmFeedforward(0, /*0.36 <-- optimized*/0.44, 0) : new ArmFeedforward(0, 0.3, 0);
-    private static final PIDConstants PIVOT_PID = Constants.mode.isReal() ? new PIDConstants(/*0.17 <-- optimized*/0.06/*, 0.003*/) : new PIDConstants(2.5, 0);
+    private static final ArmFeedforward PIVOT_FF = Constants.mode.isReal() ? new ArmFeedforward(0, 0.6, 0) : new ArmFeedforward(0, 0.3, 0);
+    private static final PIDConstants PIVOT_PID = Constants.mode.isReal() ? new PIDConstants(0.09, 0.003) : new PIDConstants(2.5, 0);
     private static final double PIVOT_GEAR_RATIO = 45;
     private static final Measure<Angle> PIVOT_ENCODER_OFFSET = Radians.of(0.0);
     private static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-141);
-    private static final Measure<Angle> PIVOT_HOVER = Degrees.of(-60);
+    private static final Measure<Angle> PIVOT_CLEAR_OF_SHOOTER = Degrees.of(-130);
+    private static final Measure<Angle> PIVOT_HOVER = Degrees.of(-120);
     private static final Measure<Angle> PIVOT_HANDOFF = Degrees.of(-142);
     private static final Measure<Angle> PIVOT_INTAKE = Degrees.of(0);
     private static final Measure<Angle> PIVOT_EJECT = Degrees.of(-70);
@@ -86,6 +87,10 @@ public class Intake extends SubsystemBase {
 
         pivotVisualizer.update(pivot);
         Logger.recordOutput("Intake/Mechanism", pivotVisualizer.mechanism);
+    }
+
+    public boolean isClearOfShooter() {
+        return pivot.getPosition().gte(PIVOT_CLEAR_OF_SHOOTER);
     }
 
     private Command pivotSetpoint(Measure<Angle> setpoint) {

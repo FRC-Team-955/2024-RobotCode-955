@@ -3,7 +3,7 @@ package frc.lib.subsystems.wheel;
 import com.pathplanner.lib.util.PIDConstants;
 import com.revrobotics.*;
 import edu.wpi.first.math.util.Units;
-import frc.lib.util.CommonMotorFlags;
+import frc.lib.util.MotorFlags;
 
 import java.util.EnumSet;
 
@@ -14,14 +14,14 @@ public class WheelIOSparkMax extends WheelIO {
 
     private double gearRatio;
 
-    public WheelIOSparkMax(int canID, EnumSet<CommonMotorFlags> flags) {
+    public WheelIOSparkMax(int canID, EnumSet<MotorFlags> flags) {
         motor = new CANSparkMax(canID, CANSparkLowLevel.MotorType.kBrushless);
         motor.restoreFactoryDefaults();
-        motor.setIdleMode(flags.contains(CommonMotorFlags.IDLE_MODE_BRAKE) ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast);
+        motor.setIdleMode(flags.contains(MotorFlags.IDLE_MODE_BRAKE) ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast);
         motor.setCANTimeout(250);
         motor.enableVoltageCompensation(12.0);
         motor.setSmartCurrentLimit(40);
-        motor.setInverted(flags.contains(CommonMotorFlags.INVERTED));
+        motor.setInverted(flags.contains(MotorFlags.INVERTED));
         motor.burnFlash();
 
         encoder = motor.getEncoder();

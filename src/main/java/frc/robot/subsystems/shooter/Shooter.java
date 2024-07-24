@@ -24,12 +24,13 @@ import org.littletonrobotics.junction.Logger;
 import static edu.wpi.first.units.Units.*;
 
 public class Shooter extends SubsystemBase {
-    private static final ArmFeedforward PIVOT_FF = Constants.mode.isReal() ? new ArmFeedforward(0, 0.59, 0) : new ArmFeedforward(0, 0.5, 0);
+    private static final ArmFeedforward PIVOT_FF = Constants.mode.isReal() ? new ArmFeedforward(0, 0.8, 0) : new ArmFeedforward(0, 0.5, 0);
     private static final PIDConstants PIVOT_PID = Constants.mode.isReal() ? new PIDConstants(0.1/*, 0.011*/) : new PIDConstants(2.5, 0);
     private static final double PIVOT_GEAR_RATIO = 40;
     private static final Measure<Angle> PIVOT_ENCODER_OFFSET = Radians.of(0.0);
     private static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-90);
-    private static final Measure<Angle> PIVOT_HOVER = Degrees.of(-10);
+    private static final Measure<Angle> PIVOT_HOVER = Degrees.of(-90);
+    private static final Measure<Angle> PIVOT_WAIT_FOR_INTAKE = Degrees.of(-40);
     private static final Measure<Angle> PIVOT_HANDOFF = Degrees.of(-45);
     private static final Measure<Angle> PIVOT_SHOOT = Degrees.of(0);
     private static final Measure<Angle> PIVOT_EJECT = Degrees.of(-15);
@@ -126,6 +127,10 @@ public class Shooter extends SubsystemBase {
         return hasNoteDebouncer.calculate(inputs.hasNote);
     }
 
+    public boolean alreadyAtHover() {
+        return pivot.getPosition().lte(PIVOT_HOVER.plus(Degrees.of(10)));
+    }
+
     private Command pivotSetpoint(Measure<Angle> setpoint) {
         return startEnd(
                 () -> pivot.setSetpoint(setpoint),
@@ -153,6 +158,10 @@ public class Shooter extends SubsystemBase {
 
     public Command pivotHover() {
         return pivotSetpoint(PIVOT_HOVER);
+    }
+
+    public Command pivotWaitForIntake() {
+        return pivotSetpoint(PIVOT_WAIT_FOR_INTAKE);
     }
 
     public Command pivotHandoff() {

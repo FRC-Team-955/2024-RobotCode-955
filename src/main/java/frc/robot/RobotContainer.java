@@ -14,7 +14,7 @@ import frc.lib.subsystems.wheel.WheelIO;
 import frc.lib.subsystems.wheel.WheelIOSim;
 import frc.lib.subsystems.wheel.WheelIOSparkMax;
 import frc.lib.util.CommandNintendoSwitchProController;
-import frc.lib.util.CommonMotorFlags;
+import frc.lib.util.MotorFlags;
 import frc.lib.util.absoluteencoder.AbsoluteEncoderIO;
 import frc.lib.util.absoluteencoder.AbsoluteEncoderIOREVThroughBore;
 import frc.lib.util.absoluteencoder.AbsoluteEncoderIOSim;
@@ -55,15 +55,15 @@ public class RobotContainer {
                             new IntakeIO(),
                             new ArmIOSparkMax(3),
                             new AbsoluteEncoderIO(),
-                            new WheelIOSparkMax(16, EnumSet.of(CommonMotorFlags.INVERTED))
+                            new WheelIOSparkMax(16, EnumSet.of(MotorFlags.INVERTED))
                     ),
                     new Shooter(
                             new ShooterIOReal(6),
                             new ArmIOSparkMax(7),
                             new AbsoluteEncoderIOREVThroughBore(0),
-                            new WheelIOSparkMax(9, EnumSet.noneOf(CommonMotorFlags.class)),
-                            new WheelIOSparkMax(10, EnumSet.of(CommonMotorFlags.INVERTED)),
-                            new WheelIOSparkMax(8, EnumSet.of(CommonMotorFlags.INVERTED))
+                            new WheelIOSparkMax(9, EnumSet.noneOf(MotorFlags.class)),
+                            new WheelIOSparkMax(10, EnumSet.of(MotorFlags.INVERTED)),
+                            new WheelIOSparkMax(8, EnumSet.of(MotorFlags.INVERTED))
                     )
             );
 
@@ -160,7 +160,11 @@ public class RobotContainer {
         );
 
         Intake.get().setDefaultCommand(Intake.get().pivotHover());
-        Shooter.get().setDefaultCommand(Shooter.get().pivotHover());
+        Shooter.get().setDefaultCommand(Commands.either(
+                Shooter.get().pivotHover(),
+                Shooter.get().pivotWaitForIntake(),
+                () -> Intake.get().isClearOfShooter() || Shooter.get().alreadyAtHover()
+        ));
     }
 
     private void configureButtonBindings() {
@@ -169,7 +173,10 @@ public class RobotContainer {
         driverController.a().whileTrue(Intake.get().intake());
 
         driverController.b().toggleOnTrue(Commands.sequence(
-                Shooter.get().pivotHover(),
+                Commands.deadline(
+                        Shooter.get().pivotWaitForIntake(),
+                        Intake.get().pivotHover()
+                ),
                 Intake.get().pivotHandoff(),
                 Shooter.get().pivotHandoff(),
                 Commands.race(
@@ -178,7 +185,7 @@ public class RobotContainer {
                 ),
                 Shooter.get().pivotShoot(),
                 Intake.get().pivotHover(),
-                Shooter.get().shootPercent(0.3, 1.0)
+                Shooter.get().shootPercent(0.3, 0.5)
         ));
 
         driverController.x().toggleOnTrue(Commands.parallel(
