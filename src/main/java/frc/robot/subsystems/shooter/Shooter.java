@@ -20,6 +20,7 @@ import frc.lib.util.absoluteencoder.AbsoluteEncoderIO;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -32,7 +33,8 @@ public class Shooter extends SubsystemBase {
     private static final Measure<Angle> PIVOT_HOVER = Degrees.of(-90);
     private static final Measure<Angle> PIVOT_WAIT_FOR_INTAKE = Degrees.of(-40);
     private static final Measure<Angle> PIVOT_HANDOFF = Degrees.of(-45);
-    private static final Measure<Angle> PIVOT_SHOOT = Degrees.of(0);
+    private static final LoggedDashboardNumber PIVOT_SHOOT = new LoggedDashboardNumber("Shooter Pivot Shoot", 0);
+//    private static final Measure<Angle> PIVOT_SHOOT = Degrees.of(0);
     private static final Measure<Angle> PIVOT_EJECT = Degrees.of(-15);
 
     private static final SimpleMotorFeedforward FEED_FF = Constants.mode.isReal() ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
@@ -169,7 +171,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command pivotShoot() {
-        return pivotSetpoint(PIVOT_SHOOT);
+        return pivotSetpoint(Degrees.of(PIVOT_SHOOT.get()));
     }
 
     private Command pivotEject() {
