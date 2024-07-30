@@ -113,11 +113,11 @@ public class ModuleIOSparkMax extends ModuleIO {
 
     @Override
     public void setDriveVoltage(double volts) {
-//        if (!Drive.get().disableDriving.get()) {
+        if (!Drive.get().disableDriving.get()) {
             driveSparkMax.setVoltage(volts / Drive.get().voltageDivider.get());
-//        } else {
-//            driveSparkMax.stopMotor();
-//        }
+        } else {
+            driveSparkMax.stopMotor();
+        }
     }
 
     @Override

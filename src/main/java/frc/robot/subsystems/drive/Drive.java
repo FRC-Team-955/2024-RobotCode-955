@@ -17,6 +17,9 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.lib.swerve.SwerveKinematicLimits;
+import frc.lib.swerve.SwerveSetpoint;
+import frc.lib.swerve.SwerveSetpointGenerator;
 import frc.lib.util.LocalADStarAK;
 import frc.robot.Util;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -35,6 +38,17 @@ public class Drive extends SubsystemBase {
     private static final double DRIVE_BASE_RADIUS = Math.hypot(TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0);
     private static final double MAX_ANGULAR_SPEED = MAX_LINEAR_SPEED / DRIVE_BASE_RADIUS;
     private static final double JOYSTICK_DRIVE_DEADBAND = 0.1;
+    private static final Translation2d[] MODULE_TRANSLATIONS = new Translation2d[]{
+            new Translation2d(TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0),
+            new Translation2d(TRACK_WIDTH_X / 2.0, -TRACK_WIDTH_Y / 2.0),
+            new Translation2d(-TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0),
+            new Translation2d(-TRACK_WIDTH_X / 2.0, -TRACK_WIDTH_Y / 2.0)
+    };
+    private static final SwerveKinematicLimits KINEMATIC_LIMITS = new SwerveKinematicLimits(
+            MAX_LINEAR_SPEED,
+            15.0,
+            MAX_ANGULAR_SPEED
+    );
 
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
@@ -44,7 +58,7 @@ public class Drive extends SubsystemBase {
     private final Module[] modules = new Module[4];
     private final SysIdRoutine sysId;
 
-    private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
+    private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(MODULE_TRANSLATIONS);
     private Rotation2d rawGyroRotation = new Rotation2d();
     // For delta tracking
     private final SwerveModulePosition[] lastModulePositions = new SwerveModulePosition[]{
@@ -54,9 +68,17 @@ public class Drive extends SubsystemBase {
             new SwerveModulePosition()
     };
     private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
+    private final SwerveSetpointGenerator setpointGenerator = new SwerveSetpointGenerator(kinematics, MODULE_TRANSLATIONS);
+    private SwerveSetpoint setpoint = new SwerveSetpoint(new ChassisSpeeds(), new SwerveModuleState[]{
+            new SwerveModuleState(),
+            new SwerveModuleState(),
+            new SwerveModuleState(),
+            new SwerveModuleState()
+    });
 
     public final LoggedDashboardNumber voltageDivider = new LoggedDashboardNumber("Voltage Divider", 4);
     public final LoggedDashboardBoolean disableDriving = new LoggedDashboardBoolean("Disable Driving", false);
+    public final LoggedDashboardBoolean use254Optimization = new LoggedDashboardBoolean("Use 254's Swerve Optimizations", true);
 
     private static Drive instance;
 
@@ -162,19 +184,24 @@ public class Drive extends SubsystemBase {
      */
     public void runVelocity(ChassisSpeeds speeds) {
         // Calculate module setpoints
-        ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
-        SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, MAX_LINEAR_SPEED);
+        if (use254Optimization.get()) {
+            setpoint = setpointGenerator.generateSetpoint(KINEMATIC_LIMITS, setpoint, speeds, 0.02);
+        } else {
+            ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
+            SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
+            SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, MAX_LINEAR_SPEED);
+            setpoint = new SwerveSetpoint(discreteSpeeds, setpointStates);
+        }
 
         // Send setpoints to modules
         SwerveModuleState[] optimizedSetpointStates = new SwerveModuleState[4];
         for (int i = 0; i < 4; i++) {
             // The module returns the optimized state, useful for logging
-            optimizedSetpointStates[i] = modules[i].runSetpoint(setpointStates[i]);
+            optimizedSetpointStates[i] = modules[i].runSetpoint(setpoint.moduleStates()[i]);
         }
 
         // Log setpoint states
-        Logger.recordOutput("Drive/SwerveStates/Setpoints", setpointStates);
+        Logger.recordOutput("Drive/SwerveStates/Setpoints", setpoint.moduleStates());
         Logger.recordOutput("Drive/SwerveStates/SetpointsOptimized", optimizedSetpointStates);
     }
 
@@ -192,7 +219,7 @@ public class Drive extends SubsystemBase {
     private void stopWithX() {
         Rotation2d[] headings = new Rotation2d[4];
         for (int i = 0; i < 4; i++) {
-            headings[i] = getModuleTranslations()[i].getAngle();
+            headings[i] = MODULE_TRANSLATIONS[i].getAngle();
         }
         kinematics.resetHeadings(headings);
         stop();
@@ -283,18 +310,6 @@ public class Drive extends SubsystemBase {
      */
     public double getMaxAngularSpeedRadPerSec() {
         return MAX_ANGULAR_SPEED;
-    }
-
-    /**
-     * Returns an array of module translations.
-     */
-    public static Translation2d[] getModuleTranslations() {
-        return new Translation2d[]{
-                new Translation2d(TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0),
-                new Translation2d(TRACK_WIDTH_X / 2.0, -TRACK_WIDTH_Y / 2.0),
-                new Translation2d(-TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0),
-                new Translation2d(-TRACK_WIDTH_X / 2.0, -TRACK_WIDTH_Y / 2.0)
-        };
     }
 
     public Command stopWithXCommand() {
