@@ -26,6 +26,7 @@ import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOReal;
 import frc.robot.subsystems.shooter.ShooterIOSim;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 import java.util.EnumSet;
 
@@ -168,26 +169,22 @@ public class RobotContainer {
     }
 
     private void configureButtonBindings() {
-        driverController.rightBumper().onTrue(Drive.get().resetRotationCommand());
+        driverController.a().onTrue(Drive.get().resetRotationCommand());
 
-        driverController.a().whileTrue(Intake.get().intake());
+        driverController.leftBumper().whileTrue(Intake.get().intake());
 
-        var shootPercent = new LoggedDashboardNumber("Shoot Percent", 0.3);
-        var shootSpinupTime = new LoggedDashboardNumber("Shoot Spinup Time", 0.5);
-        driverController.b().toggleOnTrue(Commands.sequence(
-                Commands.deadline(
-                        Shooter.get().pivotWaitForIntake(),
-                        Intake.get().pivotHover()
-                ),
+        driverController.rightBumper().toggleOnTrue(Commands.sequence(
+                Shooter.get().pivotWaitForIntake(),
                 Intake.get().pivotHandoff(),
                 Shooter.get().pivotHandoff(),
                 Commands.race(
                         Intake.get().feedHandoff(),
                         Shooter.get().feedHandoff()
                 ),
-                Shooter.get().pivotShoot(),
+                Shooter.get().pivotWaitForIntake(),
                 Intake.get().pivotHover(),
-                Commands.deferredProxy(() -> Shooter.get().shootPercent(shootPercent.get(), shootSpinupTime.get()))
+                Shooter.get().pivotShoot(),
+                Shooter.get().shootPercent(0.5, 0.6)
         ));
 
         driverController.x().toggleOnTrue(Commands.parallel(
