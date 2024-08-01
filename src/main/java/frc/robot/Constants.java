@@ -47,7 +47,7 @@ public final class Constants {
         }
 
         public boolean isSim() {
-            return this == REAL;
+            return this == SIM;
         }
     }
 }
