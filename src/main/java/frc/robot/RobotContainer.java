@@ -172,6 +172,8 @@ public class RobotContainer {
 
         driverController.a().whileTrue(Intake.get().intake());
 
+        var shootPercent = new LoggedDashboardNumber("Shoot Percent", 0.3);
+        var shootSpinupTime = new LoggedDashboardNumber("Shoot Spinup Time", 0.5);
         driverController.b().toggleOnTrue(Commands.sequence(
                 Commands.deadline(
                         Shooter.get().pivotWaitForIntake(),
@@ -185,7 +187,7 @@ public class RobotContainer {
                 ),
                 Shooter.get().pivotShoot(),
                 Intake.get().pivotHover(),
-                Shooter.get().shootPercent(0.3, 0.5)
+                Commands.deferredProxy(() -> Shooter.get().shootPercent(shootPercent.get(), shootSpinupTime.get()))
         ));
 
         driverController.x().toggleOnTrue(Commands.parallel(
