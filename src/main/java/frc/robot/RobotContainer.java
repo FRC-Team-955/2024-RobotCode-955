@@ -28,6 +28,7 @@ import frc.robot.subsystems.shooter.ShooterIOSim;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 
 /**
@@ -40,102 +41,128 @@ public class RobotContainer {
     private final CommandXboxController driverController = Constants.Simulation.useNintendoSwitchProController ? new CommandNintendoSwitchProController(0) : new CommandXboxController(0);
     private final CommandXboxController operatorController = Constants.Simulation.useNintendoSwitchProController ? new CommandNintendoSwitchProController(1) : new CommandXboxController(1);
 
-    private final LoggedDashboardChooser<Command> autoChooser;
+    private final LoggedDashboardChooser<Command> autoChooser = new LoggedDashboardChooser<>("Auto Choices"); //AutoBuilder.buildAutoChooser());
+
+    /* Subsystems */
+
+    private Drive drive;
+    private Intake intake;
+    private Shooter shooter;
 
     public RobotContainer() {
         switch (Constants.mode) {
-            case REAL -> Util.registerFieldsForAutoLogOutput(
-                    new Drive(
-                            new GyroIOPigeon2(10),
-                            new ModuleIOSparkMax(0),
-                            new ModuleIOSparkMax(1),
-                            new ModuleIOSparkMax(2),
-                            new ModuleIOSparkMax(3)
-                    ),
-                    new Intake(
-                            new IntakeIO(),
-                            new ArmIOSparkMax(3),
-                            new AbsoluteEncoderIO(),
-                            new WheelIOSparkMax(16, EnumSet.of(MotorFlags.INVERTED))
-                    ),
-                    new Shooter(
-                            new ShooterIOReal(6),
-                            new ArmIOSparkMax(7),
-                            new AbsoluteEncoderIOREVThroughBore(0),
-                            new WheelIOSparkMax(9, EnumSet.noneOf(MotorFlags.class)),
-                            new WheelIOSparkMax(10, EnumSet.of(MotorFlags.INVERTED)),
-                            new WheelIOSparkMax(8, EnumSet.of(MotorFlags.INVERTED))
-                    )
-            );
+            case REAL -> {
+                drive = new Drive(
+                        new GyroIOPigeon2(10),
+                        new ModuleIOSparkMax(0),
+                        new ModuleIOSparkMax(1),
+                        new ModuleIOSparkMax(2),
+                        new ModuleIOSparkMax(3)
+                );
+                intake = new Intake(
+                        new IntakeIO(),
+                        new ArmIOSparkMax(3),
+                        new AbsoluteEncoderIO(),
+                        new WheelIOSparkMax(16, EnumSet.of(MotorFlags.INVERTED))
+                );
+                shooter = new Shooter(
+                        new ShooterIOReal(6),
+                        new ArmIOSparkMax(7),
+                        new AbsoluteEncoderIOREVThroughBore(0),
+                        new WheelIOSparkMax(9, EnumSet.noneOf(MotorFlags.class)),
+                        new WheelIOSparkMax(10, EnumSet.of(MotorFlags.INVERTED)),
+                        new WheelIOSparkMax(8, EnumSet.of(MotorFlags.INVERTED))
+                );
+            }
 
-            case SIM -> Util.registerFieldsForAutoLogOutput(
-                    new Drive(
-                            new GyroIO(),
-                            new ModuleIOSim(),
-                            new ModuleIOSim(),
-                            new ModuleIOSim(),
-                            new ModuleIOSim()
-                    ),
-                    new Intake(
-                            new IntakeIO(),
-                            new ArmIOSim(DCMotor.getNEO(1), 0.3, 0.045),
-                            new AbsoluteEncoderIOSim(),
-                            new WheelIOSim(DCMotor.getNEO(1))
-                    ),
-                    new Shooter(
-                            new ShooterIOSim(),
-                            new ArmIOSim(DCMotor.getNEO(1), 0.4, 0.083),
-                            new AbsoluteEncoderIOSim(),
-                            new WheelIOSim(DCMotor.getNEO(1)),
-                            new WheelIOSim(DCMotor.getNEO(1)),
-                            new WheelIOSim(DCMotor.getNEO(1))
-                    )
-            );
+            case SIM -> {
+                drive = new Drive(
+                        new GyroIO(),
+                        new ModuleIOSim(),
+                        new ModuleIOSim(),
+                        new ModuleIOSim(),
+                        new ModuleIOSim()
+                );
+                intake = new Intake(
+                        new IntakeIO(),
+                        new ArmIOSim(DCMotor.getNEO(1), 0.3, 0.045),
+                        new AbsoluteEncoderIOSim(),
+                        new WheelIOSim(DCMotor.getNEO(1))
+                );
+                shooter = new Shooter(
+                        new ShooterIOSim(),
+                        new ArmIOSim(DCMotor.getNEO(1), 0.4, 0.083),
+                        new AbsoluteEncoderIOSim(),
+                        new WheelIOSim(DCMotor.getNEO(1)),
+                        new WheelIOSim(DCMotor.getNEO(1)),
+                        new WheelIOSim(DCMotor.getNEO(1))
+                );
+            }
 
-            case REPLAY -> Util.registerFieldsForAutoLogOutput(
-                    new Drive(
-                            new GyroIO(),
-                            new ModuleIO(),
-                            new ModuleIO(),
-                            new ModuleIO(),
-                            new ModuleIO()
-                    ),
-                    new Intake(new IntakeIO(), new ArmIO(), new AbsoluteEncoderIO(), new WheelIO()),
-                    new Shooter(new ShooterIO(), new ArmIO(), new AbsoluteEncoderIO(), new WheelIO(), new WheelIO(), new WheelIO())
-            );
+            case REPLAY -> {
+                drive = new Drive(
+                        new GyroIO(),
+                        new ModuleIO(),
+                        new ModuleIO(),
+                        new ModuleIO(),
+                        new ModuleIO()
+                );
+                intake = new Intake(new IntakeIO(), new ArmIO(), new AbsoluteEncoderIO(), new WheelIO());
+                shooter = new Shooter(new ShooterIO(), new ArmIO(), new AbsoluteEncoderIO(), new WheelIO(), new WheelIO(), new WheelIO());
+            }
         }
 
-        // Set up auto routines
-//        NamedCommands.registerCommand("Run Flywheel", Flywheel.get().run());
-        autoChooser = new LoggedDashboardChooser<>("Auto Choices"); //AutoBuilder.buildAutoChooser());
+        // Check fields and warn if subsystems are uninitialized
+        for (var field : getClass().getDeclaredFields()) {
+            try {
+                if (field.get(this) == null) {
+                    var msg = "RobotContainer." + field.getName() + " is null. If the field is a subsystem please fix it";
+                    if (Constants.mode.isSim()) {
+                        throw new RuntimeException(msg);
+                    } else {
+                        for (int i = 0; i < 3; i++) {
+                            // Without the i the driver station will recognize duplicate messages
+                            DriverStation.reportError("(" + (i + 1) + ") " + msg, false);
+                        }
+                    }
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
-        // Set up SysId routines
-        autoChooser.addOption(
-                "Drive SysId (Quasistatic Forward)",
-                Drive.get().sysIdQuasistatic(SysIdRoutine.Direction.kForward)
-        );
-        autoChooser.addOption(
-                "Drive SysId (Quasistatic Reverse)",
-                Drive.get().sysIdQuasistatic(SysIdRoutine.Direction.kReverse)
-        );
-        autoChooser.addOption(
-                "Drive SysId (Dynamic Forward)",
-                Drive.get().sysIdDynamic(SysIdRoutine.Direction.kForward)
-        );
-        autoChooser.addOption(
-                "Drive SysId (Dynamic Reverse)",
-                Drive.get().sysIdDynamic(SysIdRoutine.Direction.kReverse)
-        );
-
+        addAutos();
         setDefaultCommands();
         configureButtonBindings();
 
         SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
     }
 
+    private void addAutos() {
+//        NamedCommands.registerCommand("Run Flywheel", Flywheel.get().run());
+
+        // Set up SysId routines
+        autoChooser.addOption(
+                "Drive SysId (Quasistatic Forward)",
+                drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
+        );
+        autoChooser.addOption(
+                "Drive SysId (Quasistatic Reverse)",
+                drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse)
+        );
+        autoChooser.addOption(
+                "Drive SysId (Dynamic Forward)",
+                drive.sysIdDynamic(SysIdRoutine.Direction.kForward)
+        );
+        autoChooser.addOption(
+                "Drive SysId (Dynamic Reverse)",
+                drive.sysIdDynamic(SysIdRoutine.Direction.kReverse)
+        );
+    }
+
     private void setDefaultCommands() {
-        Drive.get().setDefaultCommand(
-                Drive.get().joystickDrive(
+        drive.setDefaultCommand(
+                drive.joystickDrive(
                         () -> {
                             var override =
                                     Math.abs(operatorController.getLeftX()) > 0.1 ||
@@ -160,49 +187,52 @@ public class RobotContainer {
                 )
         );
 
-        Intake.get().setDefaultCommand(Intake.get().pivotHover());
-        Shooter.get().setDefaultCommand(Commands.either(
-                Shooter.get().pivotHover(),
-                Shooter.get().pivotWaitForIntake(),
-                () -> Intake.get().isClearOfShooter() || Shooter.get().alreadyAtHover()
+        intake.setDefaultCommand(intake.pivotHover());
+        shooter.setDefaultCommand(Commands.either(
+                shooter.pivotHover(),
+                shooter.pivotWaitForIntake(),
+                () -> intake.isClearOfShooter() || shooter.alreadyAtHover()
         ));
     }
 
-    private void configureButtonBindings() {
-        driverController.a().onTrue(Drive.get().resetRotationCommand());
+    private final LoggedDashboardNumber shootPercent = new LoggedDashboardNumber("Shoot Percent", 0.3);
+    private final LoggedDashboardNumber shootSpinupTime = new LoggedDashboardNumber("Shoot Spinup Time", 0.5);
 
-        driverController.leftBumper().whileTrue(Intake.get().intake());
+    private void configureButtonBindings() {
+        driverController.a().onTrue(drive.resetRotationCommand());
+
+        driverController.leftBumper().whileTrue(intake.intake());
 
         driverController.rightBumper().toggleOnTrue(Commands.sequence(
-                Shooter.get().pivotWaitForIntake(),
-                Intake.get().pivotHandoff(),
-                Shooter.get().pivotHandoff(),
+                shooter.pivotWaitForIntake(),
+                intake.pivotHandoff(),
+                shooter.pivotHandoff(),
                 Commands.race(
-                        Intake.get().feedHandoff(),
-                        Shooter.get().feedHandoff()
+                        intake.feedHandoff(),
+                        shooter.feedHandoff()
                 ),
-                Shooter.get().pivotWaitForIntake(),
-                Intake.get().pivotHover(),
-                Shooter.get().pivotShoot(),
-                Shooter.get().shootPercent(0.5, 0.6)
+                shooter.pivotWaitForIntake(),
+                intake.pivotHover(),
+                shooter.pivotShoot(),
+                shooter.shootPercent(0.5, 0.6)
         ));
 
         driverController.x().toggleOnTrue(Commands.parallel(
-                Shooter.get().eject(),
-                Intake.get().eject()
+                shooter.eject(),
+                intake.eject()
         ));
 
-//        driverController.povUp().onTrue(Shooter.get().pivotHover());
-//        driverController.povRight().onTrue(Shooter.get().pivotHandoff());
-////        controller.povDown().onTrue(Shooter.get().pivotShoot());
+//        driverController.povUp().onTrue(shooter.pivotHover());
+//        driverController.povRight().onTrue(shooter.pivotHandoff());
+////        controller.povDown().onTrue(shooter.pivotShoot());
 //
-//        driverController.a().onTrue(Intake.get().pivotHover());
-//        driverController.b().onTrue(Intake.get().pivotHandoff());
-////        controller.y().onTrue(Intake.get().pivotIntake());
+//        driverController.a().onTrue(intake.pivotHover());
+//        driverController.b().onTrue(intake.pivotHandoff());
+////        controller.y().onTrue(intake.pivotIntake());
 //
-//        driverController.y().toggleOnTrue(Intake.get().feed.setPercentCommand(0.3));
-//        driverController.povLeft().toggleOnTrue(Intake.get().feed.setPercentCommand(-0.1));
-//        driverController.povDown().toggleOnTrue(Shooter.get().feed.setPercentCommand(0.2));
+//        driverController.y().toggleOnTrue(intake.feed.setPercentCommand(0.3));
+//        driverController.povLeft().toggleOnTrue(intake.feed.setPercentCommand(-0.1));
+//        driverController.povDown().toggleOnTrue(shooter.feed.setPercentCommand(0.2));
     }
 
     public Command getAutonomousCommand() {
