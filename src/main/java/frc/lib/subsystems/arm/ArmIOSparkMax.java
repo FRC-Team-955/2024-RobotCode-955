@@ -67,6 +67,7 @@ public class ArmIOSparkMax extends ArmIO {
         pid.setD(pidConstants.kD);
         pid.setIZone(pidConstants.iZone);
         pid.setFF(0);
+        motor.burnFlash();
     }
 
     @Override
