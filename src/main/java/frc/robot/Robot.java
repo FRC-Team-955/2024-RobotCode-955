@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import org.littletonrobotics.junction.AutoLogOutputManager;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -49,6 +50,14 @@ public class Robot extends LoggedRobot {
      */
     @Override
     public void robotInit() {
+        // https://github.com/Mechanical-Advantage/AdvantageKit/blob/main/docs/RECORDING-OUTPUTS.md#autologoutput-annotation
+        AutoLogOutputManager.addPackage("frc");
+        AutoLogOutputManager.addPackage("frc.lib");
+        try {
+            AutoLogOutputManager.addPackage(getClass().getPackageName().split("\\.")[0]);
+        } catch (IndexOutOfBoundsException ignored) {
+        }
+
         Logger.recordMetadata("* ProjectName", BuildConstants.MAVEN_NAME);
         Logger.recordMetadata("* BuildDate", BuildConstants.BUILD_DATE);
         Logger.recordMetadata("* GitSHA", BuildConstants.GIT_SHA);
