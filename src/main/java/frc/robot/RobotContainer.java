@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -162,27 +163,9 @@ public class RobotContainer {
     private void setDefaultCommands() {
         drive.setDefaultCommand(
                 drive.joystickDrive(
-                        () -> {
-                            var override =
-                                    Math.abs(operatorController.getLeftX()) > 0.1 ||
-                                            Math.abs(operatorController.getLeftY()) > 0.1 ||
-                                            Math.abs(operatorController.getRightX()) > 0.1;
-                            return -(override ? operatorController.getLeftY() : driverController.getLeftY());
-                        },
-                        () -> {
-                            var override =
-                                    Math.abs(operatorController.getLeftX()) > 0.1 ||
-                                            Math.abs(operatorController.getLeftY()) > 0.1 ||
-                                            Math.abs(operatorController.getRightX()) > 0.1;
-                            return -(override ? operatorController.getLeftX() : driverController.getLeftX());
-                        },
-                        () -> {
-                            var override =
-                                    Math.abs(operatorController.getLeftX()) > 0.1 ||
-                                            Math.abs(operatorController.getLeftY()) > 0.1 ||
-                                            Math.abs(operatorController.getRightX()) > 0.1;
-                            return -(override ? operatorController.getRightX() : driverController.getRightX());
-                        }
+                        () -> -driverController.getLeftY(),
+                        () -> -driverController.getLeftX(),
+                        () -> -driverController.getRightX()
                 )
         );
 
