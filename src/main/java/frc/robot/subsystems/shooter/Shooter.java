@@ -118,12 +118,8 @@ public class Shooter extends SubsystemBase {
         Logger.recordOutput("Shooter/Mechanism", pivotVisualizer.mechanism);
     }
 
-    private boolean hasNote() {
-        return inputs.hasNote;
-    }
-
     @AutoLogOutput
-    private boolean hasNoteDebounced() {
+    public boolean hasNoteDebounced() {
         return hasNoteDebouncer.calculate(inputs.hasNote);
     }
 
@@ -184,7 +180,7 @@ public class Shooter extends SubsystemBase {
         return Commands.sequence(
                 startEnd(() -> flywheelsPercent(percent), () -> {
                 }).withTimeout(spinupTime),
-                feedPercent(1).until(() -> !hasNote())
+                feedPercent(1).until(() -> !hasNoteDebounced())
         ).finallyDo(this::flywheelsStop);
     }
 

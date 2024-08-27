@@ -183,15 +183,39 @@ public class RobotContainer {
     private void configureButtonBindings() {
         driverController.a().onTrue(drive.resetRotationCommand());
 
-        driverController.leftBumper().whileTrue(intake.intake());
+        driverController.leftTrigger(0.25).whileTrue(
+                intake.intake()
+                        // auto handoff after intake
+//                        .finallyDo(() -> Commands.sequence(
+//                                        shooter.pivotWaitForIntake(),
+//                                        intake.pivotHandoff(),
+//                                        shooter.pivotHandoff(),
+//                                        Commands.race(
+//                                                intake.feedHandoff(),
+//                                                shooter.feedHandoff()
+//                                        ),
+//                                        shooter.pivotWaitForIntake(),
+//                                        intake.pivotHover(),
+//                                        shooter.pivotHover()
+//                                )
+//                                .withTimeout(3)
+//                                .schedule())
+        );
 
-        driverController.rightBumper().toggleOnTrue(Commands.sequence(
-                shooter.pivotWaitForIntake(),
-                intake.pivotHandoff(),
-                shooter.pivotHandoff(),
-                Commands.race(
-                        intake.feedHandoff(),
-                        shooter.feedHandoff()
+        driverController.rightTrigger(0.25).toggleOnTrue(Commands.sequence(
+                // handoff if shooter doesn't have a note
+                Commands.either(
+                        Commands.none(),
+                        Commands.sequence(
+                                shooter.pivotWaitForIntake(),
+                                intake.pivotHandoff(),
+                                shooter.pivotHandoff(),
+                                Commands.race(
+                                        intake.feedHandoff(),
+                                        shooter.feedHandoff()
+                                )
+                        ),
+                        shooter::hasNoteDebounced
                 ),
                 shooter.pivotWaitForIntake(),
                 intake.pivotHover(),
@@ -203,18 +227,6 @@ public class RobotContainer {
                 shooter.eject(),
                 intake.eject()
         ));
-
-//        driverController.povUp().onTrue(shooter.pivotHover());
-//        driverController.povRight().onTrue(shooter.pivotHandoff());
-////        controller.povDown().onTrue(shooter.pivotShoot());
-//
-//        driverController.a().onTrue(intake.pivotHover());
-//        driverController.b().onTrue(intake.pivotHandoff());
-////        controller.y().onTrue(intake.pivotIntake());
-//
-//        driverController.y().toggleOnTrue(intake.feed.setPercentCommand(0.3));
-//        driverController.povLeft().toggleOnTrue(intake.feed.setPercentCommand(-0.1));
-//        driverController.povDown().toggleOnTrue(shooter.feed.setPercentCommand(0.2));
     }
 
     public Command getAutonomousCommand() {
