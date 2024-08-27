@@ -17,11 +17,11 @@ public class WheelIOSparkMax extends WheelIO {
     public WheelIOSparkMax(int canID, EnumSet<MotorFlags> flags) {
         motor = new CANSparkMax(canID, CANSparkLowLevel.MotorType.kBrushless);
         motor.restoreFactoryDefaults();
-        motor.setIdleMode(flags.contains(MotorFlags.IDLE_MODE_BRAKE) ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast);
+        motor.setIdleMode(flags.contains(MotorFlags.IdleModeBrake) ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast);
         motor.setCANTimeout(250);
         motor.enableVoltageCompensation(12.0);
         motor.setSmartCurrentLimit(40);
-        motor.setInverted(flags.contains(MotorFlags.INVERTED));
+        motor.setInverted(flags.contains(MotorFlags.Inverted));
         motor.burnFlash();
 
         encoder = motor.getEncoder();

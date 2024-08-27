@@ -5,9 +5,9 @@ public enum MotorFlags {
      * If specified, the motor's default idle mode will be set to break mode.
      * If not specified, the motor's default idle mode will be set to coast mode.
      */
-    IDLE_MODE_BRAKE,
+    IdleModeBrake,
     /**
      * If specified, the motor will be inverted.
      */
-    INVERTED
+    Inverted
 }

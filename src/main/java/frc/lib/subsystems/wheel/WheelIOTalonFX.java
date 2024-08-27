@@ -30,8 +30,8 @@ public class WheelIOTalonFX extends WheelIO {
         var config = new TalonFXConfiguration();
         config.CurrentLimits.SupplyCurrentLimit = 40.0;
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
-        config.MotorOutput.NeutralMode = flags.contains(MotorFlags.IDLE_MODE_BRAKE) ? NeutralModeValue.Brake : NeutralModeValue.Coast;
-        config.MotorOutput.Inverted = flags.contains(MotorFlags.INVERTED) ? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive;
+        config.MotorOutput.NeutralMode = flags.contains(MotorFlags.IdleModeBrake) ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+        config.MotorOutput.Inverted = flags.contains(MotorFlags.Inverted) ? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive;
         motor.getConfigurator().apply(config);
 
         position = motor.getPosition();

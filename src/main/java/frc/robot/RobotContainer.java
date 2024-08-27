@@ -28,7 +28,6 @@ import frc.robot.subsystems.shooter.ShooterIOSim;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
 
 /**
@@ -63,15 +62,15 @@ public class RobotContainer {
                         new IntakeIO(),
                         new ArmIOSparkMax(3),
                         new AbsoluteEncoderIO(),
-                        new WheelIOSparkMax(16, EnumSet.of(MotorFlags.INVERTED))
+                        new WheelIOSparkMax(16, EnumSet.of(MotorFlags.Inverted))
                 );
                 shooter = new Shooter(
                         new ShooterIOReal(6),
                         new ArmIOSparkMax(7),
                         new AbsoluteEncoderIOREVThroughBore(0),
                         new WheelIOSparkMax(9, EnumSet.noneOf(MotorFlags.class)),
-                        new WheelIOSparkMax(10, EnumSet.of(MotorFlags.INVERTED)),
-                        new WheelIOSparkMax(8, EnumSet.of(MotorFlags.INVERTED))
+                        new WheelIOSparkMax(10, EnumSet.of(MotorFlags.Inverted)),
+                        new WheelIOSparkMax(8, EnumSet.of(MotorFlags.Inverted))
                 );
             }
 
