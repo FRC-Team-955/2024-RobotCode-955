@@ -50,8 +50,8 @@ public class Drive extends SubsystemBase {
 //            MAX_ANGULAR_SPEED
 //    );
     private final LoggedDashboardNumber maxLinearSpeed = new LoggedDashboardNumber("Max Linear Speed meters per sec", Units.feetToMeters(14.5));
-    private final LoggedDashboardNumber maxLinearAccel = new LoggedDashboardNumber("Max Linear Accel meters per sec squared", 15);
-    private final LoggedDashboardNumber maxAngularSpeed = new LoggedDashboardNumber("Max Angular Speed rad per sec", 5);
+    private final LoggedDashboardNumber maxLinearAccel = new LoggedDashboardNumber("Max Linear Accel meters per sec squared", Units.feetToMeters(10));
+    private final LoggedDashboardNumber maxAngularSpeed = new LoggedDashboardNumber("Max Angular Speed rad per sec", 20);
 
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
