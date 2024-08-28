@@ -79,7 +79,6 @@ public class Drive extends SubsystemBase {
             new SwerveModuleState()
     });
 
-    public final LoggedDashboardNumber voltageDivider = new LoggedDashboardNumber("Voltage Divider", 4);
     public final LoggedDashboardBoolean disableDriving = new LoggedDashboardBoolean("Disable Driving", false);
     public final LoggedDashboardBoolean use254Optimization = new LoggedDashboardBoolean("Use 254's Swerve Optimizations", true);
 

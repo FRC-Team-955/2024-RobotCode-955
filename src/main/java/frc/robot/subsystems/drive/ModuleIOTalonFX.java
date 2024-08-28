@@ -145,7 +145,7 @@ public class ModuleIOTalonFX extends ModuleIO {
     @Override
     public void setDriveVoltage(double volts) {
         if (!Drive.get().disableDriving.get()) {
-            driveTalon.setControl(new VoltageOut(volts / Drive.get().voltageDivider.get()));
+            driveTalon.setControl(new VoltageOut(volts));
         } else {
             driveTalon.stopMotor();
         }
