@@ -10,6 +10,7 @@ import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.subsystems.arm.Arm;
 import frc.lib.subsystems.arm.ArmIO;
@@ -174,6 +175,10 @@ public class Shooter extends SubsystemBase {
 
     public Command feedHandoff() {
         return feedPercent(0.2).until(this::hasNoteDebounced);
+    }
+
+    public Command shootPercentUntimed(double percent) {
+        return new RunCommand(() -> flywheelsPercent(percent));
     }
 
     public Command shootPercent(double percent, double spinupTime) {

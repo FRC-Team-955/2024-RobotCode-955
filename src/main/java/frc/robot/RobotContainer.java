@@ -186,23 +186,24 @@ public class RobotContainer {
         driverController.leftTrigger(0.25).whileTrue(
                 intake.intake()
                         // auto handoff after intake
-//                        .finallyDo(() -> Commands.sequence(
-//                                        shooter.pivotWaitForIntake(),
-//                                        intake.pivotHandoff(),
-//                                        shooter.pivotHandoff(),
-//                                        Commands.race(
-//                                                intake.feedHandoff(),
-//                                                shooter.feedHandoff()
-//                                        ),
-//                                        shooter.pivotWaitForIntake(),
-//                                        intake.pivotHover(),
-//                                        shooter.pivotHover()
-//                                )
-//                                .withTimeout(3)
-//                                .schedule())
+                //        .finallyDo(() -> Commands.sequence(
+                //                        shooter.pivotWaitForIntake(),
+                //                        intake.pivotHandoff(),
+                //                        shooter.pivotHandoff(),
+                //                        Commands.race(
+                //                                intake.feedHandoff(),
+                //                                shooter.feedHandoff()
+                //                        ),
+                //                        shooter.pivotWaitForIntake(),
+                //                        intake.pivotHover(),
+                //                        shooter.pivotHover()
+                //                )
+                //                .withTimeout(3)
+                //                .schedule())
         );
 
-        driverController.rightTrigger(0.25).toggleOnTrue(Commands.sequence(
+        // b for handoff
+        driverController.b().toggleOnTrue(Commands.sequence(
                 // handoff if shooter doesn't have a note
                 Commands.either(
                         Commands.none(),
@@ -218,10 +219,19 @@ public class RobotContainer {
                         shooter::hasNoteDebounced
                 ),
                 shooter.pivotWaitForIntake(),
-                intake.pivotHover(),
+                intake.pivotHover()
+        ));
+        
+        driverController.rightBumper().toggleOnTrue(Commands.sequence(
                 shooter.pivotShoot(),
                 shooter.shootPercent(0.5, 0.6)
         ));
+        
+        driverController.rightTrigger(0.25).whileTrue(Commands.sequence(
+                shooter.pivotShoot(),
+                shooter.shootPercentUntimed(0.5)
+        ).finallyDo(() -> shooter.shootPercent(0.5, 0).schedule())
+        );
 
         driverController.x().toggleOnTrue(Commands.parallel(
                 shooter.eject(),
