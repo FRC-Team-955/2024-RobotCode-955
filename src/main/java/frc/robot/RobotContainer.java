@@ -53,6 +53,8 @@ public class RobotContainer {
         switch (Constants.mode) {
             case REAL -> {
                 drive = new Drive(
+                        // TODO: Figure out id
+                        new VisionIOCamera("Front_Camera"),
                         new GyroIOPigeon2(10),
                         new ModuleIOSparkMax(0),
                         new ModuleIOSparkMax(1),
@@ -77,6 +79,7 @@ public class RobotContainer {
 
             case SIM -> {
                 drive = new Drive(
+                        new VisionIO(),
                         new GyroIO(),
                         new ModuleIOSim(),
                         new ModuleIOSim(),
@@ -101,6 +104,7 @@ public class RobotContainer {
 
             case REPLAY -> {
                 drive = new Drive(
+                        new VisionIO(),
                         new GyroIO(),
                         new ModuleIO(),
                         new ModuleIO(),
