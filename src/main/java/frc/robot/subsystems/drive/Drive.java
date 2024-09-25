@@ -5,11 +5,7 @@ import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -30,8 +26,6 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
-import org.photonvision.PhotonUtils;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
 import java.util.function.DoubleSupplier;
 
@@ -61,9 +55,6 @@ public class Drive extends SubsystemBase {
 
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
-
-    private final VisionIO visionIO;
-    private final VisionIOInputsAutoLogged visionInputs = new VisionIOInputsAutoLogged();
     /**
      * FL, FR, BL, BR
      */
@@ -91,20 +82,6 @@ public class Drive extends SubsystemBase {
     public final LoggedDashboardBoolean disableDriving = new LoggedDashboardBoolean("Disable Driving", false);
     public final LoggedDashboardBoolean use254Optimization = new LoggedDashboardBoolean("Use 254's Swerve Optimizations", true);
 
-    // Formula: std = baseStd / (sum of ambiguities^visionTrust) * (1/(distance to most confident target))^distanceTrust, with a cap of 2
-    // baseStd will scale the total standard deviation, higher is less trust in vision
-    // visionTrust will scale the power of ambiguities, since ambiguities are between 0 and 1 a higher number is less trust in ambiguous aprilTags
-    // distanceTrust will scale the power of 1/distance, so a higher number is less trust for a farther distance
-    // NOTE: baseStd will have to increase or decrease opposite to the trend of visionTrust and distanceTrust in order to keep a "normal" confidence for a "normal" apriltag
-    // lower = less trust
-    // TODO: tune values
-    public final LoggedDashboardNumber visionTrust = new LoggedDashboardNumber("How much to trust ambiguous aprilTags", 2);
-    public final LoggedDashboardNumber distanceTrust = new LoggedDashboardNumber("trust vision based on distance", 0.5);
-    public final LoggedDashboardNumber baseStdPosition = new LoggedDashboardNumber("base standard deviation of guesses for position", 0.2);
-    public final LoggedDashboardNumber baseStdRotation = new LoggedDashboardNumber("base standard deviation of guesses for rotation in degrees", 10);
-
-    private final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
-
     private static Drive instance;
 
     public static Drive get() {
@@ -112,7 +89,6 @@ public class Drive extends SubsystemBase {
     }
 
     public Drive(
-            VisionIO visionIO,
             GyroIO gyroIO,
             ModuleIO flModuleIO,
             ModuleIO frModuleIO,
@@ -123,7 +99,6 @@ public class Drive extends SubsystemBase {
             throw new RuntimeException("Duplicate subsystem created!");
         instance = this;
 
-        this.visionIO = visionIO;
         this.gyroIO = gyroIO;
         modules[0] = new Module(flModuleIO, 0);
         modules[1] = new Module(frModuleIO, 1);
@@ -165,7 +140,6 @@ public class Drive extends SubsystemBase {
     }
 
     public void periodic() {
-        visionIO.updateInputs(visionInputs);
         gyroIO.updateInputs(gyroInputs);
         Logger.processInputs("Inputs/Drive/Gyro", gyroInputs);
         for (var module : modules) {
@@ -203,44 +177,6 @@ public class Drive extends SubsystemBase {
 
         // Apply odometry update
         poseEstimator.update(rawGyroRotation, modulePositions);
-
-        // simple backup
-//        if (visionInputs.hasEstimatedPose) {
-//            poseEstimator.addVisionMeasurement(
-//                    visionInputs.estimatedPose.estimatedPose.toPose2d(),
-//                    visionInputs.estimatedPose.timestampSeconds
-//            );
-//        }
-
-        // TODO: make sure this doesn't go to hell
-        if (visionInputs.hasEstimatedPose) {
-            double totalTrust = 0;
-            // don't trust if the best target isn't even recognised
-            double distanceTrustFactor = 0;
-            for (PhotonTrackedTarget target : visionInputs.estimatedPose.targetsUsed) {
-                totalTrust += Math.pow(target.getPoseAmbiguity(), visionTrust.get());
-            }
-            if (aprilTagFieldLayout.getTagPose(visionInputs.bestTarget.getFiducialId()).isPresent()) {
-                // pretty random, would accept revisions if they work better
-                distanceTrustFactor = Math.min(Math.pow(1 /
-                        PhotonUtils.calculateDistanceToTargetMeters(
-                            Units.inchesToMeters(12.458),
-                            aprilTagFieldLayout.getTagPose(visionInputs.bestTarget.getFiducialId()).get().getZ(),
-                            Units.degreesToRadians(30),
-                            Units.degreesToRadians(visionInputs.bestTarget.getPitch())
-                        ), distanceTrust.get()),
-                        2);
-            }
-            poseEstimator.addVisionMeasurement(
-                    visionInputs.estimatedPose.estimatedPose.toPose2d(),
-                    visionInputs.estimatedPose.timestampSeconds,
-                    new Matrix<>(Nat.N3(), Nat.N1(), new double[]{
-                            baseStdPosition.get() * distanceTrustFactor / totalTrust,
-                            baseStdPosition.get() * distanceTrustFactor / totalTrust,
-                            Units.degreesToRadians(baseStdRotation.get() * distanceTrustFactor / totalTrust)
-                    })
-            );
-        }
     }
 
     /**
