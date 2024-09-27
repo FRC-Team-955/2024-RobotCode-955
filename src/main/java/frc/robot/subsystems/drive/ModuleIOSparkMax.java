@@ -41,25 +41,25 @@ public class ModuleIOSparkMax extends ModuleIO {
                 driveSparkMax = new CANSparkMax(2, MotorType.kBrushless);
                 turnSparkMax = new CANSparkMax(1, MotorType.kBrushless);
                 cancoder = new CANcoder(18);
-                absoluteEncoderOffsetRad = 0.209;
+                absoluteEncoderOffsetRad = 0.192;
             }
             case 1 -> { // FR
                 driveSparkMax = new CANSparkMax(14, MotorType.kBrushless);
                 turnSparkMax = new CANSparkMax(15, MotorType.kBrushless);
                 cancoder = new CANcoder(19);
-                absoluteEncoderOffsetRad = -1.417;
+                absoluteEncoderOffsetRad = -1.411;
             }
             case 2 -> { // BL
                 driveSparkMax = new CANSparkMax(5, MotorType.kBrushless);
                 turnSparkMax = new CANSparkMax(6, MotorType.kBrushless);
                 cancoder = new CANcoder(20);
-                absoluteEncoderOffsetRad = -0.020;
+                absoluteEncoderOffsetRad = -0.008;
             }
             case 3 -> { // BR
                 driveSparkMax = new CANSparkMax(11, MotorType.kBrushless);
                 turnSparkMax = new CANSparkMax(12, MotorType.kBrushless);
                 cancoder = new CANcoder(21);
-                absoluteEncoderOffsetRad = -2.882;
+                absoluteEncoderOffsetRad = -2.832;
             }
             default -> throw new RuntimeException("unreachable");
         }
