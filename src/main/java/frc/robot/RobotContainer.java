@@ -163,8 +163,8 @@ public class RobotContainer {
     private void setDefaultCommands() {
         drive.setDefaultCommand(
                 drive.joystickDrive(
-                        () -> -driverController.getLeftY(),
-                        () -> -driverController.getLeftX(),
+                        driverController::getLeftY,
+                        driverController::getLeftX,
                         () -> -driverController.getRightX()
                 )
         );
@@ -185,7 +185,7 @@ public class RobotContainer {
 
         driverController.leftTrigger(0.25).whileTrue(
                 intake.intake()
-                        // auto handoff after intake
+                // auto handoff after intake
                 //        .finallyDo(() -> Commands.sequence(
                 //                        shooter.pivotWaitForIntake(),
                 //                        intake.pivotHandoff(),
@@ -221,16 +221,16 @@ public class RobotContainer {
                 shooter.pivotWaitForIntake(),
                 intake.pivotHover()
         ));
-        
+
         driverController.rightBumper().toggleOnTrue(Commands.sequence(
                 shooter.pivotShoot(),
                 shooter.shootPercent(0.5, 0.6)
         ));
-        
+
         driverController.rightTrigger(0.25).whileTrue(Commands.sequence(
-                shooter.pivotShoot(),
-                shooter.shootPercentUntimed(0.5)
-        ).finallyDo(() -> shooter.shootPercent(0.5, 0).schedule())
+                        shooter.pivotShoot(),
+                        shooter.shootPercentUntimed(0.5)
+                ).finallyDo(() -> shooter.shootPercent(0.5, 0).schedule())
         );
 
         driverController.x().toggleOnTrue(Commands.parallel(

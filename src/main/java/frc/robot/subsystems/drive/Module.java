@@ -57,8 +57,7 @@ public class Module {
 
         // Run closed loop turn control
         if (angleSetpoint != null) {
-            io.setTurnVoltage(
-                    turnFeedback.calculate(getAngle().getRadians(), angleSetpoint.getRadians()));
+            io.setTurnVoltage(turnFeedback.calculate(getAngle().getRadians(), angleSetpoint.getRadians()));
 
             // Run closed loop drive control
             // Only allowed if closed loop turn control is running
@@ -72,9 +71,7 @@ public class Module {
 
                 // Run drive controller
                 double velocityRadPerSec = adjustSpeedSetpoint / WHEEL_RADIUS;
-                io.setDriveVoltage(
-                        driveFeedforward.calculate(velocityRadPerSec)
-                                + driveFeedback.calculate(inputs.driveVelocityRadPerSec, velocityRadPerSec));
+                io.setDriveVoltage(driveFeedforward.calculate(velocityRadPerSec) + driveFeedback.calculate(inputs.driveVelocityRadPerSec, velocityRadPerSec));
             }
         }
     }

@@ -5,6 +5,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class CommandNintendoSwitchProController extends CommandXboxController {
+    private static final double STICK_MULTIPLIER = 1 / 0.75; // Sticks normally only go to 0.75 max
+
     public enum Button {
         LeftBumper(5),
         RightBumper(6),
@@ -101,22 +103,22 @@ public class CommandNintendoSwitchProController extends CommandXboxController {
 
     @Override
     public double getLeftX() {
-        return getRawAxis(0);
+        return getRawAxis(0) * STICK_MULTIPLIER;
     }
 
     @Override
     public double getLeftY() {
-        return getRawAxis(1);
+        return getRawAxis(1) * STICK_MULTIPLIER;
     }
 
     @Override
     public double getRightX() {
-        return getRawAxis(2);
+        return getRawAxis(2) * STICK_MULTIPLIER;
     }
 
     @Override
     public double getRightY() {
-        return getRawAxis(3);
+        return getRawAxis(3) * STICK_MULTIPLIER;
     }
 
     @Override

@@ -17,9 +17,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.lib.swerve.SwerveKinematicLimits;
-import frc.lib.swerve.SwerveSetpoint;
-import frc.lib.swerve.SwerveSetpointGenerator;
 import frc.lib.util.LocalADStarAK;
 import frc.robot.Util;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -44,14 +41,8 @@ public class Drive extends SubsystemBase {
             new Translation2d(-TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0),
             new Translation2d(-TRACK_WIDTH_X / 2.0, -TRACK_WIDTH_Y / 2.0)
     };
-    //    private static final SwerveKinematicLimits KINEMATIC_LIMITS = new SwerveKinematicLimits(
-//            MAX_LINEAR_SPEED,
-//            15.0,
-//            MAX_ANGULAR_SPEED
-//    );
     private final LoggedDashboardNumber maxLinearSpeed = new LoggedDashboardNumber("Max Linear Speed meters per sec", Units.feetToMeters(14.5));
-    private final LoggedDashboardNumber maxLinearAccel = new LoggedDashboardNumber("Max Linear Accel meters per sec squared", Units.feetToMeters(10));
-    private final LoggedDashboardNumber maxAngularSpeed = new LoggedDashboardNumber("Max Angular Speed rad per sec", 20);
+    private final LoggedDashboardNumber maxAngularSpeed = new LoggedDashboardNumber("Max Angular Speed rad per sec", maxLinearSpeed.get() / DRIVE_BASE_RADIUS);
 
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
@@ -71,16 +62,8 @@ public class Drive extends SubsystemBase {
             new SwerveModulePosition()
     };
     private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
-    private final SwerveSetpointGenerator setpointGenerator = new SwerveSetpointGenerator(kinematics, MODULE_TRANSLATIONS);
-    private SwerveSetpoint setpoint = new SwerveSetpoint(new ChassisSpeeds(), new SwerveModuleState[]{
-            new SwerveModuleState(),
-            new SwerveModuleState(),
-            new SwerveModuleState(),
-            new SwerveModuleState()
-    });
 
     public final LoggedDashboardBoolean disableDriving = new LoggedDashboardBoolean("Disable Driving", false);
-    public final LoggedDashboardBoolean use254Optimization = new LoggedDashboardBoolean("Use 254's Swerve Optimizations", true);
 
     private static Drive instance;
 
@@ -186,24 +169,19 @@ public class Drive extends SubsystemBase {
      */
     public void runVelocity(ChassisSpeeds speeds) {
         // Calculate module setpoints
-        if (use254Optimization.get()) {
-            setpoint = setpointGenerator.generateSetpoint(new SwerveKinematicLimits(maxLinearSpeed.get(), maxLinearAccel.get(), maxAngularSpeed.get()), setpoint, speeds, 0.02);
-        } else {
-            ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
-            SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
-            SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, maxLinearSpeed.get());
-            setpoint = new SwerveSetpoint(discreteSpeeds, setpointStates);
-        }
+        ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
+        SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
+        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, maxLinearSpeed.get());
 
         // Send setpoints to modules
         SwerveModuleState[] optimizedSetpointStates = new SwerveModuleState[4];
         for (int i = 0; i < 4; i++) {
             // The module returns the optimized state, useful for logging
-            optimizedSetpointStates[i] = modules[i].runSetpoint(setpoint.moduleStates()[i]);
+            optimizedSetpointStates[i] = modules[i].runSetpoint(setpointStates[i]);
         }
 
         // Log setpoint states
-        Logger.recordOutput("Drive/SwerveStates/Setpoints", setpoint.moduleStates());
+        Logger.recordOutput("Drive/SwerveStates/Setpoints", setpointStates);
         Logger.recordOutput("Drive/SwerveStates/SetpointsOptimized", optimizedSetpointStates);
     }
 
@@ -340,7 +318,7 @@ public class Drive extends SubsystemBase {
             linearMagnitude = linearMagnitude * linearMagnitude;
             omega = Math.copySign(omega * omega, omega);
 
-            // Calcaulate new linear velocity
+            // Calculate new linear velocity
             Translation2d linearVelocity = new Pose2d(new Translation2d(), linearDirection)
                     .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
                     .getTranslation();
