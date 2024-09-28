@@ -80,7 +80,7 @@ public class Drive extends SubsystemBase {
     });
 
     public final LoggedDashboardBoolean disableDriving = new LoggedDashboardBoolean("Disable Driving", false);
-    public final LoggedDashboardBoolean use254Optimization = new LoggedDashboardBoolean("Use 254's Swerve Optimizations", true);
+    public final LoggedDashboardBoolean use254Optimization = new LoggedDashboardBoolean("Use 254's Swerve Optimizations", false);
 
     private static Drive instance;
 
@@ -187,7 +187,7 @@ public class Drive extends SubsystemBase {
     public void runVelocity(ChassisSpeeds speeds) {
         // Calculate module setpoints
         if (use254Optimization.get()) {
-            setpoint = setpointGenerator.generateSetpoint(new SwerveKinematicLimits(maxLinearSpeed.get(), maxLinearAccel.get(), maxAngularSpeed.get()), setpoint, speeds, 0.02);
+//            setpoint = setpointGenerator.generateSetpoint(new SwerveKinematicLimits(maxLinearSpeed.get(), maxLinearAccel.get(), maxAngularSpeed.get()), setpoint, speeds, 0.02);
         } else {
             ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
             SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
@@ -340,7 +340,7 @@ public class Drive extends SubsystemBase {
             linearMagnitude = linearMagnitude * linearMagnitude;
             omega = Math.copySign(omega * omega, omega);
 
-            // Calcaulate new linear velocity
+            // Calculate new linear velocity
             Translation2d linearVelocity = new Pose2d(new Translation2d(), linearDirection)
                     .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
                     .getTranslation();
