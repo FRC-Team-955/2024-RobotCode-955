@@ -1,8 +1,7 @@
 package frc.robot.subsystems.drive;
 
-import org.littletonrobotics.junction.AutoLog;
-
 import edu.wpi.first.math.geometry.Pose3d;
+import org.littletonrobotics.junction.AutoLog;
 
 public class VisionIO {
     @AutoLog
