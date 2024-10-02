@@ -224,6 +224,15 @@ public class RobotContainer {
 
 //        driverController.leftBumper().toggleOnTrue(Commands.sequence(
         operatorController.leftTrigger(0.25).toggleOnTrue(Commands.sequence(
+                shooter.pivotWaitForIntake(),
+                intake.pivotHandoff(),
+                shooter.pivotHandoff(),
+                Commands.race(
+                        intake.feedHandoff(),
+                        shooter.feedHandoff()
+                ),
+                shooter.pivotWaitForIntake(),
+                intake.pivotHover(),
                 shooter.pivotShoot(),
                 shooter.shootPercent(0.5, 0.6)
         ));
