@@ -248,7 +248,7 @@ public class RobotContainer {
                 shooter.pivotWaitForIntake(),
                 intake.pivotHover(),
                 shooter.pivotAmp(),
-                shooter.shootPercent(0.25, 0)
+                shooter.shootPercent(0.25, 0.25)
         ));
 
 //        driverController.leftTrigger(0.25).whileTrue(Commands.sequence(
