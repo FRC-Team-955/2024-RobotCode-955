@@ -181,9 +181,9 @@ public class RobotContainer {
     private final LoggedDashboardNumber shootSpinupTime = new LoggedDashboardNumber("Shoot Spinup Time", 0.5);
 
     private void configureButtonBindings() {
-        driverController.a().onTrue(drive.resetRotationCommand());
+        driverController.y().onTrue(drive.resetRotationCommand());
 
-        driverController.leftTrigger(0.25).whileTrue(
+        operatorController.rightTrigger(0.25).whileTrue(
                 intake.intake()
                 // auto handoff after intake
                 //        .finallyDo(() -> Commands.sequence(
@@ -203,37 +203,38 @@ public class RobotContainer {
         );
 
         // b for handoff
-        driverController.b().toggleOnTrue(Commands.sequence(
-                // handoff if shooter doesn't have a note
-                Commands.either(
-                        Commands.none(),
-                        Commands.sequence(
-                                shooter.pivotWaitForIntake(),
-                                intake.pivotHandoff(),
-                                shooter.pivotHandoff(),
-                                Commands.race(
-                                        intake.feedHandoff(),
-                                        shooter.feedHandoff()
-                                )
-                        ),
-                        shooter::hasNoteDebounced
-                ),
-                shooter.pivotWaitForIntake(),
-                intake.pivotHover()
-        ));
+//        driverController.b().toggleOnTrue(Commands.sequence(
+//                // handoff if shooter doesn't have a note
+//                Commands.either(
+//                        Commands.none(),
+//                        Commands.sequence(
+//                                shooter.pivotWaitForIntake(),
+//                                intake.pivotHandoff(),
+//                                shooter.pivotHandoff(),
+//                                Commands.race(
+//                                        intake.feedHandoff(),
+//                                        shooter.feedHandoff()
+//                                )
+//                        ),
+//                        shooter::hasNoteDebounced
+//                ),
+//                shooter.pivotWaitForIntake(),
+//                intake.pivotHover()
+//        ));
 
-        driverController.rightBumper().toggleOnTrue(Commands.sequence(
+//        driverController.leftBumper().toggleOnTrue(Commands.sequence(
+        operatorController.leftTrigger(0.25).toggleOnTrue(Commands.sequence(
                 shooter.pivotShoot(),
                 shooter.shootPercent(0.5, 0.6)
         ));
 
-        driverController.rightTrigger(0.25).whileTrue(Commands.sequence(
-                        shooter.pivotShoot(),
-                        shooter.shootPercentUntimed(0.5)
-                ).finallyDo(() -> shooter.shootPercent(0.5, 0).schedule())
-        );
+//        driverController.leftTrigger(0.25).whileTrue(Commands.sequence(
+//                        shooter.pivotShoot(),
+//                        shooter.shootPercentUntimed(0.5)
+//                ).finallyDo(() -> shooter.shootPercent(0.5, 0).schedule())
+//        );
 
-        driverController.x().toggleOnTrue(Commands.parallel(
+        operatorController.x().toggleOnTrue(Commands.parallel(
                 shooter.eject(),
                 intake.eject()
         ));
