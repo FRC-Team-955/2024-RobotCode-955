@@ -234,7 +234,7 @@ public class RobotContainer {
                 shooter.pivotWaitForIntake(),
                 intake.pivotHover(),
                 shooter.pivotShoot(),
-                shooter.shootPercent(0.5, 0.6)
+                Commands.run(() -> shooter.shootPercent(0.5, 0.6).schedule())
         ));
 
         operatorController.leftBumper().toggleOnTrue(Commands.sequence(
@@ -248,7 +248,7 @@ public class RobotContainer {
                 shooter.pivotWaitForIntake(),
                 intake.pivotHover(),
                 shooter.pivotAmp(),
-                shooter.shootPercent(0.25, 0.25)
+                Commands.run(() -> shooter.shootPercent(0.25, 0.25).schedule())
         ));
 
 //        driverController.leftTrigger(0.25).whileTrue(Commands.sequence(
