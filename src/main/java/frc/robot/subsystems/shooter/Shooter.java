@@ -25,8 +25,8 @@ import org.littletonrobotics.junction.Logger;
 import static edu.wpi.first.units.Units.*;
 
 public class Shooter extends SubsystemBase {
-    private static final ArmFeedforward PIVOT_FF = Constants.mode.isReal() ? new ArmFeedforward(0, 1.0, 0) : new ArmFeedforward(0, 0.5, 0);
-    private static final PIDConstants PIVOT_PID = Constants.mode.isReal() ? new PIDConstants(0.15/*, 0.011*/) : new PIDConstants(2.5, 0);
+    private static final ArmFeedforward PIVOT_FF = Constants.mode.isReal() ? new ArmFeedforward(0, 1.2, 0) : new ArmFeedforward(0, 0.5, 0);
+    private static final PIDConstants PIVOT_PID = Constants.mode.isReal() ? new PIDConstants(0.2/*, 0.011*/) : new PIDConstants(2.5, 0);
     private static final double PIVOT_GEAR_RATIO = 40;
     private static final Measure<Angle> PIVOT_ENCODER_OFFSET = Radians.of(0.0);
     private static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-90);

@@ -260,7 +260,7 @@ public class RobotContainer {
         operatorController.x().toggleOnTrue(Commands.parallel(
                 shooter.eject(),
                 intake.eject()
-        ).withTimeout(1));
+        ).withTimeout(2));
     }
 
     public Command getAutonomousCommand() {
