@@ -28,7 +28,7 @@ public class Intake extends SubsystemBase {
     private static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-141);
     private static final Measure<Angle> PIVOT_CLEAR_OF_SHOOTER = Degrees.of(-130);
     private static final Measure<Angle> PIVOT_HOVER = Degrees.of(-110);
-    private static final Measure<Angle> PIVOT_HANDOFF = Degrees.of(-142);
+    private static final Measure<Angle> PIVOT_HANDOFF = Degrees.of(-145);
     private static final Measure<Angle> PIVOT_INTAKE = Degrees.of(0);
     private static final Measure<Angle> PIVOT_EJECT = Degrees.of(-70);
 
@@ -133,10 +133,10 @@ public class Intake extends SubsystemBase {
     }
 
     public Command feedHandoff() {
-        return feedPercent(-0.1);
+        return feedPercent(-0.15);
     }
 
     public Command eject() {
-        return pivotEject().andThen(feedPercent(-0.5));
+        return pivotEject().andThen(feedPercent(-0.1));
     }
 }

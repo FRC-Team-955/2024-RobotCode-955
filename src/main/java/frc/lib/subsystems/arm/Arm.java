@@ -13,7 +13,7 @@ import org.littletonrobotics.junction.Logger;
 import static edu.wpi.first.units.Units.Radians;
 
 public final class Arm {
-    private static final double SETPOINT_TOLERANCE = Units.degreesToRadians(5);
+    private static final double SETPOINT_TOLERANCE = Units.degreesToRadians(7);
 
     private final String ioName;
     private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();

@@ -25,23 +25,23 @@ import org.littletonrobotics.junction.Logger;
 import static edu.wpi.first.units.Units.*;
 
 public class Shooter extends SubsystemBase {
-    private static final ArmFeedforward PIVOT_FF = Constants.mode.isReal() ? new ArmFeedforward(0, 1.2, 0) : new ArmFeedforward(0, 0.5, 0);
-    private static final PIDConstants PIVOT_PID = Constants.mode.isReal() ? new PIDConstants(0.2/*, 0.011*/) : new PIDConstants(2.5, 0);
+    private static final ArmFeedforward PIVOT_FF = Constants.mode.isReal() ? new ArmFeedforward(0, 1.3, 0) : new ArmFeedforward(0, 0.5, 0);
+    private static final PIDConstants PIVOT_PID = Constants.mode.isReal() ? new PIDConstants(0.15/*, 0.011*/) : new PIDConstants(2.5, 0);
     private static final double PIVOT_GEAR_RATIO = 40;
     private static final Measure<Angle> PIVOT_ENCODER_OFFSET = Radians.of(0.0);
     private static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-90);
     private static final Measure<Angle> PIVOT_HOVER = Degrees.of(-90);
     private static final Measure<Angle> PIVOT_WAIT_FOR_INTAKE = Degrees.of(-30);
-    private static final Measure<Angle> PIVOT_HANDOFF = Degrees.of(-40);
+    private static final Measure<Angle> PIVOT_HANDOFF = Degrees.of(-45);
     private static final Measure<Angle> PIVOT_SHOOT = Degrees.of(-50);
-    private static final Measure<Angle> PIVOT_EJECT = Degrees.of(-15);
+    private static final Measure<Angle> PIVOT_EJECT = Degrees.of(30);
     private static final Measure<Angle> PIVOT_AMP = Degrees.of(25);
 
     private static final SimpleMotorFeedforward FEED_FF = Constants.mode.isReal() ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
     private static final PIDConstants FEED_PID = Constants.mode.isReal() ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
     private static final double FEED_GEAR_RATIO = 3;
     private static final Measure<Velocity<Angle>> FEED_SETPOINT_TOLERANCE = RPM.of(10);
-    private static final double FEED_BEAM_BRAKE_DEBOUNCE = 0.1;
+    private static final double FEED_BEAM_BRAKE_DEBOUNCE = 0.05;
 
     private static final SimpleMotorFeedforward FLYWHEEL_FF = Constants.mode.isReal() ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
     private static final PIDConstants FLYWHEEL_PID = Constants.mode.isReal() ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
@@ -179,7 +179,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command feedHandoff() {
-        return feedPercent(0.2).until(this::hasNoteDebounced);
+        return feedPercent(0.4).until(this::hasNoteDebounced);
     }
 
     public Command shootPercentUntimed(double percent) {
@@ -196,7 +196,7 @@ public class Shooter extends SubsystemBase {
 
     public Command eject() {
         return pivotEject().andThen(startEnd(() -> {
-            flywheelsPercent(0.1);
+            flywheelsPercent(0.5);
             feed.setPercent(1);
         }, () -> {
             flywheelsStop();
