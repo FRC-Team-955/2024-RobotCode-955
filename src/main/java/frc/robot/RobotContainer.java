@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -140,6 +141,12 @@ public class RobotContainer {
 
     private void addAutos() {
 //        NamedCommands.registerCommand("Run Flywheel", Flywheel.get().run());
+        autoChooser.addOption(
+                "Mobility (robot relative forward)",
+                Commands.run(
+                        () -> drive.runVelocity(new ChassisSpeeds(0, 1, 0))
+                ).withTimeout(3)
+        );
 
         // Set up SysId routines
         autoChooser.addOption(
