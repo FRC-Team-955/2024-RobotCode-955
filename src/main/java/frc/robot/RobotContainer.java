@@ -143,9 +143,7 @@ public class RobotContainer {
 //        NamedCommands.registerCommand("Run Flywheel", Flywheel.get().run());
         autoChooser.addOption(
                 "Mobility (robot relative forward)",
-                Commands.run(
-                        () -> drive.runVelocity(new ChassisSpeeds(0, 1, 0))
-                ).withTimeout(3)
+                drive.driveVelocity(new ChassisSpeeds(2, 0, 0), 3)
         );
 
         // Set up SysId routines

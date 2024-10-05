@@ -300,6 +300,10 @@ public class Drive extends SubsystemBase {
         return runOnce(() -> get().resetRotation()).ignoringDisable(true);
     }
 
+    public Command driveVelocity(ChassisSpeeds velocities, double seconds) {
+        return run(() -> runVelocity(velocities)).withTimeout(seconds);
+    }
+
     /**
      * Field relative drive command using two joysticks (controlling linear and angular velocities).
      */
