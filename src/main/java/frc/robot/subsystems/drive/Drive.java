@@ -30,16 +30,16 @@ import static edu.wpi.first.units.Units.Volts;
 
 public class Drive extends SubsystemBase {
     //    private static final double MAX_LINEAR_SPEED = Units.feetToMeters(14.5);
-    private static final double TRACK_WIDTH_X = Units.inchesToMeters(25.0);
-    private static final double TRACK_WIDTH_Y = Units.inchesToMeters(25.0);
-    private static final double DRIVE_BASE_RADIUS = Math.hypot(TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0);
+    private static final double DRIVE_BASE_WIDTH = Units.inchesToMeters(21.75); // Measured from the center of the swerve wheels
+    private static final double DRIVE_BASE_LENGTH = DRIVE_BASE_WIDTH;
+    private static final double DRIVE_BASE_RADIUS = Math.hypot(DRIVE_BASE_WIDTH / 2.0, DRIVE_BASE_LENGTH / 2.0);
     //    private static final double MAX_ANGULAR_SPEED = MAX_LINEAR_SPEED / DRIVE_BASE_RADIUS;
     private static final double JOYSTICK_DRIVE_DEADBAND = 0.1;
     private static final Translation2d[] MODULE_TRANSLATIONS = new Translation2d[]{
-            new Translation2d(TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0),
-            new Translation2d(TRACK_WIDTH_X / 2.0, -TRACK_WIDTH_Y / 2.0),
-            new Translation2d(-TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0),
-            new Translation2d(-TRACK_WIDTH_X / 2.0, -TRACK_WIDTH_Y / 2.0)
+            new Translation2d(DRIVE_BASE_WIDTH / 2.0, DRIVE_BASE_LENGTH / 2.0),
+            new Translation2d(DRIVE_BASE_WIDTH / 2.0, -DRIVE_BASE_LENGTH / 2.0),
+            new Translation2d(-DRIVE_BASE_WIDTH / 2.0, DRIVE_BASE_LENGTH / 2.0),
+            new Translation2d(-DRIVE_BASE_WIDTH / 2.0, -DRIVE_BASE_LENGTH / 2.0)
     };
     private final LoggedDashboardNumber maxLinearSpeed = new LoggedDashboardNumber("Max Linear Speed meters per sec", Units.feetToMeters(15) * 0.5);
     private final LoggedDashboardNumber maxAngularSpeed = new LoggedDashboardNumber("Max Angular Speed rad per sec", maxLinearSpeed.get() / DRIVE_BASE_RADIUS * 0.75);
