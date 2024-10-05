@@ -21,7 +21,7 @@ import edu.wpi.first.math.util.Units;
  * absolute encoders using AdvantageScope. These values are logged under
  * "/Inputs/Drive/ModuleX/TurnAbsolutePositionRad"
  */
-public class ModuleIOTalonFX extends ModuleIO {
+public class ModuleIOTalonFXCANcoder extends ModuleIO {
     private final TalonFX driveTalon;
     private final TalonFX turnTalon;
     private final CANcoder cancoder;
@@ -44,7 +44,7 @@ public class ModuleIOTalonFX extends ModuleIO {
     private final boolean isTurnMotorInverted = true;
     private final double absoluteEncoderOffsetRad;
 
-    public ModuleIOTalonFX(int index) {
+    public ModuleIOTalonFXCANcoder(int index) {
         // See class level documentation comment for info on calibrating encoder offsets
         switch (index) {
             case 0 -> {

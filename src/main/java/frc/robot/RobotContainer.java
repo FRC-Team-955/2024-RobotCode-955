@@ -55,10 +55,10 @@ public class RobotContainer {
             case REAL -> {
                 drive = new Drive(
                         new GyroIOPigeon2(10),
-                        new ModuleIOSparkMax(0),
-                        new ModuleIOSparkMax(1),
-                        new ModuleIOSparkMax(2),
-                        new ModuleIOSparkMax(3)
+                        new ModuleIOSparkMaxCANcoder(0),
+                        new ModuleIOSparkMaxCANcoder(1),
+                        new ModuleIOSparkMaxCANcoder(2),
+                        new ModuleIOSparkMaxCANcoder(3)
                 );
                 intake = new Intake(
                         new IntakeIO(),

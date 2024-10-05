@@ -18,7 +18,7 @@ import edu.wpi.first.math.util.Units;
  * absolute encoders using AdvantageScope. These values are logged under
  * "/Inputs/Drive/ModuleX/TurnAbsolutePositionRad"
  */
-public class ModuleIOSparkMax extends ModuleIO {
+public class ModuleIOSparkMaxCANcoder extends ModuleIO {
     // Gear ratios for SDS MK4i L2, adjust as necessary
     public static final double DRIVE_GEAR_RATIO = (50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0);
     public static final double TURN_GEAR_RATIO = 150.0 / 7.0;
@@ -34,7 +34,7 @@ public class ModuleIOSparkMax extends ModuleIO {
     private final boolean isTurnMotorInverted = true;
     private final double absoluteEncoderOffsetRad;
 
-    public ModuleIOSparkMax(int index) {
+    public ModuleIOSparkMaxCANcoder(int index) {
         // See class level documentation comment for info on calibrating encoder offsets
         switch (index) {
             case 0 -> { // FL
