@@ -17,12 +17,12 @@ public final class Arm {
 
     private final String ioName;
     private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
-    private final ArmIO io;
+    public final ArmIO io;
 
     private final ArmFeedforward ff;
     private final AbsoluteEncoder absoluteEncoder;
     private Measure<Angle> initialPosition;
-    private Double setpointRad;
+    public Double setpointRad;
 
     /**
      * @param ioName    Example: Intake/Pivot

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.subsystems.arm.Arm;
 import frc.lib.subsystems.arm.ArmIO;
 import frc.lib.subsystems.arm.ArmVisualizer;
@@ -25,8 +26,8 @@ import org.littletonrobotics.junction.Logger;
 import static edu.wpi.first.units.Units.*;
 
 public class Shooter extends SubsystemBase {
-    private static final ArmFeedforward PIVOT_FF = Constants.mode.isReal() ? new ArmFeedforward(0, 1.3, 0) : new ArmFeedforward(0, 0.5, 0);
-    private static final PIDConstants PIVOT_PID = Constants.mode.isReal() ? new PIDConstants(0.15/*, 0.011*/) : new PIDConstants(2.5, 0);
+    private static final ArmFeedforward PIVOT_FF = Constants.mode.isReal() ? new ArmFeedforward(0.574, 1.0, 0.65051, 0.21235) : new ArmFeedforward(0, 0.5, 0);
+    private static final PIDConstants PIVOT_PID = Constants.mode.isReal() ? new PIDConstants(0.075/*, 0.011*/) : new PIDConstants(2.5, 0);
     private static final double PIVOT_GEAR_RATIO = 40;
     private static final Measure<Angle> PIVOT_ENCODER_OFFSET = Radians.of(0.0);
     private static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-90);
@@ -105,6 +106,23 @@ public class Shooter extends SubsystemBase {
                 FLYWHEEL_GEAR_RATIO,
                 FLYWHEEL_SETPOINT_TOLERANCE
         );
+
+        /*sysId = new SysIdRoutine(
+                new SysIdRoutine.Config(
+                        null,
+                        null,
+                        null,
+                        (state) -> Logger.recordOutput("Shooter/Pivot/SysIdState", state.toString())
+                ),
+                new SysIdRoutine.Mechanism(
+                        (voltage) -> {
+                            pivot.setpointRad = null;
+                            pivot.io.setVoltage(voltage.in(Volts));
+                        },
+                        null,
+                        this
+                )
+        );*/
     }
 
     @Override
@@ -203,4 +221,15 @@ public class Shooter extends SubsystemBase {
             feed.stop();
         }));
     }
+
+    /*private final SysIdRoutine
+    sysId;
+
+    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+        return sysId.quasistatic(direction);
+    }
+
+    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+        return sysId.dynamic(direction);
+    }*/
 }

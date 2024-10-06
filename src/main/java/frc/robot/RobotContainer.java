@@ -148,11 +148,11 @@ public class RobotContainer {
 
         autoChooser.addOption("none", null);
 
-        autoChooser.addOption("shoot & move",
+        autoChooser.addDefaultOption("shoot & move",
                 Commands.sequence(
                         intake.pivotHover(),
                         shooter.pivotShoot(),
-                        Commands.run(() -> shooter.shootPercent(0.5, 0.6)),
+                        shooter.shootPercent(0.5, 0.6),
                         drive.driveVelocity(new ChassisSpeeds(2, 0, 0), 3)
                 )
         );
@@ -174,6 +174,23 @@ public class RobotContainer {
                 "Drive SysId (Dynamic Reverse)",
                 drive.sysIdDynamic(SysIdRoutine.Direction.kReverse)
         );
+
+        /*autoChooser.addOption(
+                "Shooter SysId (Quasistatic Forward)",
+                shooter.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
+        );
+        autoChooser.addOption(
+                "Shooter SysId (Quasistatic Reverse)",
+                shooter.sysIdQuasistatic(SysIdRoutine.Direction.kReverse)
+        );
+        autoChooser.addOption(
+                "Shooter SysId (Dynamic Forward)",
+                shooter.sysIdDynamic(SysIdRoutine.Direction.kForward)
+        );
+        autoChooser.addOption(
+                "Shooter SysId (Dynamic Reverse)",
+                shooter.sysIdDynamic(SysIdRoutine.Direction.kReverse)
+        );*/
     }
 
     private void setDefaultCommands() {
@@ -258,7 +275,7 @@ public class RobotContainer {
         operatorController.x().toggleOnTrue(Commands.parallel(
                 shooter.eject(),
                 intake.eject()
-        ).withTimeout(2));
+        ).withTimeout(1));
 
         operatorController.b().toggleOnTrue(Commands.sequence(
                 shooter.pivotWaitForIntake(),
