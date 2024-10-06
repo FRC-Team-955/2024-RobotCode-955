@@ -146,6 +146,17 @@ public class RobotContainer {
                 drive.driveVelocity(new ChassisSpeeds(2, 0, 0), 3)
         );
 
+        autoChooser.addOption("none", null);
+
+        autoChooser.addOption("shoot & move",
+                Commands.sequence(
+                        intake.pivotHover(),
+                        shooter.pivotShoot(),
+                        Commands.run(() -> shooter.shootPercent(0.5, 0.6)),
+                        drive.driveVelocity(new ChassisSpeeds(2, 0, 0), 3)
+                )
+        );
+
         // Set up SysId routines
         autoChooser.addOption(
                 "Drive SysId (Quasistatic Forward)",
@@ -229,29 +240,11 @@ public class RobotContainer {
 
 //        driverController.leftBumper().toggleOnTrue(Commands.sequence(
         operatorController.leftTrigger(0.25).toggleOnTrue(Commands.sequence(
-                shooter.pivotWaitForIntake(),
-                intake.pivotHandoff(),
-                shooter.pivotHandoff(),
-                Commands.race(
-                        intake.feedHandoff(),
-                        shooter.feedHandoff()
-                ),
-                shooter.pivotWaitForIntake(),
-                intake.pivotHover(),
                 shooter.pivotShoot(),
-                Commands.run(() -> shooter.shootPercent(0.5, 0.6).schedule())
+                Commands.run(() -> shooter.shootPercent(0.5, 1).schedule())
         ));
 
         operatorController.leftBumper().toggleOnTrue(Commands.sequence(
-                shooter.pivotWaitForIntake(),
-                intake.pivotHandoff(),
-                shooter.pivotHandoff(),
-                Commands.race(
-                        intake.feedHandoff(),
-                        shooter.feedHandoff()
-                ),
-                shooter.pivotWaitForIntake(),
-                intake.pivotHover(),
                 shooter.pivotAmp(),
                 Commands.run(() -> shooter.shootPercent(0.25, 0.25).schedule())
         ));
@@ -266,6 +259,18 @@ public class RobotContainer {
                 shooter.eject(),
                 intake.eject()
         ).withTimeout(2));
+
+        operatorController.b().toggleOnTrue(Commands.sequence(
+                shooter.pivotWaitForIntake(),
+                intake.pivotHandoff(),
+                shooter.pivotHandoff(),
+                Commands.race(
+                        intake.feedHandoff(),
+                        shooter.feedHandoff()
+                ),
+                shooter.pivotWaitForIntake(),
+                intake.pivotHover()
+        ));
     }
 
     public Command getAutonomousCommand() {

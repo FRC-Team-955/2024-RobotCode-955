@@ -179,7 +179,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command feedHandoff() {
-        return feedPercent(0.4).until(this::hasNoteDebounced);
+        return feedPercent(0.3).until(this::hasNoteDebounced);
     }
 
     public Command shootPercentUntimed(double percent) {
@@ -190,7 +190,7 @@ public class Shooter extends SubsystemBase {
         return Commands.sequence(
                 startEnd(() -> flywheelsPercent(percent), () -> {
                 }).withTimeout(spinupTime),
-                feedPercent(1).until(() -> !hasNoteDebounced())
+                feedPercent(1).withTimeout(0.6)
         ).finallyDo(this::flywheelsStop);
     }
 
