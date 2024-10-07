@@ -258,12 +258,12 @@ public class RobotContainer {
 //        driverController.leftBumper().toggleOnTrue(Commands.sequence(
         operatorController.leftTrigger(0.25).toggleOnTrue(Commands.sequence(
                 shooter.pivotShoot(),
-                Commands.run(() -> shooter.shootPercent(0.5, 1).schedule())
+                Commands.runOnce(() -> shooter.shootPercent(0.5, 1).schedule())
         ));
 
         operatorController.leftBumper().toggleOnTrue(Commands.sequence(
                 shooter.pivotAmp(),
-                Commands.run(() -> shooter.shootPercent(0.25, 0.25).schedule())
+                Commands.runOnce(() -> shooter.shootPercent(0.25, 0.25).schedule())
         ));
 
 //        driverController.leftTrigger(0.25).whileTrue(Commands.sequence(
