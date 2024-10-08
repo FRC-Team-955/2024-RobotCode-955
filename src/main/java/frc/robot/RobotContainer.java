@@ -30,7 +30,6 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
  */
 public class RobotContainer {
     private final CommandXboxController driverController = Constants.Simulation.useNintendoSwitchProController ? new CommandNintendoSwitchProController(0) : new CommandXboxController(0);
-    private final CommandXboxController operatorController = Constants.Simulation.useNintendoSwitchProController ? new CommandNintendoSwitchProController(1) : new CommandXboxController(1);
 
     private final LoggedDashboardChooser<Command> autoChooser = new LoggedDashboardChooser<>("Auto Choices"); //AutoBuilder.buildAutoChooser());
 
@@ -183,7 +182,7 @@ public class RobotContainer {
     private void configureButtonBindings() {
         driverController.y().onTrue(drive.resetRotationCommand());
 
-        operatorController.rightTrigger(0.25).whileTrue(
+        driverController.rightTrigger(0.25).whileTrue(
                 intake.intake()
                 // auto handoff after intake
                 //        .finallyDo(() -> Commands.sequence(
@@ -223,12 +222,12 @@ public class RobotContainer {
 //        ));
 
 //        driverController.leftBumper().toggleOnTrue(Commands.sequence(
-        operatorController.leftTrigger(0.25).toggleOnTrue(Commands.sequence(
+        driverController.leftTrigger(0.25).toggleOnTrue(Commands.sequence(
                 shooter.pivotShoot(),
-                Commands.runOnce(() -> shooter.shootPercent(0.5, 1).schedule())
+                Commands.runOnce(() -> shooter.shootPercent(0.5, 0.75).schedule())
         ));
 
-        operatorController.leftBumper().toggleOnTrue(Commands.sequence(
+        driverController.leftBumper().toggleOnTrue(Commands.sequence(
                 shooter.pivotAmp(),
                 Commands.runOnce(() -> shooter.shootPercent(0.25, 0.25).schedule())
         ));
@@ -239,12 +238,12 @@ public class RobotContainer {
 //                ).finallyDo(() -> shooter.shootPercent(0.5, 0).schedule())
 //        );
 
-        operatorController.x().toggleOnTrue(Commands.parallel(
+        driverController.x().toggleOnTrue(Commands.parallel(
                 shooter.eject(),
                 intake.eject()
         ).withTimeout(1));
 
-        operatorController.b().toggleOnTrue(Commands.sequence(
+        driverController.b().toggleOnTrue(Commands.sequence(
                 shooter.pivotWaitForIntake(),
                 intake.pivotHandoff(),
                 shooter.pivotHandoff(),

@@ -43,7 +43,7 @@ public class ShooterIOSparkMaxBeamBreak extends ShooterIO {
         feedMotor.setCANTimeout(250);
         feedMotor.enableVoltageCompensation(12.0);
         feedMotor.setSmartCurrentLimit(40);
-        feedMotor.setInverted(true);
+        feedMotor.setInverted(false);
         feedMotor.burnFlash();
         feedEncoder = feedMotor.getEncoder();
         feedPid = feedMotor.getPIDController();
