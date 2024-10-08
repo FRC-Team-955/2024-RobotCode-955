@@ -9,28 +9,18 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.lib.subsystems.arm.ArmIO;
-import frc.lib.subsystems.arm.ArmIOSim;
-import frc.lib.subsystems.arm.ArmIOSparkMax;
-import frc.lib.subsystems.wheel.WheelIO;
-import frc.lib.subsystems.wheel.WheelIOSim;
-import frc.lib.subsystems.wheel.WheelIOSparkMax;
-import frc.lib.util.CommandNintendoSwitchProController;
-import frc.lib.util.MotorFlags;
-import frc.lib.util.absoluteencoder.AbsoluteEncoderIO;
-import frc.lib.util.absoluteencoder.AbsoluteEncoderIOREVThroughBore;
-import frc.lib.util.absoluteencoder.AbsoluteEncoderIOSim;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
-import frc.robot.subsystems.shooter.ShooterIOReal;
 import frc.robot.subsystems.shooter.ShooterIOSim;
+import frc.robot.subsystems.shooter.ShooterIOSparkMaxBeamBreak;
+import frc.robot.util.CommandNintendoSwitchProController;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
-
-import java.util.EnumSet;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -60,20 +50,8 @@ public class RobotContainer {
                         new ModuleIOSparkMaxCANcoder(2),
                         new ModuleIOSparkMaxCANcoder(3)
                 );
-                intake = new Intake(
-                        new IntakeIO(),
-                        new ArmIOSparkMax(3),
-                        new AbsoluteEncoderIO(),
-                        new WheelIOSparkMax(16, EnumSet.of(MotorFlags.Inverted))
-                );
-                shooter = new Shooter(
-                        new ShooterIOReal(6),
-                        new ArmIOSparkMax(7),
-                        new AbsoluteEncoderIOREVThroughBore(0),
-                        new WheelIOSparkMax(9, EnumSet.noneOf(MotorFlags.class)),
-                        new WheelIOSparkMax(10, EnumSet.of(MotorFlags.Inverted)),
-                        new WheelIOSparkMax(8, EnumSet.of(MotorFlags.Inverted))
-                );
+                intake = new Intake(new IntakeIOSparkMax(3, 16));
+                shooter = new Shooter(new ShooterIOSparkMaxBeamBreak(6, 7, 9, 10, 8));
             }
 
             case SIM -> {
@@ -84,20 +62,8 @@ public class RobotContainer {
                         new ModuleIOSim(),
                         new ModuleIOSim()
                 );
-                intake = new Intake(
-                        new IntakeIO(),
-                        new ArmIOSim(DCMotor.getNEO(1), 0.3, 0.045),
-                        new AbsoluteEncoderIOSim(),
-                        new WheelIOSim(DCMotor.getNEO(1))
-                );
-                shooter = new Shooter(
-                        new ShooterIOSim(),
-                        new ArmIOSim(DCMotor.getNEO(1), 0.4, 0.083),
-                        new AbsoluteEncoderIOSim(),
-                        new WheelIOSim(DCMotor.getNEO(1)),
-                        new WheelIOSim(DCMotor.getNEO(1)),
-                        new WheelIOSim(DCMotor.getNEO(1))
-                );
+                intake = new Intake(new IntakeIOSim(DCMotor.getNEO(1), 0.3, 0.045, DCMotor.getNEO(1)));
+                shooter = new Shooter(new ShooterIOSim(/*DCMotor.getNEO(1), 0.4, 0.083, DCMotor.getNEO(1), DCMotor.getNEO(1), DCMotor.getNEO(1)*/));
             }
 
             case REPLAY -> {
@@ -108,8 +74,8 @@ public class RobotContainer {
                         new ModuleIO(),
                         new ModuleIO()
                 );
-                intake = new Intake(new IntakeIO(), new ArmIO(), new AbsoluteEncoderIO(), new WheelIO());
-                shooter = new Shooter(new ShooterIO(), new ArmIO(), new AbsoluteEncoderIO(), new WheelIO(), new WheelIO(), new WheelIO());
+                intake = new Intake(new IntakeIO());
+                shooter = new Shooter(new ShooterIO());
             }
         }
 
@@ -194,6 +160,7 @@ public class RobotContainer {
     }
 
     private void setDefaultCommands() {
+        //noinspection SuspiciousNameCombination
         drive.setDefaultCommand(
                 drive.joystickDrive(
                         driverController::getLeftY,

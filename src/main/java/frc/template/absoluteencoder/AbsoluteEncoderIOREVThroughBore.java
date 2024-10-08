@@ -1,4 +1,4 @@
-package frc.lib.util.absoluteencoder;
+package frc.template.absoluteencoder;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 public class AbsoluteEncoderIOREVThroughBore extends AbsoluteEncoderIO {
     private final DutyCycleEncoder encoder;
 
-    private double gearRatio;
+    private double gearRatio = 1.0;
     private double offsetRad;
 
     public AbsoluteEncoderIOREVThroughBore(int pwmID) {
@@ -16,7 +16,7 @@ public class AbsoluteEncoderIOREVThroughBore extends AbsoluteEncoderIO {
     @Override
     public void updateInputs(AbsoluteEncoderIOInputs inputs) {
         inputs.isConnected = encoder.isConnected();
-        inputs.positionRad = Units.rotationsToRadians(encoder.getAbsolutePosition()) / gearRatio - offsetRad;
+        inputs.absolutePositionRad = Units.rotationsToRadians(encoder.getAbsolutePosition()) / gearRatio - offsetRad;
     }
 
     @Override

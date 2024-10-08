@@ -1,4 +1,4 @@
-package frc.lib.util.absoluteencoder;
+package frc.template.absoluteencoder;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.Angle;
@@ -20,6 +20,6 @@ public class AbsoluteEncoderIOSim extends AbsoluteEncoderIO {
     @Override
     public void updateInputs(AbsoluteEncoderIOInputs inputs) {
         inputs.isConnected = true;
-        inputs.positionRad = positionRad;
+        inputs.absolutePositionRad = positionRad;
     }
 }

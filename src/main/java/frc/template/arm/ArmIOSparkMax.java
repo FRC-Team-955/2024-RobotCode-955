@@ -1,27 +1,23 @@
-package frc.lib.subsystems.wheel;
+package frc.template.arm;
 
 import com.pathplanner.lib.util.PIDConstants;
 import com.revrobotics.*;
 import edu.wpi.first.math.util.Units;
-import frc.lib.util.MotorFlags;
 
-import java.util.EnumSet;
-
-public class WheelIOSparkMax extends WheelIO {
+public class ArmIOSparkMax extends ArmIO {
     private final CANSparkMax motor;
     private final RelativeEncoder encoder;
     private final SparkPIDController pid;
 
-    private double gearRatio;
+    private double gearRatio = 1.0;
 
-    public WheelIOSparkMax(int canID, EnumSet<MotorFlags> flags) {
+    public ArmIOSparkMax(int canID) {
         motor = new CANSparkMax(canID, CANSparkLowLevel.MotorType.kBrushless);
         motor.restoreFactoryDefaults();
-        motor.setIdleMode(flags.contains(MotorFlags.IdleModeBrake) ? CANSparkBase.IdleMode.kBrake : CANSparkBase.IdleMode.kCoast);
+        motor.setIdleMode(CANSparkBase.IdleMode.kBrake);
         motor.setCANTimeout(250);
         motor.enableVoltageCompensation(12.0);
         motor.setSmartCurrentLimit(40);
-        motor.setInverted(flags.contains(MotorFlags.Inverted));
         motor.burnFlash();
 
         encoder = motor.getEncoder();
@@ -30,7 +26,7 @@ public class WheelIOSparkMax extends WheelIO {
     }
 
     @Override
-    public void updateInputs(WheelIOInputs inputs) {
+    public void updateInputs(ArmIOInputs inputs) {
         inputs.positionRad = Units.rotationsToRadians(encoder.getPosition()) / gearRatio;
         inputs.velocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(encoder.getVelocity()) / gearRatio;
         inputs.appliedVolts = motor.getAppliedOutput() * motor.getBusVoltage();
@@ -43,14 +39,20 @@ public class WheelIOSparkMax extends WheelIO {
     }
 
     @Override
-    public void setSetpoint(double setpointVelocityRadPerSec, double ffVolts) {
+    public void setSetpoint(double setpointPositionRad, double ffVolts) {
         pid.setReference(
-                Units.radiansPerSecondToRotationsPerMinute(setpointVelocityRadPerSec * gearRatio),
-                CANSparkBase.ControlType.kVelocity,
+                Units.radiansToRotations(setpointPositionRad * gearRatio),
+                CANSparkBase.ControlType.kPosition,
                 0,
                 ffVolts,
                 SparkPIDController.ArbFFUnits.kVoltage
         );
+    }
+
+
+    @Override
+    public void setPosition(double currentPositionRad) {
+        encoder.setPosition(Units.radiansToRotations(currentPositionRad * gearRatio));
     }
 
     @Override

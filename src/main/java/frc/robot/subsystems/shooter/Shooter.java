@@ -7,18 +7,11 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Velocity;
-import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.lib.subsystems.arm.Arm;
-import frc.lib.subsystems.arm.ArmIO;
-import frc.lib.subsystems.arm.ArmVisualizer;
-import frc.lib.subsystems.wheel.Wheel;
-import frc.lib.subsystems.wheel.WheelIO;
-import frc.lib.util.absoluteencoder.AbsoluteEncoderIO;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -27,9 +20,9 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 import static edu.wpi.first.units.Units.*;
 
 public class Shooter extends SubsystemBase {
-    private static final ArmFeedforward PIVOT_FF = Constants.mode.isReal() ? new ArmFeedforward(0.574, 1.0, 0.65051, 0.21235) : new ArmFeedforward(0, 0.5, 0);
-    private static final PIDConstants PIVOT_PID = Constants.mode.isReal() ? new PIDConstants(0.075/*, 0.011*/) : new PIDConstants(2.5, 0);
-    private static final double PIVOT_GEAR_RATIO = 40;
+    protected static final ArmFeedforward PIVOT_FF = Constants.mode.isReal() ? new ArmFeedforward(0.574, 1.0, 0.65051, 0.21235) : new ArmFeedforward(0, 0.5, 0);
+    protected static final PIDConstants PIVOT_PID = Constants.mode.isReal() ? new PIDConstants(0.075/*, 0.011*/) : new PIDConstants(2.5, 0);
+    protected static final double PIVOT_GEAR_RATIO = 40;
     private static final Measure<Angle> PIVOT_ENCODER_OFFSET = Radians.of(0.0);
     private static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-90);
     private static final Measure<Angle> PIVOT_HOVER = Degrees.of(-90);
@@ -39,27 +32,31 @@ public class Shooter extends SubsystemBase {
     private final LoggedDashboardNumber shoot_angle = new LoggedDashboardNumber("Shoot angle degree", -45);
     private static final Measure<Angle> PIVOT_EJECT = Degrees.of(30);
     private static final Measure<Angle> PIVOT_AMP = Degrees.of(25);
+    private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(7);
 
-    private static final SimpleMotorFeedforward FEED_FF = Constants.mode.isReal() ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
-    private static final PIDConstants FEED_PID = Constants.mode.isReal() ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
-    private static final double FEED_GEAR_RATIO = 3;
+    protected static final SimpleMotorFeedforward FEED_FF = Constants.mode.isReal() ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
+    protected static final PIDConstants FEED_PID = Constants.mode.isReal() ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
+    protected static final double FEED_GEAR_RATIO = 3;
     private static final Measure<Velocity<Angle>> FEED_SETPOINT_TOLERANCE = RPM.of(10);
     private static final double FEED_BEAM_BRAKE_DEBOUNCE = 0.05;
 
     private static final SimpleMotorFeedforward FLYWHEEL_FF = Constants.mode.isReal() ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
     private static final PIDConstants FLYWHEEL_PID = Constants.mode.isReal() ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
-    private static final double FLYWHEEL_GEAR_RATIO = 1;
+    protected static final double FLYWHEEL_GEAR_RATIO = 1;
     private static final Measure<Velocity<Angle>> FLYWHEEL_SETPOINT_TOLERANCE = RPM.of(10);
 
     private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
     private final ShooterIO io;
     private final Debouncer hasNoteDebouncer = new Debouncer(FEED_BEAM_BRAKE_DEBOUNCE);
 
-    private final Arm pivot;
-    private final ArmVisualizer pivotVisualizer = new ArmVisualizer(Color.kOrange, 6, 6, 2.5);
-    private final Wheel feed;
-    private final Wheel flywheelTop;
-    private final Wheel flywheelBottom;
+    private final ArmFeedforward pivotFeedforward = PIVOT_FF;
+    private Measure<Angle> pivotSetpoint = PIVOT_INITIAL_POSITION;
+
+    private final SimpleMotorFeedforward feedFeedforward = FEED_FF;
+    private final Measure<Velocity<Angle>> feedSetpoint = null;
+
+    private final SimpleMotorFeedforward flywheelsFeedforward = FLYWHEEL_FF;
+    private final Measure<Velocity<Angle>> flywheelsSetpoint = null;
 
     private static Shooter instance;
 
@@ -67,47 +64,18 @@ public class Shooter extends SubsystemBase {
         return instance;
     }
 
-    public Shooter(ShooterIO io, ArmIO pivotIO, AbsoluteEncoderIO pivotAbsoluteEncoderIO, WheelIO feedIO, WheelIO flywheelTopIO, WheelIO flywheelBottomIO) {
+    public Shooter(ShooterIO io) {
         if (instance != null)
             throw new RuntimeException("Duplicate subsystem created!");
         instance = this;
 
         this.io = io;
 
-        pivot = new Arm(
-                "Shooter/Pivot",
-                pivotIO,
-                PIVOT_FF,
-                PIVOT_PID,
-                PIVOT_GEAR_RATIO,
-                PIVOT_INITIAL_POSITION
-//                pivotAbsoluteEncoderIO,
-//                PIVOT_OFFSET
-        );
-        feed = new Wheel(
-                "Shooter/Feed",
-                feedIO,
-                FEED_FF,
-                FEED_PID,
-                FEED_GEAR_RATIO,
-                FEED_SETPOINT_TOLERANCE
-        );
-        flywheelTop = new Wheel(
-                "Shooter/FlywheelTop",
-                flywheelTopIO,
-                FLYWHEEL_FF,
-                FLYWHEEL_PID,
-                FLYWHEEL_GEAR_RATIO,
-                FLYWHEEL_SETPOINT_TOLERANCE
-        );
-        flywheelBottom = new Wheel(
-                "Shooter/FlywheelBottom",
-                flywheelBottomIO,
-                FLYWHEEL_FF,
-                FLYWHEEL_PID,
-                FLYWHEEL_GEAR_RATIO,
-                FLYWHEEL_SETPOINT_TOLERANCE
-        );
+        io.pivotConfigurePID(PIVOT_PID);
+        io.pivotSetPosition(PIVOT_INITIAL_POSITION.in(Radians));
+
+        io.feedConfigurePID(FEED_PID);
+        io.flywheelsConfigurePID(FLYWHEEL_PID);
 
         /*sysId = new SysIdRoutine(
                 new SysIdRoutine.Config(
@@ -118,8 +86,8 @@ public class Shooter extends SubsystemBase {
                 ),
                 new SysIdRoutine.Mechanism(
                         (voltage) -> {
-                            pivot.setpointRad = null;
-                            pivot.io.setVoltage(voltage.in(Volts));
+                            pivotSetpointRad = null;
+                            io.pivotSetVoltage(voltage.in(Volts));
                         },
                         null,
                         this
@@ -131,13 +99,42 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Inputs/Shooter", inputs);
-        pivot.periodic();
-        feed.periodic();
-        flywheelTop.periodic();
-        flywheelBottom.periodic();
 
-        pivotVisualizer.update(pivot);
-        Logger.recordOutput("Shooter/Mechanism", pivotVisualizer.mechanism);
+        Logger.recordOutput("Shooter/Pivot/ClosedLoop", pivotSetpoint != null);
+        if (pivotSetpoint != null) {
+            Logger.recordOutput("Shooter/Pivot/Setpoint", pivotSetpoint);
+
+            if (RobotState.isEnabled()) {
+                var pivotSetpointRad = pivotSetpoint.in(Radians);
+                var ffVolts = pivotFeedforward.calculate(pivotSetpointRad, 0);
+                Logger.recordOutput("Shooter/Pivot/FFVolts", ffVolts);
+                io.pivotSetSetpoint(pivotSetpointRad, ffVolts);
+            }
+        }
+
+        Logger.recordOutput("Shooter/Feed/ClosedLoop", feedSetpoint != null);
+        if (feedSetpoint != null) {
+            Logger.recordOutput("Shooter/Feed/Setpoint", feedSetpoint);
+
+            if (RobotState.isEnabled()) {
+                var feedSetpointRadPerSec = feedSetpoint.in(RadiansPerSecond);
+                var ffVolts = feedFeedforward.calculate(feedSetpointRadPerSec, 0);
+                Logger.recordOutput("Shooter/Feed/FFVolts", ffVolts);
+                io.feedSetSetpoint(feedSetpointRadPerSec, ffVolts);
+            }
+        }
+
+        Logger.recordOutput("Shooter/Flywheels/ClosedLoop", flywheelsSetpoint != null);
+        if (flywheelsSetpoint != null) {
+            Logger.recordOutput("Shooter/Flywheels/Setpoint", flywheelsSetpoint);
+
+            if (RobotState.isEnabled()) {
+                var flywheelsSetpointRadPerSec = flywheelsSetpoint.in(RadiansPerSecond);
+                var ffVolts = flywheelsFeedforward.calculate(flywheelsSetpointRadPerSec, 0);
+                Logger.recordOutput("Shooter/Flywheels/FFVolts", ffVolts);
+                io.flywheelsSetSetpoint(flywheelsSetpointRadPerSec, ffVolts);
+            }
+        }
     }
 
     @AutoLogOutput
@@ -146,32 +143,34 @@ public class Shooter extends SubsystemBase {
     }
 
     public boolean alreadyAtHover() {
-        return pivot.getPosition().lte(PIVOT_HOVER.plus(Degrees.of(10)));
+        return inputs.pivotPositionRad <= PIVOT_HOVER.plus(Degrees.of(10)).in(Radians);
+    }
+
+    private boolean pivotAtSetpoint() {
+        return Math.abs(inputs.pivotPositionRad - pivotSetpoint.in(Radians)) <= PIVOT_SETPOINT_TOLERANCE.in(Radians);
     }
 
     private Command pivotSetpoint(Measure<Angle> setpoint) {
         return startEnd(
-                () -> pivot.setSetpoint(setpoint),
+                () -> pivotSetpoint = setpoint,
                 () -> {
                 }
-        ).until(pivot::atSetpoint);
+        ).until(this::pivotAtSetpoint);
     }
 
     private Command feedPercent(double percent) {
         return startEnd(
-                () -> feed.setPercent(percent),
-                feed::stop
+                () -> io.feedSetVoltage(percent * 12.0),
+                () -> io.feedSetVoltage(0)
         );
     }
 
     private void flywheelsPercent(double percent) {
-        flywheelTop.setPercent(percent);
-        flywheelBottom.setPercent(percent);
+        io.flywheelsSetVoltage(percent * 12.0);
     }
 
     private void flywheelsStop() {
-        flywheelTop.stop();
-        flywheelBottom.stop();
+        io.flywheelsSetVoltage(0);
     }
 
     public Command pivotHover() {
@@ -190,7 +189,7 @@ public class Shooter extends SubsystemBase {
         return pivotSetpoint(PIVOT_SHOOT);
         /*
         return startEnd(
-                () -> pivot.setSetpoint(Degrees.of(shoot_angle.get())),
+                () -> pivot.pivotSetSetpoint(Degrees.of(shoot_angle.get())),
                 () -> {
                 }
         ).until(pivot::atSetpoint);
@@ -224,10 +223,10 @@ public class Shooter extends SubsystemBase {
     public Command eject() {
         return pivotEject().andThen(startEnd(() -> {
             flywheelsPercent(0.5);
-            feed.setPercent(1);
+            io.feedSetVoltage(12);
         }, () -> {
             flywheelsStop();
-            feed.stop();
+            io.feedSetVoltage(0);
         }));
     }
 

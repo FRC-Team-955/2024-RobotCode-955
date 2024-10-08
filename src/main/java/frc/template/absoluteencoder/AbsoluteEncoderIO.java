@@ -1,4 +1,4 @@
-package frc.lib.util.absoluteencoder;
+package frc.template.absoluteencoder;
 
 import org.littletonrobotics.junction.AutoLog;
 
@@ -6,7 +6,7 @@ public class AbsoluteEncoderIO {
     @AutoLog
     public static class AbsoluteEncoderIOInputs {
         public boolean isConnected = false;
-        public double positionRad = 0.0;
+        public double absolutePositionRad = 0.0;
     }
 
     public void updateInputs(AbsoluteEncoderIOInputs inputs) {

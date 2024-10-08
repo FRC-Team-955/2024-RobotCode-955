@@ -1,4 +1,4 @@
-package frc.lib.util.absoluteencoder;
+package frc.template.absoluteencoder;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -10,7 +10,7 @@ public class AbsoluteEncoderIOCANcoder extends AbsoluteEncoderIO {
 
     private final StatusSignal<Double> absolutePosition;
 
-    private double gearRatio;
+    private double gearRatio = 1.0;
     private double offsetRad;
 
     public AbsoluteEncoderIOCANcoder(int canID) {
@@ -23,7 +23,7 @@ public class AbsoluteEncoderIOCANcoder extends AbsoluteEncoderIO {
     @Override
     public void updateInputs(AbsoluteEncoderIOInputs inputs) {
         inputs.isConnected = absolutePosition.refresh().getStatus().isOK();
-        inputs.positionRad = Units.rotationsToRadians(absolutePosition.getValueAsDouble()) / gearRatio - offsetRad;
+        inputs.absolutePositionRad = Units.rotationsToRadians(absolutePosition.getValueAsDouble()) / gearRatio - offsetRad;
     }
 
     @Override

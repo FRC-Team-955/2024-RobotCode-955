@@ -1,4 +1,4 @@
-package frc.lib.subsystems.wheel;
+package frc.template.wheel;
 
 import com.pathplanner.lib.util.PIDConstants;
 import org.littletonrobotics.junction.AutoLog;

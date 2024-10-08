@@ -1,5 +1,7 @@
-package frc.lib.subsystems.arm;
+package frc.template.arm;
 
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color;
@@ -17,7 +19,7 @@ public class ArmVisualizer {
         ligament = root.append(new MechanismLigament2d("Pivot", length, 0.0, 4.0, new Color8Bit(color)));
     }
 
-    public void update(Arm arm) {
-        ligament.setAngle(arm.getPosition().in(Degrees));
+    public void update(Measure<Angle> armPosition) {
+        ligament.setAngle(armPosition.in(Degrees));
     }
 }

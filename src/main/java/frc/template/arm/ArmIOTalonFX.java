@@ -1,21 +1,17 @@
-package frc.lib.subsystems.wheel;
+package frc.template.arm;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.util.Units;
-import frc.lib.util.MotorFlags;
 
-import java.util.EnumSet;
-
-public class WheelIOTalonFX extends WheelIO {
+public class ArmIOTalonFX extends ArmIO {
     private final TalonFX motor;
 
     private final StatusSignal<Double> position;
@@ -23,15 +19,14 @@ public class WheelIOTalonFX extends WheelIO {
     private final StatusSignal<Double> appliedVolts;
     private final StatusSignal<Double> current;
 
-    private double gearRatio;
+    private double gearRatio = 1.0;
 
-    public WheelIOTalonFX(int canID, EnumSet<MotorFlags> flags) {
+    public ArmIOTalonFX(int canID) {
         motor = new TalonFX(canID);
         var config = new TalonFXConfiguration();
         config.CurrentLimits.SupplyCurrentLimit = 40.0;
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
-        config.MotorOutput.NeutralMode = flags.contains(MotorFlags.IdleModeBrake) ? NeutralModeValue.Brake : NeutralModeValue.Coast;
-        config.MotorOutput.Inverted = flags.contains(MotorFlags.Inverted) ? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive;
+        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         motor.getConfigurator().apply(config);
 
         position = motor.getPosition();
@@ -44,7 +39,7 @@ public class WheelIOTalonFX extends WheelIO {
     }
 
     @Override
-    public void updateInputs(WheelIOInputs inputs) {
+    public void updateInputs(ArmIOInputs inputs) {
         BaseStatusSignal.refreshAll(position, velocity, appliedVolts, current);
         inputs.positionRad = Units.rotationsToRadians(position.getValue()) / gearRatio;
         inputs.velocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(velocity.getValue()) / gearRatio;
@@ -58,9 +53,9 @@ public class WheelIOTalonFX extends WheelIO {
     }
 
     @Override
-    public void setSetpoint(double setpointVelocityRadPerSec, double ffVolts) {
-        motor.setControl(new VelocityVoltage(
-                Units.radiansToRotations(setpointVelocityRadPerSec * gearRatio),
+    public void setSetpoint(double setpointPositionRad, double ffVolts) {
+        motor.setControl(new PositionVoltage(
+                Units.radiansToRotations(setpointPositionRad * gearRatio),
                 0.0,
                 true,
                 ffVolts,
@@ -69,6 +64,11 @@ public class WheelIOTalonFX extends WheelIO {
                 false,
                 false
         ));
+    }
+
+    @Override
+    public void setPosition(double currentPositionRad) {
+        motor.setPosition(Units.radiansToRotations(currentPositionRad * gearRatio));
     }
 
     @Override
