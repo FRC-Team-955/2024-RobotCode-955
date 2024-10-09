@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -25,7 +26,7 @@ public class Shooter extends SubsystemBase {
     protected static final double PIVOT_GEAR_RATIO = 40;
     private static final Measure<Angle> PIVOT_ENCODER_OFFSET = Radians.of(0.0);
     private static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-90);
-    private static final Measure<Angle> PIVOT_HOVER = Degrees.of(-90);
+    private static final Measure<Angle> PIVOT_HOVER = Degrees.of(0);
     private static final Measure<Angle> PIVOT_WAIT_FOR_INTAKE = Degrees.of(-30);
     private static final Measure<Angle> PIVOT_HANDOFF = Degrees.of(-45);
     private static final Measure<Angle> PIVOT_SHOOT = Degrees.of(-45);
@@ -43,7 +44,7 @@ public class Shooter extends SubsystemBase {
     private static final SimpleMotorFeedforward FLYWHEEL_FF = Constants.mode.isReal() ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
     private static final PIDConstants FLYWHEEL_PID = Constants.mode.isReal() ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
     protected static final double FLYWHEEL_GEAR_RATIO = 1;
-    private static final Measure<Velocity<Angle>> FLYWHEEL_SETPOINT_TOLERANCE = RPM.of(10);
+    private static final Measure<Velocity<Angle>> FLYWHEEL_SETPOINT_TOLERANCE = RPM.of(50);
 
     private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
     private final ShooterIO io;
@@ -51,12 +52,15 @@ public class Shooter extends SubsystemBase {
 
     private final ArmFeedforward pivotFeedforward = PIVOT_FF;
     private Measure<Angle> pivotSetpoint = PIVOT_INITIAL_POSITION;
+    public final SysIdRoutine pivotSysId;
 
     private final SimpleMotorFeedforward feedFeedforward = FEED_FF;
-    private final Measure<Velocity<Angle>> feedSetpoint = null;
+    private Measure<Velocity<Angle>> feedSetpoint = null;
+    public final SysIdRoutine feedSysId;
 
     private final SimpleMotorFeedforward flywheelsFeedforward = FLYWHEEL_FF;
-    private final Measure<Velocity<Angle>> flywheelsSetpoint = null;
+    private Measure<Velocity<Angle>> flywheelsSetpoint = null;
+    public final SysIdRoutine flywheelsSysId;
 
     private static Shooter instance;
 
@@ -77,7 +81,7 @@ public class Shooter extends SubsystemBase {
         io.feedConfigurePID(FEED_PID);
         io.flywheelsConfigurePID(FLYWHEEL_PID);
 
-        /*sysId = new SysIdRoutine(
+        pivotSysId = new SysIdRoutine(
                 new SysIdRoutine.Config(
                         null,
                         null,
@@ -86,13 +90,47 @@ public class Shooter extends SubsystemBase {
                 ),
                 new SysIdRoutine.Mechanism(
                         (voltage) -> {
-                            pivotSetpointRad = null;
+                            pivotSetpoint = null;
                             io.pivotSetVoltage(voltage.in(Volts));
                         },
                         null,
                         this
                 )
-        );*/
+        );
+
+        feedSysId = new SysIdRoutine(
+                new SysIdRoutine.Config(
+                        null,
+                        null,
+                        null,
+                        (state) -> Logger.recordOutput("Shooter/Feed/SysIdState", state.toString())
+                ),
+                new SysIdRoutine.Mechanism(
+                        (voltage) -> {
+                            feedSetpoint = null;
+                            io.feedSetVoltage(voltage.in(Volts));
+                        },
+                        null,
+                        this
+                )
+        );
+
+        flywheelsSysId = new SysIdRoutine(
+                new SysIdRoutine.Config(
+                        null,
+                        null,
+                        null,
+                        (state) -> Logger.recordOutput("Shooter/Flywheels/SysIdState", state.toString())
+                ),
+                new SysIdRoutine.Mechanism(
+                        (voltage) -> {
+                            flywheelsSetpoint = null;
+                            io.flywheelsSetVoltage(voltage.in(Volts));
+                        },
+                        null,
+                        this
+                )
+        );
     }
 
     @Override
@@ -148,6 +186,11 @@ public class Shooter extends SubsystemBase {
 
     private boolean pivotAtSetpoint() {
         return Math.abs(inputs.pivotPositionRad - pivotSetpoint.in(Radians)) <= PIVOT_SETPOINT_TOLERANCE.in(Radians);
+    }
+
+    private boolean flywheelsAtSetpoint() {
+        return Math.abs(inputs.flywheelTopVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= FLYWHEEL_SETPOINT_TOLERANCE.in(RadiansPerSecond) &&
+                Math.abs(inputs.flywheelBottomVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= FLYWHEEL_SETPOINT_TOLERANCE.in(RadiansPerSecond);
     }
 
     private Command pivotSetpoint(Measure<Angle> setpoint) {
@@ -230,14 +273,23 @@ public class Shooter extends SubsystemBase {
         }));
     }
 
-    /*private final SysIdRoutine
-    sysId;
+    public final LoggedDashboardNumber shootConfigurableSpeed = new LoggedDashboardNumber("Shoot Configurable Speed (RPM)", 0);
+    public final LoggedDashboardNumber shootConfigurableAngle = new LoggedDashboardNumber("Shoot Configurable Angle (Degrees)", 0);
 
-    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-        return sysId.quasistatic(direction);
+    public Command shootConfigurable() {
+        return Commands.sequence(
+                startEnd(
+                        () -> pivotSetpoint = Degrees.of(shootConfigurableAngle.get()),
+                        () -> {}
+                ).until(this::pivotAtSetpoint),
+                startEnd(
+                        () -> flywheelsSetpoint = RPM.of(shootConfigurableSpeed.get()),
+                        () -> {}
+                ).until(this::flywheelsAtSetpoint),
+                feedPercent(1).withTimeout(0.6)
+        ).finallyDo(() -> {
+            pivotSetpoint = Degrees.of(0);
+            flywheelsSetpoint = RPM.of(0);
+        });
     }
-
-    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-        return sysId.dynamic(direction);
-    }*/
 }

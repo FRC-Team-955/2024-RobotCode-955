@@ -122,6 +122,8 @@ public class RobotContainer {
                 )
         );
 
+        autoChooser.addOption("Shoot Configurable", shooter.shootConfigurable());
+
         // Set up SysId routines
         autoChooser.addOption(
                 "Drive SysId (Quasistatic Forward)",
@@ -140,22 +142,56 @@ public class RobotContainer {
                 drive.sysIdDynamic(SysIdRoutine.Direction.kReverse)
         );
 
-        /*autoChooser.addOption(
-                "Shooter SysId (Quasistatic Forward)",
-                shooter.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
+        autoChooser.addOption(
+                "Shooter Pivot SysId (Quasistatic Forward)",
+                shooter.pivotSysId.quasistatic(SysIdRoutine.Direction.kForward)
         );
         autoChooser.addOption(
-                "Shooter SysId (Quasistatic Reverse)",
-                shooter.sysIdQuasistatic(SysIdRoutine.Direction.kReverse)
+                "Shooter Pivot SysId (Quasistatic Reverse)",
+                shooter.pivotSysId.quasistatic(SysIdRoutine.Direction.kReverse)
         );
         autoChooser.addOption(
-                "Shooter SysId (Dynamic Forward)",
-                shooter.sysIdDynamic(SysIdRoutine.Direction.kForward)
+                "Shooter Pivot SysId (Dynamic Forward)",
+                shooter.pivotSysId.dynamic(SysIdRoutine.Direction.kForward)
         );
         autoChooser.addOption(
-                "Shooter SysId (Dynamic Reverse)",
-                shooter.sysIdDynamic(SysIdRoutine.Direction.kReverse)
-        );*/
+                "Shooter Pivot SysId (Dynamic Reverse)",
+                shooter.pivotSysId.dynamic(SysIdRoutine.Direction.kReverse)
+        );
+
+        autoChooser.addOption(
+                "Shooter Feed SysId (Quasistatic Forward)",
+                shooter.feedSysId.quasistatic(SysIdRoutine.Direction.kForward)
+        );
+        autoChooser.addOption(
+                "Shooter Feed SysId (Quasistatic Reverse)",
+                shooter.feedSysId.quasistatic(SysIdRoutine.Direction.kReverse)
+        );
+        autoChooser.addOption(
+                "Shooter Feed SysId (Dynamic Forward)",
+                shooter.feedSysId.dynamic(SysIdRoutine.Direction.kForward)
+        );
+        autoChooser.addOption(
+                "Shooter Feed SysId (Dynamic Reverse)",
+                shooter.feedSysId.dynamic(SysIdRoutine.Direction.kReverse)
+        );
+
+        autoChooser.addOption(
+                "Shooter Flywheels SysId (Quasistatic Forward)",
+                shooter.flywheelsSysId.quasistatic(SysIdRoutine.Direction.kForward)
+        );
+        autoChooser.addOption(
+                "Shooter Flywheels SysId (Quasistatic Reverse)",
+                shooter.flywheelsSysId.quasistatic(SysIdRoutine.Direction.kReverse)
+        );
+        autoChooser.addOption(
+                "Shooter Flywheels SysId (Dynamic Forward)",
+                shooter.flywheelsSysId.dynamic(SysIdRoutine.Direction.kForward)
+        );
+        autoChooser.addOption(
+                "Shooter Flywheels SysId (Dynamic Reverse)",
+                shooter.flywheelsSysId.dynamic(SysIdRoutine.Direction.kReverse)
+        );
     }
 
     private void setDefaultCommands() {
