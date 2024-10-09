@@ -41,8 +41,8 @@ public class Drive extends SubsystemBase {
             new Translation2d(-DRIVE_BASE_WIDTH / 2.0, DRIVE_BASE_LENGTH / 2.0),
             new Translation2d(-DRIVE_BASE_WIDTH / 2.0, -DRIVE_BASE_LENGTH / 2.0)
     };
-    private final LoggedDashboardNumber maxLinearSpeed = new LoggedDashboardNumber("Max Linear Speed meters per sec", Units.feetToMeters(15) * 0.75);
-    private final LoggedDashboardNumber maxAngularSpeed = new LoggedDashboardNumber("Max Angular Speed rad per sec", maxLinearSpeed.get() / DRIVE_BASE_RADIUS * 0.75);
+    private final LoggedDashboardNumber maxLinearSpeed = new LoggedDashboardNumber("Max Linear Speed (m/sec)", Units.feetToMeters(15));
+    private final LoggedDashboardNumber maxAngularSpeed = new LoggedDashboardNumber("Max Angular Speed (deg/sec)", 270);
 
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
@@ -278,20 +278,6 @@ public class Drive extends SubsystemBase {
         poseEstimator.addVisionMeasurement(visionPose, timestamp);
     }
 
-    /**
-     * Returns the maximum linear speed in meters per sec.
-     */
-    public double getMaxLinearSpeedMetersPerSec() {
-        return maxLinearSpeed.get();
-    }
-
-    /**
-     * Returns the maximum angular speed in radians per sec.
-     */
-    public double getMaxAngularSpeedRadPerSec() {
-        return maxAngularSpeed.get();
-    }
-
     public Command stopWithXCommand() {
         return runOnce(this::stopWithX);
     }
@@ -330,9 +316,9 @@ public class Drive extends SubsystemBase {
             // Convert to field relative speeds & send command
             runVelocity(
                     ChassisSpeeds.fromFieldRelativeSpeeds(
-                            linearVelocity.getX() * Drive.get().getMaxLinearSpeedMetersPerSec(),
-                            linearVelocity.getY() * Drive.get().getMaxLinearSpeedMetersPerSec(),
-                            omega * Drive.get().getMaxAngularSpeedRadPerSec(),
+                            linearVelocity.getX() * maxLinearSpeed.get(),
+                            linearVelocity.getY() * maxLinearSpeed.get(),
+                            omega * Units.degreesToRadians(maxAngularSpeed.get()),
                             Util.shouldFlip()
                                     ? getRotation().plus(new Rotation2d(Math.PI))
                                     : getRotation()
