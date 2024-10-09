@@ -239,32 +239,14 @@ public class RobotContainer {
                 //                .withTimeout(3)
                 //                .schedule())
         );
-
-        // b for handoff
-//        driverController.b().toggleOnTrue(Commands.sequence(
-//                // handoff if shooter doesn't have a note
-//                Commands.either(
-//                        Commands.none(),
-//                        Commands.sequence(
-//                                shooter.pivotWaitForIntake(),
-//                                intake.pivotHandoff(),
-//                                shooter.pivotHandoff(),
-//                                Commands.race(
-//                                        intake.feedHandoff(),
-//                                        shooter.feedHandoff()
-//                                )
-//                        ),
-//                        shooter::hasNoteDebounced
-//                ),
-//                shooter.pivotWaitForIntake(),
-//                intake.pivotHover()
-//        ));
-
-//        driverController.leftBumper().toggleOnTrue(Commands.sequence(
+        /*
         driverController.leftTrigger(0.25).toggleOnTrue(Commands.sequence(
                 shooter.pivotShoot(),
                 Commands.runOnce(() -> shooter.shootPercent(0.5, 0.75).schedule())
         ));
+        */
+
+        driverController.leftTrigger(0.25).toggleOnTrue(shooter.shootConfigurable());
 
         driverController.leftBumper().toggleOnTrue(Commands.sequence(
                 shooter.pivotAmp(),

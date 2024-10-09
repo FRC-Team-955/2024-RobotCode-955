@@ -268,6 +268,11 @@ public class Drive extends SubsystemBase {
         return poseEstimator.getEstimatedPosition();
     }
 
+    @AutoLogOutput(key = "Drive/dist")
+    public double distFromSpeaker() {
+        return getPose().getX();
+    }
+
     /**
      * Returns the current odometry rotation.
      */

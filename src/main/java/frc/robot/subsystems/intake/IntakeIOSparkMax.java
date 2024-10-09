@@ -26,7 +26,7 @@ public class IntakeIOSparkMax extends IntakeIO {
 
         feedMotor = new CANSparkMax(feedCanID, CANSparkLowLevel.MotorType.kBrushless);
         feedMotor.restoreFactoryDefaults();
-        feedMotor.setIdleMode(CANSparkBase.IdleMode.kCoast);
+        feedMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
         feedMotor.setCANTimeout(250);
         feedMotor.enableVoltageCompensation(12.0);
         feedMotor.setSmartCurrentLimit(40);

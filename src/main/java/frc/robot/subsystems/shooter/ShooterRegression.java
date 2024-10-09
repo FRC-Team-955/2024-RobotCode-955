@@ -7,6 +7,6 @@ public final class ShooterRegression {
 
     distance | shooter angle (degrees) | shooter speed (RPM)
     ---------|-------------------------|--------------------
-    52.5 in  | 0                       | 0
+    52.5 in = 1.33 m  | 0                       | 0
     */
 }

@@ -43,7 +43,7 @@ public class Shooter extends SubsystemBase {
 
     private static final SimpleMotorFeedforward FLYWHEEL_FF = Constants.mode.isReal() ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
     private static final PIDConstants FLYWHEEL_PID = Constants.mode.isReal() ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
-    protected static final double FLYWHEEL_GEAR_RATIO = 1;
+    protected static final double FLYWHEEL_GEAR_RATIO = 0.5;
     private static final Measure<Velocity<Angle>> FLYWHEEL_SETPOINT_TOLERANCE = RPM.of(50);
 
     private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
