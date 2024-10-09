@@ -5,6 +5,8 @@ import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
@@ -52,6 +54,9 @@ public class Drive extends SubsystemBase {
     private final Module[] modules = new Module[4];
     private final SysIdRoutine sysId;
 
+    private final VisionIO visionIO;
+    private final VisionIOInputsAutoLogged visionInputs = new VisionIOInputsAutoLogged();
+
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(MODULE_TRANSLATIONS);
     private Rotation2d rawGyroRotation = new Rotation2d();
     // For delta tracking
@@ -65,6 +70,8 @@ public class Drive extends SubsystemBase {
 
     public final LoggedDashboardBoolean disableDriving = new LoggedDashboardBoolean("Disable Driving", false);
 
+    private final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+
     private static Drive instance;
 
     public static Drive get() {
@@ -76,7 +83,8 @@ public class Drive extends SubsystemBase {
             ModuleIO flModuleIO,
             ModuleIO frModuleIO,
             ModuleIO blModuleIO,
-            ModuleIO brModuleIO
+            ModuleIO brModuleIO,
+            VisionIO visionIO
     ) {
         if (instance != null)
             throw new RuntimeException("Duplicate subsystem created!");
@@ -87,6 +95,7 @@ public class Drive extends SubsystemBase {
         modules[1] = new Module(frModuleIO, 1);
         modules[2] = new Module(blModuleIO, 2);
         modules[3] = new Module(brModuleIO, 3);
+        this.visionIO = visionIO;
 
         // Configure AutoBuilder for PathPlanner
         AutoBuilder.configureHolonomic(
@@ -123,8 +132,10 @@ public class Drive extends SubsystemBase {
     }
 
     public void periodic() {
+        visionIO.updateInputs(visionInputs);
         gyroIO.updateInputs(gyroInputs);
-        Logger.processInputs("Inputs/Drive/Gyro", gyroInputs);
+        Logger.processInputs("Inputs/Drive/Gyro", gyroInputs);;
+        Logger.processInputs("Inputs/Drive/Vision", visionInputs);
         for (var module : modules) {
             module.periodic();
         }
@@ -159,6 +170,14 @@ public class Drive extends SubsystemBase {
 
         // Apply odometry update
         poseEstimator.update(rawGyroRotation, modulePositions);
+
+        if (visionInputs.hasEstimatedPose) {
+            poseEstimator.addVisionMeasurement(
+                    //new Pose2d(visionInputs.estimatedPose.toPose2d().getTranslation(), rawGyroRotation),
+                    visionInputs.estimatedPose.toPose2d(),
+                    visionInputs.timestampSeconds
+            );
+        }
     }
 
     /**

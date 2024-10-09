@@ -47,7 +47,8 @@ public class RobotContainer {
                         new ModuleIOSparkMaxCANcoder(0),
                         new ModuleIOSparkMaxCANcoder(1),
                         new ModuleIOSparkMaxCANcoder(2),
-                        new ModuleIOSparkMaxCANcoder(3)
+                        new ModuleIOSparkMaxCANcoder(3),
+                        new VisionIOCamera("Shooter_Cam")
                 );
                 intake = new Intake(new IntakeIOSparkMax(3, 16));
                 shooter = new Shooter(new ShooterIOSparkMaxBeamBreak(6, 7, 9, 10, 8));
@@ -59,7 +60,8 @@ public class RobotContainer {
                         new ModuleIOSim(),
                         new ModuleIOSim(),
                         new ModuleIOSim(),
-                        new ModuleIOSim()
+                        new ModuleIOSim(),
+                        new VisionIO()
                 );
                 intake = new Intake(new IntakeIOSim(DCMotor.getNEO(1), 0.3, 0.045, DCMotor.getNEO(1)));
                 shooter = new Shooter(new ShooterIOSim(/*DCMotor.getNEO(1), 0.4, 0.083, DCMotor.getNEO(1), DCMotor.getNEO(1), DCMotor.getNEO(1)*/));
@@ -71,7 +73,8 @@ public class RobotContainer {
                         new ModuleIO(),
                         new ModuleIO(),
                         new ModuleIO(),
-                        new ModuleIO()
+                        new ModuleIO(),
+                        new VisionIO()
                 );
                 intake = new Intake(new IntakeIO());
                 shooter = new Shooter(new ShooterIO());
