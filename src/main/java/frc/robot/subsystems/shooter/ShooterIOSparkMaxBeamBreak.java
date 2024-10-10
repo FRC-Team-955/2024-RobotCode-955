@@ -4,6 +4,7 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.revrobotics.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 
 public class ShooterIOSparkMaxBeamBreak extends ShooterIO {
     private final DigitalInput beamBreak;
@@ -22,7 +23,7 @@ public class ShooterIOSparkMaxBeamBreak extends ShooterIO {
 
     private final CANSparkMax flywheelBottomMotor;
     private final RelativeEncoder flywheelBottomEncoder;
-//    private final SparkPIDController flywheelBottomPid;
+    private final SparkPIDController flywheelBottomPid;
 
     public ShooterIOSparkMaxBeamBreak(int beamBreakPwmID, int pivotCanID, int feedCanID, int flywheelTopCanID, int flywheelBottomCanID) {
         beamBreak = new DigitalInput(beamBreakPwmID);
@@ -66,10 +67,9 @@ public class ShooterIOSparkMaxBeamBreak extends ShooterIO {
         flywheelBottomMotor.enableVoltageCompensation(12.0);
         flywheelBottomMotor.setSmartCurrentLimit(40);
         flywheelBottomMotor.setInverted(true);
-        flywheelBottomMotor.follow(flywheelTopMotor);
         flywheelBottomMotor.burnFlash();
         flywheelBottomEncoder = flywheelBottomMotor.getEncoder();
-//        flywheelBottomPid = flywheelBottomMotor.getPIDController();
+        flywheelBottomPid = flywheelBottomMotor.getPIDController();
     }
 
     @Override
@@ -171,12 +171,20 @@ public class ShooterIOSparkMaxBeamBreak extends ShooterIO {
     }
 
     @Override
-    public void flywheelsSetSetpoint(double setpointVelocityRadPerSec, double ffVolts) {
-        feedPid.setReference(
+    public void flywheelsSetSetpoint(double setpointVelocityRadPerSec, double ffTopVolts, double ffBottomVolts) {
+        flywheelTopPid.setReference(
                 Units.radiansPerSecondToRotationsPerMinute(setpointVelocityRadPerSec * Shooter.FLYWHEEL_GEAR_RATIO),
                 CANSparkBase.ControlType.kVelocity,
                 0,
-                ffVolts,
+                ffTopVolts,
+                SparkPIDController.ArbFFUnits.kVoltage
+        );
+
+        flywheelBottomPid.setReference(
+                Units.radiansPerSecondToRotationsPerMinute(setpointVelocityRadPerSec * Shooter.FLYWHEEL_GEAR_RATIO),
+                CANSparkBase.ControlType.kVelocity,
+                0,
+                ffBottomVolts,
                 SparkPIDController.ArbFFUnits.kVoltage
         );
     }
@@ -188,19 +196,19 @@ public class ShooterIOSparkMaxBeamBreak extends ShooterIO {
     }
 
     @Override
-    public void flywheelsConfigurePID(PIDConstants pidConstants) {
-        flywheelTopPid.setP(pidConstants.kP);
-        flywheelTopPid.setI(pidConstants.kI);
-        flywheelTopPid.setD(pidConstants.kD);
-        flywheelTopPid.setIZone(pidConstants.iZone);
+    public void flywheelsConfigurePID(PIDConstants pidTopConstants, PIDConstants pidBottomConstants) {
+        flywheelTopPid.setP(pidTopConstants.kP);
+        flywheelTopPid.setI(pidTopConstants.kI);
+        flywheelTopPid.setD(pidTopConstants.kD);
+        flywheelTopPid.setIZone(pidTopConstants.iZone);
         flywheelTopPid.setFF(0);
         flywheelTopMotor.burnFlash();
 
-//        flywheelBottomPid.setP(pidConstants.kP);
-//        flywheelBottomPid.setI(pidConstants.kI);
-//        flywheelBottomPid.setD(pidConstants.kD);
-//        flywheelBottomPid.setIZone(pidConstants.iZone);
-//        flywheelBottomPid.setFF(0);
-//        flywheelBottomMotor.burnFlash();
+        flywheelBottomPid.setP(pidBottomConstants.kP);
+        flywheelBottomPid.setI(pidBottomConstants.kI);
+        flywheelBottomPid.setD(pidBottomConstants.kD);
+        flywheelBottomPid.setIZone(pidBottomConstants.iZone);
+        flywheelBottomPid.setFF(0);
+        flywheelBottomMotor.burnFlash();
     }
 }

@@ -246,7 +246,10 @@ public class RobotContainer {
         driverController.leftTrigger(0.25).toggleOnTrue(shooter.shoot());
         */
 
-        driverController.leftTrigger(0.25).toggleOnTrue(shooter.shootConfigurable());
+        driverController.leftTrigger(0.25).toggleOnTrue(
+                //shooter.shootConfigurable()
+                shooter.shootDistance(drive.distanceToSpeaker())
+        );
 
         driverController.leftBumper().toggleOnTrue(shooter.amp());
 

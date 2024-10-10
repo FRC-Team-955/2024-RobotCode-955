@@ -62,12 +62,12 @@ public class ShooterIO {
     public void flywheelsSetVoltage(double volts) {
     }
 
-    public void flywheelsSetSetpoint(double setpointVelocityRadPerSec, double ffVolts) {
+    public void flywheelsSetSetpoint(double setpointVelocityRadPerSec, double ffTopVolts, double ffBottomVolts) {
     }
 
     public void flywheelsSetBrakeMode(boolean enabled) {
     }
 
-    public void flywheelsConfigurePID(PIDConstants pidConstants) {
+    public void flywheelsConfigurePID(PIDConstants pidTopConstants, PIDConstants pidBottomConstants) {
     }
 }

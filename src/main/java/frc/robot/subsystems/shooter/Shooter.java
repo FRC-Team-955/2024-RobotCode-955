@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.subsystems.drive.VisionIOInputsAutoLogged;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
@@ -21,8 +22,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 import static edu.wpi.first.units.Units.*;
 
 public class Shooter extends SubsystemBase {
-    protected static final ArmFeedforward PIVOT_FF = Constants.isReal ? new ArmFeedforward(0.574, 1.0, 0.65051, 0.21235) : new ArmFeedforward(0, 0.5, 0);
-    protected static final PIDConstants PIVOT_PID = Constants.isReal ? new PIDConstants(0.075/*, 0.011*/) : new PIDConstants(2.5, 0);
+    protected static final ArmFeedforward PIVOT_FF = Constants.isReal ? new ArmFeedforward(0.574, 0.90, 0.65051, 0.21235) : new ArmFeedforward(0, 0.5, 0);
+    protected static final PIDConstants PIVOT_PID = Constants.isReal ? new PIDConstants(0.15/*, 0.011*/) : new PIDConstants(2.5, 0);
     protected static final double PIVOT_GEAR_RATIO = 40;
     private static final Measure<Angle> PIVOT_ENCODER_OFFSET = Radians.of(0.0);
     private static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-90);
@@ -32,7 +33,7 @@ public class Shooter extends SubsystemBase {
     private static final Measure<Angle> PIVOT_SHOOT = Degrees.of(-45);
     private static final Measure<Angle> PIVOT_EJECT = Degrees.of(30);
     private static final Measure<Angle> PIVOT_AMP = Degrees.of(25);
-    private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(7);
+    private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(1.5);
 
     protected static final SimpleMotorFeedforward FEED_FF = Constants.isReal ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
     protected static final PIDConstants FEED_PID = Constants.isReal ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
@@ -40,10 +41,12 @@ public class Shooter extends SubsystemBase {
     private static final Measure<Velocity<Angle>> FEED_SETPOINT_TOLERANCE = RPM.of(10);
     private static final double FEED_BEAM_BRAKE_DEBOUNCE = 0.05;
 
-    private static final SimpleMotorFeedforward FLYWHEEL_FF = Constants.isReal ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
-    private static final PIDConstants FLYWHEEL_PID = Constants.isReal ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
+    private static final SimpleMotorFeedforward FLYWHEEL_TOP_FF = Constants.isReal ? new SimpleMotorFeedforward(0.23795, 0.011308, 0.0069895) : new SimpleMotorFeedforward(0, 0.058);
+    private static final SimpleMotorFeedforward FLYWHEEL_BOTTOM_FF = Constants.isReal ? new SimpleMotorFeedforward(0.23279, 0.0113005, 0.0064997) : new SimpleMotorFeedforward(0, 0.058);
+    private static final PIDConstants FLYWHEEL_TOP_PID = Constants.isReal ? new PIDConstants(0, 0) : new PIDConstants(0.1, 0);
+    private static final PIDConstants FLYWHEEL_BOTTOM_PID = Constants.isReal ? new PIDConstants(0, 0) : new PIDConstants(0.1, 0);
     protected static final double FLYWHEEL_GEAR_RATIO = 1 / 2.0;
-    private static final Measure<Velocity<Angle>> FLYWHEEL_SETPOINT_TOLERANCE = RPM.of(50);
+    private static final Measure<Velocity<Angle>> FLYWHEEL_SETPOINT_TOLERANCE = RPM.of(100);
 
     private final ShooterIO io;
     private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
@@ -62,7 +65,8 @@ public class Shooter extends SubsystemBase {
     private Measure<Velocity<Angle>> feedSetpoint = null;
     public final SysIdRoutine feedSysId;
 
-    private final SimpleMotorFeedforward flywheelsFeedforward = FLYWHEEL_FF;
+    private final SimpleMotorFeedforward flywheelTopFeedforward = FLYWHEEL_TOP_FF;
+    private final SimpleMotorFeedforward flywheelBottomFeedforward = FLYWHEEL_BOTTOM_FF;
     private Measure<Velocity<Angle>> flywheelsSetpoint = null;
     public final SysIdRoutine flywheelsSysId;
 
@@ -83,7 +87,7 @@ public class Shooter extends SubsystemBase {
         io.pivotSetPosition(PIVOT_INITIAL_POSITION.in(Radians));
 
         io.feedConfigurePID(FEED_PID);
-        io.flywheelsConfigurePID(FLYWHEEL_PID);
+        io.flywheelsConfigurePID(FLYWHEEL_TOP_PID, FLYWHEEL_BOTTOM_PID);
 
         pivotSysId = new SysIdRoutine(
                 new SysIdRoutine.Config(
@@ -172,9 +176,11 @@ public class Shooter extends SubsystemBase {
 
             if (RobotState.isEnabled()) {
                 var flywheelsSetpointRadPerSec = flywheelsSetpoint.in(RadiansPerSecond);
-                var ffVolts = flywheelsFeedforward.calculate(flywheelsSetpointRadPerSec, 0);
-                Logger.recordOutput("Shooter/Flywheels/FFVolts", ffVolts);
-                io.flywheelsSetSetpoint(flywheelsSetpointRadPerSec, ffVolts);
+                var ffTopVolts = flywheelTopFeedforward.calculate(flywheelsSetpointRadPerSec, 0);
+                var ffBottomVolts = flywheelBottomFeedforward.calculate(flywheelsSetpointRadPerSec, 0);
+                Logger.recordOutput("Shooter/Flywheels/FFTopVolts", ffTopVolts);
+                Logger.recordOutput("Shooter/Flywheels/FFBottomVolts", ffBottomVolts);
+                io.flywheelsSetSetpoint(flywheelsSetpointRadPerSec, ffTopVolts, ffBottomVolts);
             }
         }
     }
@@ -302,6 +308,23 @@ public class Shooter extends SubsystemBase {
                         () -> flywheelsSetpoint = RPM.of(shootConfigurableSpeed.get()),
                         () -> {
                         }
+                ).until(this::flywheelsAtSetpoint),
+                feedPercent(1).withTimeout(0.6)
+        ).finallyDo(() -> {
+            pivotSetpoint = Degrees.of(0);
+            flywheelsSetpoint = RPM.of(0);
+        });
+    }
+
+    public Command shootDistance(double distance) {
+        return Commands.sequence(
+                startEnd(
+                        () -> pivotSetpoint = Degrees.of(ShooterRegression.getAngle(distance)),
+                        () -> {}
+                ).until(this::pivotAtSetpoint),
+                startEnd(
+                        () -> flywheelsSetpoint = RPM.of(ShooterRegression.getSpeed(distance)),
+                        () -> {}
                 ).until(this::flywheelsAtSetpoint),
                 feedPercent(1).withTimeout(0.6)
         ).finallyDo(() -> {
