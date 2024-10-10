@@ -1,6 +1,13 @@
 package frc.robot.subsystems.shooter;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Velocity;
+
+import static edu.wpi.first.units.Units.*;
 
 public final class ShooterRegression {
     /*
@@ -12,17 +19,17 @@ public final class ShooterRegression {
     4.05                    | -25.5                   | 5000
     */
 
-    public static double getAngle(double distance) {
-        // power regression (bit inaccurate)
-        //return -65.957 * Math.pow(0.7816, distance);
-        // regression inspired by actual kinematics (surprisingly accurate)
-        return -Units.radiansToDegrees(Math.atan(1.23351 / (distance - 0.20496))) - 1.90326 * distance;
+    public static Measure<Angle> getAngle(Measure<Distance> distance) {
+        var distanceMeters = distance.in(Meters);
+        var angleRad = Math.atan(-1.23351 / (distanceMeters - 0.20496)) - 0.0332181 * distanceMeters;
+        var clampedAngleRad = MathUtil.clamp(angleRad, Units.degreesToRadians(-60), 0);
+        return Radians.of(clampedAngleRad);
     }
 
-    public static double getSpeed(double distance) {
-        // linear
-        // return 2722 + 557.3 * distance;
-        // quadratic
-        return Math.min(51.0189 * Math.pow(distance, 2) + 276.094 * distance + 3041.66, 6000);
+    public static Measure<Velocity<Angle>> getSpeed(Measure<Distance> distance) {
+        var distanceMeters = distance.in(Meters);
+        var speedRPM = Math.min(51.0189 * Math.pow(distanceMeters, 2) + 276.094 * distanceMeters + 3041.66, 6000);
+        var clampedSpeedRPM = MathUtil.clamp(speedRPM, 1000, 6000);
+        return RPM.of(clampedSpeedRPM);
     }
 }

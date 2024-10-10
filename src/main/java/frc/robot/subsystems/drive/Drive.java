@@ -19,6 +19,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -35,6 +37,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Volts;
 
 public class Drive extends SubsystemBase {
@@ -73,9 +76,10 @@ public class Drive extends SubsystemBase {
             new SwerveModulePosition()
     };
     private final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
-    private final PIDController xController = new PIDController(1, 0, 0);
-    private final PIDController yController = new PIDController(1, 0, 0);
-    private final PIDController thetaController = new PIDController(1, 0, 0);
+    private final PIDController choreoFeedbackX = new PIDController(1, 0, 0);
+    private final PIDController choreoFeedbackY = new PIDController(1, 0, 0);
+    private final PIDController choreoFeedbackTheta = new PIDController(1, 0, 0);
+    private final PIDController pointTowardsController = new PIDController(5, 0, 0);
     private Rotation2d rawGyroRotation = new Rotation2d();
     private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
@@ -98,7 +102,8 @@ public class Drive extends SubsystemBase {
         modules[3] = new Module(brModuleIO, 3);
         this.visionIO = visionIO;
 
-        thetaController.enableContinuousInput(-Math.PI, Math.PI);
+        choreoFeedbackTheta.enableContinuousInput(-Math.PI, Math.PI);
+        pointTowardsController.enableContinuousInput(-Math.PI, Math.PI);
 
         // Configure AutoBuilder for PathPlanner
         AutoBuilder.configureHolonomic(
@@ -283,8 +288,8 @@ public class Drive extends SubsystemBase {
     }
 
     @AutoLogOutput(key = "Drive/SpeakerDistance")
-    public double distanceToSpeaker() {
-        return getPose().getTranslation().getDistance(FieldLocations.SPEAKER.get());
+    public Measure<Distance> distanceToSpeaker() {
+        return Meters.of(getPose().getTranslation().getDistance(FieldLocations.SPEAKER.get()));
     }
 
     /**
@@ -340,9 +345,9 @@ public class Drive extends SubsystemBase {
 
     private ChassisSpeeds choreoController(Pose2d pose, SwerveSample sample) {
         return ChassisSpeeds.fromFieldRelativeSpeeds(
-                sample.vx + xController.calculate(pose.getX(), sample.x),
-                sample.vy + yController.calculate(pose.getY(), sample.y),
-                sample.omega + thetaController.calculate(pose.getRotation().getRadians(), sample.heading),
+                sample.vx + choreoFeedbackX.calculate(pose.getX(), sample.x),
+                sample.vy + choreoFeedbackY.calculate(pose.getY(), sample.y),
+                sample.omega + choreoFeedbackTheta.calculate(pose.getRotation().getRadians(), sample.heading),
                 pose.getRotation()
         );
     }

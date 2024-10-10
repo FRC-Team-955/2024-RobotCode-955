@@ -5,6 +5,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.RobotState;
@@ -14,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
-import frc.robot.subsystems.drive.VisionIOInputsAutoLogged;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
@@ -27,7 +27,7 @@ public class Shooter extends SubsystemBase {
     protected static final double PIVOT_GEAR_RATIO = 40;
     private static final Measure<Angle> PIVOT_ENCODER_OFFSET = Radians.of(0.0);
     private static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-90);
-    private static final Measure<Angle> PIVOT_HOVER = Degrees.of(0);
+    private static final Measure<Angle> PIVOT_HOVER = Degrees.of(-90);
     private static final Measure<Angle> PIVOT_WAIT_FOR_INTAKE = Degrees.of(-30);
     private static final Measure<Angle> PIVOT_HANDOFF = Degrees.of(-45);
     private static final Measure<Angle> PIVOT_SHOOT = Degrees.of(-50);
@@ -276,14 +276,14 @@ public class Shooter extends SubsystemBase {
     public Command amp() {
         return Commands.sequence(
                 pivotAmp(),
-                Commands.runOnce(() -> shootPercent(0.25, 0.25).schedule())
+                shootPercent(0.25, 0.25)
         );
     }
 
     public Command shoot() {
         return Commands.sequence(
                 pivotShoot(),
-                Commands.runOnce(() -> shootPercent(0.5, 0.75).schedule())
+                shootPercent(0.5, 0.75)
         );
     }
 
@@ -316,15 +316,17 @@ public class Shooter extends SubsystemBase {
         });
     }
 
-    public Command shootDistance(double distance) {
+    public Command shootDistance(Measure<Distance> distance) {
         return Commands.sequence(
                 startEnd(
-                        () -> pivotSetpoint = Degrees.of(ShooterRegression.getAngle(distance)),
-                        () -> {}
+                        () -> pivotSetpoint = ShooterRegression.getAngle(distance),
+                        () -> {
+                        }
                 ).until(this::pivotAtSetpoint),
                 startEnd(
-                        () -> flywheelsSetpoint = RPM.of(ShooterRegression.getSpeed(distance)),
-                        () -> {}
+                        () -> flywheelsSetpoint = ShooterRegression.getSpeed(distance),
+                        () -> {
+                        }
                 ).until(this::flywheelsAtSetpoint),
                 feedPercent(1).withTimeout(0.6)
         ).finallyDo(() -> {

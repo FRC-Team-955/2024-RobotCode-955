@@ -168,6 +168,7 @@ public class ShooterIOSparkMaxBeamBreak extends ShooterIO {
     @Override
     public void flywheelsSetVoltage(double volts) {
         flywheelTopMotor.setVoltage(volts);
+        flywheelBottomMotor.setVoltage(volts);
     }
 
     @Override

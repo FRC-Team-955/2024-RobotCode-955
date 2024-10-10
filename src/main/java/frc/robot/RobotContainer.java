@@ -131,8 +131,6 @@ public class RobotContainer {
         var factory = drive.createAutoFactory();
         autoChooser.addDefaultOption("4 Piece Wing", FourPieceWingAutoFactory.get(factory));
 
-        autoChooser.addOption("Shoot Configurable", shooter.shootConfigurable());
-
         // Set up SysId routines
         autoChooser.addOption(
                 "Drive SysId (Quasistatic Forward)",
@@ -246,16 +244,18 @@ public class RobotContainer {
         driverController.leftTrigger(0.25).toggleOnTrue(shooter.shoot());
         */
 
-        driverController.leftTrigger(0.25).toggleOnTrue(
+        driverController.leftTrigger(0.25).onTrue(
                 //shooter.shootConfigurable()
-                Commands.deferredProxy(
-                        () -> drive.disableVision.get() ?
-                        shooter.shoot() :
-                        shooter.shootDistance(drive.distanceToSpeaker())
-                )
+//                shooter.shootDistance(drive.distanceToSpeaker())
+                shooter.shoot()
+//                Commands.deferredProxy(
+//                        () -> drive.disableVision.get() ?
+//                        shooter.shoot() :
+//                        shooter.shootDistance(drive.distanceToSpeaker())
+//                )
         );
 
-        driverController.leftBumper().toggleOnTrue(shooter.amp());
+        driverController.leftBumper().onTrue(shooter.amp());
 
 //        driverController.leftTrigger(0.25).whileTrue(Commands.sequence(
 //                        shooter.pivotShoot(),
@@ -268,7 +268,7 @@ public class RobotContainer {
                 intake.eject()
         ).withTimeout(1));
 
-        driverController.b().toggleOnTrue(HandoffFactory.get());
+        driverController.rightBumper().toggleOnTrue(HandoffFactory.get());
     }
 
     public Command getAutonomousCommand() {
