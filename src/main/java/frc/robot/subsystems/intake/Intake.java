@@ -15,8 +15,8 @@ import org.littletonrobotics.junction.Logger;
 import static edu.wpi.first.units.Units.*;
 
 public class Intake extends SubsystemBase {
-    protected static final ArmFeedforward PIVOT_FF = Constants.mode.isReal() ? new ArmFeedforward(0, 0.6, 0) : new ArmFeedforward(0, 0.3, 0);
-    protected static final PIDConstants PIVOT_PID = Constants.mode.isReal() ? new PIDConstants(0.12, 0.003) : new PIDConstants(2.5, 0);
+    protected static final ArmFeedforward PIVOT_FF = Constants.isReal ? new ArmFeedforward(0, 0.6, 0) : new ArmFeedforward(0, 0.3, 0);
+    protected static final PIDConstants PIVOT_PID = Constants.isReal ? new PIDConstants(0.12, 0.003) : new PIDConstants(2.5, 0);
     protected static final double PIVOT_GEAR_RATIO = 45;
     private static final Measure<Angle> PIVOT_ENCODER_OFFSET = Radians.of(0.0);
     protected static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-141);
@@ -27,8 +27,8 @@ public class Intake extends SubsystemBase {
     private static final Measure<Angle> PIVOT_EJECT = Degrees.of(-70);
     private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(7);
 
-    protected static final SimpleMotorFeedforward FEED_FF = Constants.mode.isReal() ? new SimpleMotorFeedforward(0.5, 1.2) : new SimpleMotorFeedforward(0, 0.058);
-    protected static final PIDConstants FEED_PID = Constants.mode.isReal() ? new PIDConstants(0, 0) : new PIDConstants(0.1, 0);
+    protected static final SimpleMotorFeedforward FEED_FF = Constants.isReal ? new SimpleMotorFeedforward(0.5, 1.2) : new SimpleMotorFeedforward(0, 0.058);
+    protected static final PIDConstants FEED_PID = Constants.isReal ? new PIDConstants(0, 0) : new PIDConstants(0.1, 0);
     protected static final double FEED_GEAR_RATIO = 4;
     protected static final Measure<Velocity<Angle>> FEED_SETPOINT_TOLERANCE = RPM.of(10);
 

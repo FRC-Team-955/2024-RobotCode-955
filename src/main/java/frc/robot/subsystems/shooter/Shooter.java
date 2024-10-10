@@ -21,8 +21,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 import static edu.wpi.first.units.Units.*;
 
 public class Shooter extends SubsystemBase {
-    protected static final ArmFeedforward PIVOT_FF = Constants.mode.isReal() ? new ArmFeedforward(0.574, 1.0, 0.65051, 0.21235) : new ArmFeedforward(0, 0.5, 0);
-    protected static final PIDConstants PIVOT_PID = Constants.mode.isReal() ? new PIDConstants(0.075/*, 0.011*/) : new PIDConstants(2.5, 0);
+    protected static final ArmFeedforward PIVOT_FF = Constants.isReal ? new ArmFeedforward(0.574, 1.0, 0.65051, 0.21235) : new ArmFeedforward(0, 0.5, 0);
+    protected static final PIDConstants PIVOT_PID = Constants.isReal ? new PIDConstants(0.075/*, 0.011*/) : new PIDConstants(2.5, 0);
     protected static final double PIVOT_GEAR_RATIO = 40;
     private static final Measure<Angle> PIVOT_ENCODER_OFFSET = Radians.of(0.0);
     private static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-90);
@@ -35,15 +35,15 @@ public class Shooter extends SubsystemBase {
     private static final Measure<Angle> PIVOT_AMP = Degrees.of(25);
     private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(7);
 
-    protected static final SimpleMotorFeedforward FEED_FF = Constants.mode.isReal() ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
-    protected static final PIDConstants FEED_PID = Constants.mode.isReal() ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
+    protected static final SimpleMotorFeedforward FEED_FF = Constants.isReal ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
+    protected static final PIDConstants FEED_PID = Constants.isReal ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
     protected static final double FEED_GEAR_RATIO = 3;
     private static final Measure<Velocity<Angle>> FEED_SETPOINT_TOLERANCE = RPM.of(10);
     private static final double FEED_BEAM_BRAKE_DEBOUNCE = 0.05;
 
-    private static final SimpleMotorFeedforward FLYWHEEL_FF = Constants.mode.isReal() ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
-    private static final PIDConstants FLYWHEEL_PID = Constants.mode.isReal() ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
-    protected static final double FLYWHEEL_GEAR_RATIO = 0.5;
+    private static final SimpleMotorFeedforward FLYWHEEL_FF = Constants.isReal ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
+    private static final PIDConstants FLYWHEEL_PID = Constants.isReal ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
+    protected static final double FLYWHEEL_GEAR_RATIO = 1 / 2.0;
     private static final Measure<Velocity<Angle>> FLYWHEEL_SETPOINT_TOLERANCE = RPM.of(50);
 
     private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();

@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.FieldLocations;
 import frc.robot.Util;
 import frc.robot.util.LocalADStarAK;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -268,9 +269,9 @@ public class Drive extends SubsystemBase {
         return poseEstimator.getEstimatedPosition();
     }
 
-    @AutoLogOutput(key = "Drive/dist")
-    public double distFromSpeaker() {
-        return getPose().getX();
+    @AutoLogOutput(key = "Drive/SpeakerDistance")
+    public double distanceToSpeaker() {
+        return getPose().getTranslation().getDistance(FieldLocations.SPEAKER);
     }
 
     /**

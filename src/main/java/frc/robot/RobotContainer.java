@@ -86,7 +86,7 @@ public class RobotContainer {
             try {
                 if (field.get(this) == null) {
                     var msg = "RobotContainer." + field.getName() + " is null. If the field is a subsystem please fix it";
-                    if (Constants.mode.isSim()) {
+                    if (Constants.isSim) {
                         throw new RuntimeException(msg);
                     } else {
                         for (int i = 0; i < 3; i++) {

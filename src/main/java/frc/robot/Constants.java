@@ -1,5 +1,9 @@
 package frc.robot;
 
+import com.pathplanner.lib.util.GeometryUtil;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -27,6 +31,14 @@ public final class Constants {
      * Simulation#shouldReplay} is enabled
      */
     public static final Mode mode = RobotBase.isReal() ? Mode.REAL : (Simulation.shouldReplay ? Mode.REPLAY : Mode.SIM);
+    /**
+     * True if {@link #mode} is REAL or REPLAY
+     */
+    public static final boolean isReal = (mode == Mode.REAL) || (mode == Mode.REPLAY);
+    /**
+     * True if {@link #mode} is SIM
+     */
+    public static final boolean isSim = mode == Mode.SIM;
 
     public enum Mode {
         /**
@@ -41,13 +53,5 @@ public final class Constants {
          * Log replay
          */
         REPLAY;
-
-        public boolean isReal() {
-            return this == REAL || this == REPLAY;
-        }
-
-        public boolean isSim() {
-            return this == SIM;
-        }
     }
 }
