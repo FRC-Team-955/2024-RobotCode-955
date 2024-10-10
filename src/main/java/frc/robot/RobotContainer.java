@@ -248,7 +248,11 @@ public class RobotContainer {
 
         driverController.leftTrigger(0.25).toggleOnTrue(
                 //shooter.shootConfigurable()
-                shooter.shootDistance(drive.distanceToSpeaker())
+                Commands.deferredProxy(
+                        () -> drive.disableVision.get() ?
+                        shooter.shoot() :
+                        shooter.shootDistance(drive.distanceToSpeaker())
+                )
         );
 
         driverController.leftBumper().toggleOnTrue(shooter.amp());

@@ -30,7 +30,7 @@ public class Shooter extends SubsystemBase {
     private static final Measure<Angle> PIVOT_HOVER = Degrees.of(0);
     private static final Measure<Angle> PIVOT_WAIT_FOR_INTAKE = Degrees.of(-30);
     private static final Measure<Angle> PIVOT_HANDOFF = Degrees.of(-45);
-    private static final Measure<Angle> PIVOT_SHOOT = Degrees.of(-45);
+    private static final Measure<Angle> PIVOT_SHOOT = Degrees.of(-50);
     private static final Measure<Angle> PIVOT_EJECT = Degrees.of(30);
     private static final Measure<Angle> PIVOT_AMP = Degrees.of(25);
     private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(1.5);

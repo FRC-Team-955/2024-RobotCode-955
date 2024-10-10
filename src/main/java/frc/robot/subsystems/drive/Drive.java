@@ -54,6 +54,7 @@ public class Drive extends SubsystemBase {
     public final LoggedDashboardBoolean disableDriving = new LoggedDashboardBoolean("Disable Driving", false);
     private final LoggedDashboardNumber maxLinearSpeed = new LoggedDashboardNumber("Max Linear Speed (m/sec)", Units.feetToMeters(15));
     private final LoggedDashboardNumber maxAngularSpeed = new LoggedDashboardNumber("Max Angular Speed (deg/sec)", 270);
+    public final LoggedDashboardBoolean disableVision = new LoggedDashboardBoolean("Disable Vision", false);
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
     /**
@@ -177,7 +178,7 @@ public class Drive extends SubsystemBase {
         // Apply odometry update
         poseEstimator.update(rawGyroRotation, modulePositions);
 
-        if (visionInputs.hasEstimatedPose) {
+        if (!disableVision.get() && visionInputs.hasEstimatedPose) {
             poseEstimator.addVisionMeasurement(
                     //new Pose2d(visionInputs.estimatedPose.toPose2d().getTranslation(), rawGyroRotation),
                     visionInputs.estimatedPose.toPose2d(),
@@ -283,7 +284,7 @@ public class Drive extends SubsystemBase {
 
     @AutoLogOutput(key = "Drive/SpeakerDistance")
     public double distanceToSpeaker() {
-        return getPose().getTranslation().getDistance(FieldLocations.SPEAKER);
+        return getPose().getTranslation().getDistance(FieldLocations.getSpeaker());
     }
 
     /**
