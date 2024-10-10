@@ -284,7 +284,7 @@ public class Drive extends SubsystemBase {
 
     @AutoLogOutput(key = "Drive/SpeakerDistance")
     public double distanceToSpeaker() {
-        return getPose().getTranslation().getDistance(FieldLocations.getSpeaker());
+        return getPose().getTranslation().getDistance(FieldLocations.SPEAKER.get());
     }
 
     /**
