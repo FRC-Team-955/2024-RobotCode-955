@@ -7,36 +7,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class CommandNintendoSwitchProController extends CommandXboxController {
     private static final double STICK_MULTIPLIER = 1 / 0.75; // Sticks normally only go to 0.75 max
 
-    public enum Button {
-        LeftBumper(5),
-        RightBumper(6),
-        LeftStick(11),
-        RightStick(12),
-        // note: A is really 2, but having it as 1 matches the button position with an xbox controller
-        A(1),
-        // note: B is really 1, but having it as 2 matches the button position with an xbox controller
-        B(2),
-        // note: X is really 4, but having it as 1 matches the button position with an xbox controller
-        X(3),
-        // note: Y is really 3, but having it as 1 matches the button position with an xbox controller
-        Y(4),
-        Plus(10),
-        Minus(9),
-        LeftTrigger(7),
-        RightTrigger(8);
-
-        public final int value;
-
-        Button(int value) {
-            this.value = value;
-        }
-
-        @Override
-        public String toString() {
-            return this.name();
-        }
-    }
-
     public CommandNintendoSwitchProController(int port) {
         super(port);
     }
@@ -129,5 +99,35 @@ public class CommandNintendoSwitchProController extends CommandXboxController {
     @Override
     public double getRightTriggerAxis() {
         return getHID().getRawButton(Button.RightTrigger.value) ? 1 : 0;
+    }
+
+    public enum Button {
+        LeftBumper(5),
+        RightBumper(6),
+        LeftStick(11),
+        RightStick(12),
+        // note: A is really 2, but having it as 1 matches the button position with an xbox controller
+        A(1),
+        // note: B is really 1, but having it as 2 matches the button position with an xbox controller
+        B(2),
+        // note: X is really 4, but having it as 1 matches the button position with an xbox controller
+        X(3),
+        // note: Y is really 3, but having it as 1 matches the button position with an xbox controller
+        Y(4),
+        Plus(10),
+        Minus(9),
+        LeftTrigger(7),
+        RightTrigger(8);
+
+        public final int value;
+
+        Button(int value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return this.name();
+        }
     }
 }

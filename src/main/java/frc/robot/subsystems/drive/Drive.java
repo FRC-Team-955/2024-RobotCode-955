@@ -1,5 +1,8 @@
 package frc.robot.subsystems.drive;
 
+import choreo.Choreo;
+import choreo.auto.AutoFactory;
+import choreo.trajectory.SwerveSample;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
@@ -8,6 +11,7 @@ import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -17,6 +21,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.FieldLocations;
@@ -28,6 +33,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import static edu.wpi.first.units.Units.Volts;
 
@@ -36,17 +42,18 @@ public class Drive extends SubsystemBase {
     private static final double DRIVE_BASE_WIDTH = Units.inchesToMeters(21.75); // Measured from the center of the swerve wheels
     private static final double DRIVE_BASE_LENGTH = DRIVE_BASE_WIDTH;
     private static final double DRIVE_BASE_RADIUS = Math.hypot(DRIVE_BASE_WIDTH / 2.0, DRIVE_BASE_LENGTH / 2.0);
-    //    private static final double MAX_ANGULAR_SPEED = MAX_LINEAR_SPEED / DRIVE_BASE_RADIUS;
-    private static final double JOYSTICK_DRIVE_DEADBAND = 0.1;
     private static final Translation2d[] MODULE_TRANSLATIONS = new Translation2d[]{
             new Translation2d(DRIVE_BASE_WIDTH / 2.0, DRIVE_BASE_LENGTH / 2.0),
             new Translation2d(DRIVE_BASE_WIDTH / 2.0, -DRIVE_BASE_LENGTH / 2.0),
             new Translation2d(-DRIVE_BASE_WIDTH / 2.0, DRIVE_BASE_LENGTH / 2.0),
             new Translation2d(-DRIVE_BASE_WIDTH / 2.0, -DRIVE_BASE_LENGTH / 2.0)
     };
+    //    private static final double MAX_ANGULAR_SPEED = MAX_LINEAR_SPEED / DRIVE_BASE_RADIUS;
+    private static final double JOYSTICK_DRIVE_DEADBAND = 0.1;
+    private static Drive instance;
+    public final LoggedDashboardBoolean disableDriving = new LoggedDashboardBoolean("Disable Driving", false);
     private final LoggedDashboardNumber maxLinearSpeed = new LoggedDashboardNumber("Max Linear Speed (m/sec)", Units.feetToMeters(15));
     private final LoggedDashboardNumber maxAngularSpeed = new LoggedDashboardNumber("Max Angular Speed (deg/sec)", 270);
-
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
     /**
@@ -54,12 +61,9 @@ public class Drive extends SubsystemBase {
      */
     private final Module[] modules = new Module[4];
     private final SysIdRoutine sysId;
-
     private final VisionIO visionIO;
     private final VisionIOInputsAutoLogged visionInputs = new VisionIOInputsAutoLogged();
-
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(MODULE_TRANSLATIONS);
-    private Rotation2d rawGyroRotation = new Rotation2d();
     // For delta tracking
     private final SwerveModulePosition[] lastModulePositions = new SwerveModulePosition[]{
             new SwerveModulePosition(),
@@ -67,17 +71,12 @@ public class Drive extends SubsystemBase {
             new SwerveModulePosition(),
             new SwerveModulePosition()
     };
-    private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
-
-    public final LoggedDashboardBoolean disableDriving = new LoggedDashboardBoolean("Disable Driving", false);
-
     private final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
-
-    private static Drive instance;
-
-    public static Drive get() {
-        return instance;
-    }
+    private final PIDController xController = new PIDController(1, 0, 0);
+    private final PIDController yController = new PIDController(1, 0, 0);
+    private final PIDController thetaController = new PIDController(1, 0, 0);
+    private Rotation2d rawGyroRotation = new Rotation2d();
+    private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
     public Drive(
             GyroIO gyroIO,
@@ -97,6 +96,8 @@ public class Drive extends SubsystemBase {
         modules[2] = new Module(blModuleIO, 2);
         modules[3] = new Module(brModuleIO, 3);
         this.visionIO = visionIO;
+
+        thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
         // Configure AutoBuilder for PathPlanner
         AutoBuilder.configureHolonomic(
@@ -132,10 +133,14 @@ public class Drive extends SubsystemBase {
         );
     }
 
+    public static Drive get() {
+        return instance;
+    }
+
     public void periodic() {
         visionIO.updateInputs(visionInputs);
         gyroIO.updateInputs(gyroInputs);
-        Logger.processInputs("Inputs/Drive/Gyro", gyroInputs);;
+        Logger.processInputs("Inputs/Drive/Gyro", gyroInputs);
         Logger.processInputs("Inputs/Drive/Vision", visionInputs);
         for (var module : modules) {
             module.periodic();
@@ -269,6 +274,13 @@ public class Drive extends SubsystemBase {
         return poseEstimator.getEstimatedPosition();
     }
 
+    /**
+     * Resets the current odometry pose.
+     */
+    private void setPose(Pose2d pose) {
+        poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+    }
+
     @AutoLogOutput(key = "Drive/SpeakerDistance")
     public double distanceToSpeaker() {
         return getPose().getTranslation().getDistance(FieldLocations.SPEAKER);
@@ -284,8 +296,8 @@ public class Drive extends SubsystemBase {
     /**
      * Resets the current odometry pose.
      */
-    private void setPose(Pose2d pose) {
-        poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+    public Command setPose(Supplier<Pose2d> pose) {
+        return Commands.runOnce(() -> setPose(pose.get()));
     }
 
     private void resetRotation() {
@@ -312,6 +324,26 @@ public class Drive extends SubsystemBase {
 
     public Command driveVelocity(ChassisSpeeds velocities, double seconds) {
         return run(() -> runVelocity(velocities)).withTimeout(seconds);
+    }
+
+    public AutoFactory createAutoFactory() {
+        return Choreo.createAutoFactory(
+                this,
+                this::getPose,
+                this::choreoController,
+                this::runVelocity,
+                Util::shouldFlip,
+                new AutoFactory.ChoreoAutoBindings()
+        );
+    }
+
+    private ChassisSpeeds choreoController(Pose2d pose, SwerveSample sample) {
+        return ChassisSpeeds.fromFieldRelativeSpeeds(
+                sample.vx + xController.calculate(pose.getX(), sample.x),
+                sample.vy + yController.calculate(pose.getY(), sample.y),
+                sample.omega + thetaController.calculate(pose.getRotation().getRadians(), sample.heading),
+                pose.getRotation()
+        );
     }
 
     /**
@@ -344,8 +376,8 @@ public class Drive extends SubsystemBase {
                             linearVelocity.getY() * maxLinearSpeed.get(),
                             omega * Units.degreesToRadians(maxAngularSpeed.get()),
                             Util.shouldFlip()
-                                    ? getRotation().plus(new Rotation2d(Math.PI))
-                                    : getRotation()
+                                    ? getRotation()
+                                    : getRotation().plus(new Rotation2d(Math.PI))
                     )
             );
         });

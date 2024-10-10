@@ -18,6 +18,11 @@
           "visible": true
         }
       },
+      "/SmartDashboard/Auto Choices": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/Command Scheduler": {
         "window": {
           "visible": true

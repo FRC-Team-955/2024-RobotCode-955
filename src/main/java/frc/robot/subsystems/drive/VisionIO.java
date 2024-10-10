@@ -2,10 +2,6 @@ package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import org.littletonrobotics.junction.AutoLog;
-import org.photonvision.EstimatedRobotPose;
-import org.photonvision.targeting.PhotonTrackedTarget;
-
-import java.util.List;
 
 public class VisionIO {
     @AutoLog
@@ -18,5 +14,6 @@ public class VisionIO {
 //        public Integer[] targetsList = new Integer[]{};
     }
 
-    public void updateInputs(VisionIOInputs inputs) {}
+    public void updateInputs(VisionIOInputs inputs) {
+    }
 }

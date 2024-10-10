@@ -30,7 +30,6 @@ public class Shooter extends SubsystemBase {
     private static final Measure<Angle> PIVOT_WAIT_FOR_INTAKE = Degrees.of(-30);
     private static final Measure<Angle> PIVOT_HANDOFF = Degrees.of(-45);
     private static final Measure<Angle> PIVOT_SHOOT = Degrees.of(-45);
-    private final LoggedDashboardNumber shoot_angle = new LoggedDashboardNumber("Shoot angle degree", -45);
     private static final Measure<Angle> PIVOT_EJECT = Degrees.of(30);
     private static final Measure<Angle> PIVOT_AMP = Degrees.of(25);
     private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(7);
@@ -46,8 +45,13 @@ public class Shooter extends SubsystemBase {
     protected static final double FLYWHEEL_GEAR_RATIO = 1 / 2.0;
     private static final Measure<Velocity<Angle>> FLYWHEEL_SETPOINT_TOLERANCE = RPM.of(50);
 
-    private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
     private final ShooterIO io;
+    private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
+
+
+    public final LoggedDashboardNumber shootConfigurableSpeed = new LoggedDashboardNumber("Shoot Configurable Speed (RPM)", 0);
+    public final LoggedDashboardNumber shootConfigurableAngle = new LoggedDashboardNumber("Shoot Configurable Angle (Degrees)", 0);
+
     private final Debouncer hasNoteDebouncer = new Debouncer(FEED_BEAM_BRAKE_DEBOUNCE);
 
     private final ArmFeedforward pivotFeedforward = PIVOT_FF;
@@ -243,7 +247,7 @@ public class Shooter extends SubsystemBase {
         return pivotSetpoint(PIVOT_EJECT);
     }
 
-    public Command pivotAmp() {
+    private Command pivotAmp() {
         return pivotSetpoint(PIVOT_AMP);
     }
 
@@ -255,12 +259,26 @@ public class Shooter extends SubsystemBase {
         return new RunCommand(() -> flywheelsPercent(percent));
     }
 
-    public Command shootPercent(double percent, double spinupTime) {
+    private Command shootPercent(double percent, double spinupTime) {
         return Commands.sequence(
                 startEnd(() -> flywheelsPercent(percent), () -> {
                 }).withTimeout(spinupTime),
                 feedPercent(1).withTimeout(0.6)
         ).finallyDo(this::flywheelsStop);
+    }
+
+    public Command amp() {
+        return Commands.sequence(
+                pivotAmp(),
+                Commands.runOnce(() -> shootPercent(0.25, 0.25).schedule())
+        );
+    }
+
+    public Command shoot() {
+        return Commands.sequence(
+                pivotShoot(),
+                Commands.runOnce(() -> shootPercent(0.5, 0.75).schedule())
+        );
     }
 
     public Command eject() {
@@ -273,18 +291,17 @@ public class Shooter extends SubsystemBase {
         }));
     }
 
-    public final LoggedDashboardNumber shootConfigurableSpeed = new LoggedDashboardNumber("Shoot Configurable Speed (RPM)", 0);
-    public final LoggedDashboardNumber shootConfigurableAngle = new LoggedDashboardNumber("Shoot Configurable Angle (Degrees)", 0);
-
     public Command shootConfigurable() {
         return Commands.sequence(
                 startEnd(
                         () -> pivotSetpoint = Degrees.of(shootConfigurableAngle.get()),
-                        () -> {}
+                        () -> {
+                        }
                 ).until(this::pivotAtSetpoint),
                 startEnd(
                         () -> flywheelsSetpoint = RPM.of(shootConfigurableSpeed.get()),
-                        () -> {}
+                        () -> {
+                        }
                 ).until(this::flywheelsAtSetpoint),
                 feedPercent(1).withTimeout(0.6)
         ).finallyDo(() -> {

@@ -1,5 +1,6 @@
 package frc.robot;
 
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -9,6 +10,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.factories.FourPieceWingAutoFactory;
+import frc.robot.factories.HandoffFactory;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
@@ -34,7 +37,6 @@ public class RobotContainer {
     private final LoggedDashboardChooser<Command> autoChooser = new LoggedDashboardChooser<>("Auto Choices"); //AutoBuilder.buildAutoChooser());
 
     /* Subsystems */
-
     private Drive drive;
     private Intake intake;
     private Shooter shooter;
@@ -108,7 +110,6 @@ public class RobotContainer {
     }
 
     private void addAutos() {
-//        NamedCommands.registerCommand("Run Flywheel", Flywheel.get().run());
         autoChooser.addOption(
                 "Mobility (robot relative forward)",
                 drive.driveVelocity(new ChassisSpeeds(2, 0, 0), 3)
@@ -116,14 +117,19 @@ public class RobotContainer {
 
         autoChooser.addOption("none", null);
 
-        autoChooser.addDefaultOption("shoot & move",
+        autoChooser.addOption("shoot & move",
                 Commands.sequence(
                         intake.pivotHover(),
                         shooter.pivotShoot(),
-                        shooter.shootPercent(0.5, 0.6),
+//                        shooter.shootPercent(0.5, 0.6),
                         drive.driveVelocity(new ChassisSpeeds(2, 0, 0), 3)
                 )
         );
+
+        NamedCommands.registerCommand("shoot", Commands.print("test").andThen(Commands.waitSeconds(2)));
+
+        var factory = drive.createAutoFactory();
+        autoChooser.addDefaultOption("4 Piece Wing", FourPieceWingAutoFactory.get(factory));
 
         autoChooser.addOption("Shoot Configurable", shooter.shootConfigurable());
 
@@ -215,9 +221,6 @@ public class RobotContainer {
         ));
     }
 
-    private final LoggedDashboardNumber shootPercent = new LoggedDashboardNumber("Shoot Percent", 0.3);
-    private final LoggedDashboardNumber shootSpinupTime = new LoggedDashboardNumber("Shoot Spinup Time", 0.5);
-
     private void configureButtonBindings() {
         driverController.y().onTrue(drive.resetRotationCommand());
 
@@ -240,18 +243,12 @@ public class RobotContainer {
                 //                .schedule())
         );
         /*
-        driverController.leftTrigger(0.25).toggleOnTrue(Commands.sequence(
-                shooter.pivotShoot(),
-                Commands.runOnce(() -> shooter.shootPercent(0.5, 0.75).schedule())
-        ));
+        driverController.leftTrigger(0.25).toggleOnTrue(shooter.shoot());
         */
 
         driverController.leftTrigger(0.25).toggleOnTrue(shooter.shootConfigurable());
 
-        driverController.leftBumper().toggleOnTrue(Commands.sequence(
-                shooter.pivotAmp(),
-                Commands.runOnce(() -> shooter.shootPercent(0.25, 0.25).schedule())
-        ));
+        driverController.leftBumper().toggleOnTrue(shooter.amp());
 
 //        driverController.leftTrigger(0.25).whileTrue(Commands.sequence(
 //                        shooter.pivotShoot(),
@@ -264,17 +261,7 @@ public class RobotContainer {
                 intake.eject()
         ).withTimeout(1));
 
-        driverController.b().toggleOnTrue(Commands.sequence(
-                shooter.pivotWaitForIntake(),
-                intake.pivotHandoff(),
-                shooter.pivotHandoff(),
-                Commands.race(
-                        intake.feedHandoff(),
-                        shooter.feedHandoff()
-                ),
-                shooter.pivotWaitForIntake(),
-                intake.pivotHover()
-        ));
+        driverController.b().toggleOnTrue(HandoffFactory.get());
     }
 
     public Command getAutonomousCommand() {

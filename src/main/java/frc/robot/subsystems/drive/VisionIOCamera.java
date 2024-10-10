@@ -9,9 +9,8 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
-import org.photonvision.proto.Photon;
-import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +19,8 @@ import java.util.Optional;
 public class VisionIOCamera extends VisionIO {
     private final Transform3d robotToCam = new Transform3d(
             // Supposedly forward is positive x, left is positive y, up is positive z
-            new Translation3d(Units.inchesToMeters(10.325), Units.inchesToMeters(5.135), Units.inchesToMeters(12.458)),
-            new Rotation3d(0,-Units.degreesToRadians(30),0)
+            new Translation3d(Units.inchesToMeters(-10.325), Units.inchesToMeters(-5.135), Units.inchesToMeters(12.458)),
+            new Rotation3d(0, -Units.degreesToRadians(30), Math.PI)
     );
 
     PhotonCamera cam;

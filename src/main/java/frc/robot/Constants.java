@@ -1,9 +1,5 @@
 package frc.robot;
 
-import com.pathplanner.lib.util.GeometryUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -15,17 +11,6 @@ import edu.wpi.first.wpilibj.RobotBase;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static final class Simulation {
-        public static final boolean shouldReplay = false;
-        /**
-         * If true, replay will run as fast as your computer can go and log to a log file instead of
-         * NetworkTables. You will have to open the log file to see anything.
-         */
-        public static final boolean replayRunAsFastAsPossible = true;
-
-        public static final boolean useNintendoSwitchProController = RobotBase.isSimulation() && System.getProperty("os.name").contains("Mac OS X");
-    }
-
     /**
      * Automatically determined based on if code is running on a real robot and if {@link
      * Simulation#shouldReplay} is enabled
@@ -39,7 +24,6 @@ public final class Constants {
      * True if {@link #mode} is SIM
      */
     public static final boolean isSim = mode == Mode.SIM;
-
     public enum Mode {
         /**
          * Real robot
@@ -52,6 +36,17 @@ public final class Constants {
         /**
          * Log replay
          */
-        REPLAY;
+        REPLAY
+    }
+
+    public static final class Simulation {
+        public static final boolean shouldReplay = false;
+        /**
+         * If true, replay will run as fast as your computer can go and log to a log file instead of
+         * NetworkTables. You will have to open the log file to see anything.
+         */
+        public static final boolean replayRunAsFastAsPossible = true;
+
+        public static final boolean useNintendoSwitchProController = RobotBase.isSimulation() && System.getProperty("os.name").contains("Mac OS X");
     }
 }
