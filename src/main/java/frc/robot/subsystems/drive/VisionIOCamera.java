@@ -56,12 +56,16 @@ public class VisionIOCamera extends VisionIO {
             targets = result.getTargets();
             bestTarget = result.getBestTarget();
             inputs.bestTargetAmbiguity = bestTarget.getPoseAmbiguity();
+            inputs.bestTargetArea = bestTarget.getArea();
+            inputs.numTargets = targets.size();
 //            targets.forEach(target -> ids.add(target.getFiducialId()));
 //            inputs.targetsList = (Integer[]) ids.toArray();
         } else {
             targets = null;
             bestTarget = null;
             inputs.bestTargetAmbiguity = 1;
+            inputs.bestTargetArea = 0;
+            inputs.numTargets = 0;
         }
         if (hasEstimatedPose) {
             estimatedPose = poseUpdate.get();

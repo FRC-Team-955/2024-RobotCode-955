@@ -88,7 +88,7 @@ public class Drive extends SubsystemBase {
     private final PIDController choreoFeedbackX = new PIDController(1, 0, 0);
     private final PIDController choreoFeedbackY = new PIDController(1, 0, 0);
     private final PIDController choreoFeedbackTheta = new PIDController(1, 0, 0);
-    private final PIDController pointTowardsController = new PIDController(2, 0, 0.1);
+    private final PIDController pointTowardsController = new PIDController(1.8, 0, 0.1);
 
     private static Drive instance;
 
@@ -193,32 +193,37 @@ public class Drive extends SubsystemBase {
         poseEstimator.update(rawGyroRotation, modulePositions);
 
         if (!disableVision.get() && visionInputs.hasEstimatedPose) {
+            double estimateDifference = visionInputs.estimatedPose.toPose2d().getTranslation().getDistance(
+                    poseEstimator.getEstimatedPosition().getTranslation()
+            );
 
+            double xyStdDev;
+            double rotStdDev;
 
-            var xyStdDev = visionInputs.bestTargetAmbiguity * 10;
-            var rotStdDev = visionInputs.bestTargetAmbiguity * 30;
+            if (visionInputs.bestTargetArea > 0.8 && estimateDifference < 0.5) {
+                xyStdDev = 1.0;
+                rotStdDev = 10.0;
+            } else if (visionInputs.bestTargetArea > 0.8) {
+                xyStdDev = 1.5;
+                rotStdDev = 10.0;
+            } else if (visionInputs.bestTargetArea > 0.5 && estimateDifference < 1) {
+                xyStdDev = 2.0;
+                rotStdDev = 15.0;
+            } else if (visionInputs.bestTargetArea > 0.2 && estimateDifference < 2) {
+                xyStdDev = 4.0;
+                rotStdDev = 30.0;
+            } else if (visionInputs.bestTargetArea > 0.05 && estimateDifference < 5) {
+                xyStdDev = 10.0;
+                rotStdDev = 30.0;
+            } else {
+                xyStdDev = 30.0;
+                rotStdDev = 90.0;
+            }
 
-//            if (avgArea > 0.8 && odometryDifference < 0.5) {
-//                xyStdDev = 1.0
-//                rotStdDev = 10.0
-//            } else if (avgArea > 0.8) {
-//                xyStdDev = 1.5
-//                rotStdDev = 10.0
-//            } else if (avgArea > 0.5 && odometryDifference < 1) {
-//                xyStdDev = 2.0
-//                rotStdDev = 15.0
-//            } else if (avgArea > 0.2 && odometryDifference < 2) {
-//                xyStdDev = 4.0
-//                rotStdDev = 30.0
-//            } else if (avgArea > 0.05 && odometryDifference < 5) {
-//                xyStdDev = 10.0
-//                rotStdDev = 30.0
-//            } else return
-//
-//            if (tagCount >= 2) {
-//                xyStdDev -= if (avgArea > 0.8) 0.25 else 0.5
-//                rotStdDev -= 8.0
-//            }
+            if (visionInputs.numTargets >= 2) {
+                xyStdDev -= visionInputs.bestTargetArea > 0.8 ? 0.25 : 0.5;
+                rotStdDev -= 8.0;
+            }
 
             poseEstimator.addVisionMeasurement(
                     //new Pose2d(visionInputs.estimatedPose.toPose2d().getTranslation(), rawGyroRotation),

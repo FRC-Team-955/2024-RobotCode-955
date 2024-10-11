@@ -32,7 +32,7 @@ public class Shooter extends SubsystemBase {
     private static final Measure<Angle> PIVOT_SHOOT = Degrees.of(-50);
     private static final Measure<Angle> PIVOT_EJECT = Degrees.of(30);
     private static final Measure<Angle> PIVOT_AMP = Degrees.of(25);
-    private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(3);
+    private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(1.7);
 
     protected static final SimpleMotorFeedforward FEED_FF = Constants.isReal ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
     protected static final PIDConstants FEED_PID = Constants.isReal ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);

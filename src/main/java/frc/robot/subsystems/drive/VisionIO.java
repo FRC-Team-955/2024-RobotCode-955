@@ -11,6 +11,8 @@ public class VisionIO {
         public Pose3d estimatedPose = new Pose3d();
         public double timestampSeconds = 0;
         public double bestTargetAmbiguity = 1;
+        public double bestTargetArea = 0;
+        public int numTargets = 0;
 //        public Integer[] targetsList = new Integer[]{};
     }
 
