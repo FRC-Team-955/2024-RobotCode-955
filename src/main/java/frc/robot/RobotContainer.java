@@ -23,7 +23,6 @@ import frc.robot.subsystems.shooter.ShooterIOSim;
 import frc.robot.subsystems.shooter.ShooterIOSparkMaxBeamBreak;
 import frc.robot.util.CommandNintendoSwitchProController;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -204,7 +203,7 @@ public class RobotContainer {
     private void setDefaultCommands() {
         //noinspection SuspiciousNameCombination
         drive.setDefaultCommand(
-                drive.joystickDrive(
+                drive.driveJoystick(
                         driverController::getLeftY,
                         driverController::getLeftX,
                         () -> -driverController.getRightX()
@@ -244,10 +243,21 @@ public class RobotContainer {
         driverController.leftTrigger(0.25).toggleOnTrue(shooter.shoot());
         */
 
-        driverController.leftTrigger(0.25).onTrue(
+        driverController.leftTrigger(0.25).toggleOnTrue(
                 //shooter.shootConfigurable()
-//                shooter.shootDistance(drive.distanceToSpeaker())
-                shooter.shoot()
+                Commands.race(
+                        drive.driveJoystickPointShooterTowards(
+                                driverController::getLeftY,
+                                driverController::getLeftX,
+                                FieldLocations.SPEAKER
+                        ),
+                        Commands.sequence(
+                                Commands.waitUntil(() -> drive.pointingShooterTowardsPoint(FieldLocations.SPEAKER.get())),
+                                shooter.shootDistance(drive::distanceToSpeaker)
+                        )
+                )
+
+//                shooter.shoot()
 //                Commands.deferredProxy(
 //                        () -> drive.disableVision.get() ?
 //                        shooter.shoot() :
@@ -255,7 +265,7 @@ public class RobotContainer {
 //                )
         );
 
-        driverController.leftBumper().onTrue(shooter.amp());
+        driverController.leftBumper().toggleOnTrue(shooter.amp());
 
 //        driverController.leftTrigger(0.25).whileTrue(Commands.sequence(
 //                        shooter.pivotShoot(),

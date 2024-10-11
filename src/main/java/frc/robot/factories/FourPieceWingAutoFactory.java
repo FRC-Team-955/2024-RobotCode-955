@@ -24,12 +24,14 @@ public class FourPieceWingAutoFactory {
                         )
         );
         StoW1.done().onTrue(
-                intake.intake().withTimeout(3)
+                W1toW2.cmd()
+//                intake.intake().withTimeout(3)
         );
         W1toW2.done().onTrue(
-               HandoffFactory.get()
-                       .andThen(shooter.eject().withTimeout(2))
-                        .andThen(W2toW3.cmd().andThen(Commands.waitSeconds(1)).raceWith(intake.intake()))
+                W2toW3.cmd()
+//               HandoffFactory.get()
+//                       .andThen(shooter.eject().withTimeout(2))
+//                        .andThen(W2toW3.cmd().andThen(Commands.waitSeconds(1)).raceWith(intake.intake()))
         );
         W2toW3.done().onTrue(
                 HandoffFactory.get()

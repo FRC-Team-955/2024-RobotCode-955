@@ -67,8 +67,18 @@ public class CommandNintendoSwitchProController extends CommandXboxController {
     }
 
     @Override
+    public Trigger leftTrigger(double threshold) {
+        return leftTrigger();
+    }
+
+    @Override
     public Trigger rightTrigger() {
         return button(Button.RightTrigger.value, CommandScheduler.getInstance().getDefaultButtonLoop());
+    }
+
+    @Override
+    public Trigger rightTrigger(double threshold) {
+        return rightTrigger();
     }
 
     @Override

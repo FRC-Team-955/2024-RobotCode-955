@@ -23,4 +23,8 @@ public class Util {
         else
             return pos;
     }
+
+    public static double angle(Translation2d from, Translation2d to) {
+        return Math.atan2(from.getY() - to.getY(), from.getX() - to.getX());
+    }
 }

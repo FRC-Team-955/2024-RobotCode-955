@@ -11,6 +11,7 @@ import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
@@ -25,6 +26,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WrapperCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.FieldLocations;
 import frc.robot.Util;
@@ -53,20 +55,24 @@ public class Drive extends SubsystemBase {
     };
     //    private static final double MAX_ANGULAR_SPEED = MAX_LINEAR_SPEED / DRIVE_BASE_RADIUS;
     private static final double JOYSTICK_DRIVE_DEADBAND = 0.1;
-    private static Drive instance;
+    private static final double POINT_TOWARDS_TOLERANCE = Units.degreesToRadians(3);
+
     public final LoggedDashboardBoolean disableDriving = new LoggedDashboardBoolean("Disable Driving", false);
     private final LoggedDashboardNumber maxLinearSpeed = new LoggedDashboardNumber("Max Linear Speed (m/sec)", Units.feetToMeters(15));
     private final LoggedDashboardNumber maxAngularSpeed = new LoggedDashboardNumber("Max Angular Speed (deg/sec)", 270);
     public final LoggedDashboardBoolean disableVision = new LoggedDashboardBoolean("Disable Vision", false);
+
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+
+    private final VisionIO visionIO;
+    private final VisionIOInputsAutoLogged visionInputs = new VisionIOInputsAutoLogged();
+
     /**
      * FL, FR, BL, BR
      */
     private final Module[] modules = new Module[4];
     private final SysIdRoutine sysId;
-    private final VisionIO visionIO;
-    private final VisionIOInputsAutoLogged visionInputs = new VisionIOInputsAutoLogged();
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(MODULE_TRANSLATIONS);
     // For delta tracking
     private final SwerveModulePosition[] lastModulePositions = new SwerveModulePosition[]{
@@ -75,13 +81,20 @@ public class Drive extends SubsystemBase {
             new SwerveModulePosition(),
             new SwerveModulePosition()
     };
+    private Rotation2d rawGyroRotation = new Rotation2d();
     private final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+    private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
+
     private final PIDController choreoFeedbackX = new PIDController(1, 0, 0);
     private final PIDController choreoFeedbackY = new PIDController(1, 0, 0);
     private final PIDController choreoFeedbackTheta = new PIDController(1, 0, 0);
-    private final PIDController pointTowardsController = new PIDController(5, 0, 0);
-    private Rotation2d rawGyroRotation = new Rotation2d();
-    private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
+    private final PIDController pointTowardsController = new PIDController(2, 0, 0.1);
+
+    private static Drive instance;
+
+    public static Drive get() {
+        return instance;
+    }
 
     public Drive(
             GyroIO gyroIO,
@@ -139,10 +152,6 @@ public class Drive extends SubsystemBase {
         );
     }
 
-    public static Drive get() {
-        return instance;
-    }
-
     public void periodic() {
         visionIO.updateInputs(visionInputs);
         gyroIO.updateInputs(gyroInputs);
@@ -184,10 +193,38 @@ public class Drive extends SubsystemBase {
         poseEstimator.update(rawGyroRotation, modulePositions);
 
         if (!disableVision.get() && visionInputs.hasEstimatedPose) {
+
+
+            var xyStdDev = visionInputs.bestTargetAmbiguity * 10;
+            var rotStdDev = visionInputs.bestTargetAmbiguity * 30;
+
+//            if (avgArea > 0.8 && odometryDifference < 0.5) {
+//                xyStdDev = 1.0
+//                rotStdDev = 10.0
+//            } else if (avgArea > 0.8) {
+//                xyStdDev = 1.5
+//                rotStdDev = 10.0
+//            } else if (avgArea > 0.5 && odometryDifference < 1) {
+//                xyStdDev = 2.0
+//                rotStdDev = 15.0
+//            } else if (avgArea > 0.2 && odometryDifference < 2) {
+//                xyStdDev = 4.0
+//                rotStdDev = 30.0
+//            } else if (avgArea > 0.05 && odometryDifference < 5) {
+//                xyStdDev = 10.0
+//                rotStdDev = 30.0
+//            } else return
+//
+//            if (tagCount >= 2) {
+//                xyStdDev -= if (avgArea > 0.8) 0.25 else 0.5
+//                rotStdDev -= 8.0
+//            }
+
             poseEstimator.addVisionMeasurement(
                     //new Pose2d(visionInputs.estimatedPose.toPose2d().getTranslation(), rawGyroRotation),
                     visionInputs.estimatedPose.toPose2d(),
-                    visionInputs.timestampSeconds
+                    visionInputs.timestampSeconds,
+                    VecBuilder.fill(xyStdDev, xyStdDev, Units.degreesToRadians(rotStdDev))
             );
         }
     }
@@ -352,40 +389,89 @@ public class Drive extends SubsystemBase {
         );
     }
 
+    private void runDrive(double linearMagnitude, Rotation2d linearDirection, double omega) {
+        // Calculate new linear velocity
+        Translation2d linearVelocity = new Pose2d(new Translation2d(), linearDirection)
+                .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
+                .getTranslation();
+
+        // Convert to field relative speeds & send command
+        runVelocity(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                        linearVelocity.getX() * maxLinearSpeed.get(),
+                        linearVelocity.getY() * maxLinearSpeed.get(),
+                        omega * Units.degreesToRadians(maxAngularSpeed.get()),
+                        Util.shouldFlip()
+                                ? getRotation()
+                                : getRotation().plus(new Rotation2d(Math.PI))
+                )
+        );
+    }
+
+    private double calculateLinearMagnitude(double x, double y) {
+        var linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), JOYSTICK_DRIVE_DEADBAND);
+        return linearMagnitude * linearMagnitude;
+    }
+
+    private Rotation2d calculateLinearDirection(double x, double y) {
+        return new Rotation2d(x, y);
+    }
+
+    private double calculateOmega(double omega) {
+        double omegaWithDeadband = MathUtil.applyDeadband(omega, JOYSTICK_DRIVE_DEADBAND);
+        return Math.copySign(omegaWithDeadband * omegaWithDeadband, omegaWithDeadband);
+    }
+
     /**
      * Field relative drive command using two joysticks (controlling linear and angular velocities).
      */
-    public Command joystickDrive(
-            DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
+    public Command driveJoystick(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
         return run(() -> {
-            // Apply deadband
-            double linearMagnitude = MathUtil.applyDeadband(
-                    Math.hypot(xSupplier.getAsDouble(), ySupplier.getAsDouble()),
-                    JOYSTICK_DRIVE_DEADBAND
-            );
-            Rotation2d linearDirection = new Rotation2d(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-            double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), JOYSTICK_DRIVE_DEADBAND);
+            var x = xSupplier.getAsDouble();
+            var y = ySupplier.getAsDouble();
+            var omega = omegaSupplier.getAsDouble();
 
-            // Square values
-            linearMagnitude = linearMagnitude * linearMagnitude;
-            omega = Math.copySign(omega * omega, omega);
-
-            // Calculate new linear velocity
-            Translation2d linearVelocity = new Pose2d(new Translation2d(), linearDirection)
-                    .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
-                    .getTranslation();
-
-            // Convert to field relative speeds & send command
-            runVelocity(
-                    ChassisSpeeds.fromFieldRelativeSpeeds(
-                            linearVelocity.getX() * maxLinearSpeed.get(),
-                            linearVelocity.getY() * maxLinearSpeed.get(),
-                            omega * Units.degreesToRadians(maxAngularSpeed.get()),
-                            Util.shouldFlip()
-                                    ? getRotation()
-                                    : getRotation().plus(new Rotation2d(Math.PI))
-                    )
+            runDrive(
+                    calculateLinearMagnitude(x, y),
+                    calculateLinearDirection(x, y),
+                    calculateOmega(omega)
             );
         });
+    }
+
+    public Command driveJoystickPointShooterTowards(DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<Translation2d> pointToPointTowards) {
+        var cmd = run(() -> {
+            var x = xSupplier.getAsDouble();
+            var y = ySupplier.getAsDouble();
+            var point = pointToPointTowards.get();
+
+            var angleTowards = Util.angle(point, getPose().getTranslation());
+            Logger.recordOutput("Drive/PointTowards/Setpoint", angleTowards);
+            var omega = pointTowardsController.calculate(getRotation().getRadians() + Math.PI, angleTowards);
+
+            runDrive(
+                    calculateLinearMagnitude(x, y),
+                    calculateLinearDirection(x, y),
+                    omega
+            );
+        });
+        return new WrapperCommand(cmd) {
+            @Override
+            public void initialize() {
+                super.initialize();
+                Logger.recordOutput("Drive/PointTowards/Running", true);
+            }
+
+            @Override
+            public void end(boolean interrupted) {
+                super.end(interrupted);
+                Logger.recordOutput("Drive/PointTowards/Running", false);
+            }
+        };
+    }
+
+    public boolean pointingShooterTowardsPoint(Translation2d pointTowards) {
+        var angleTowards = Util.angle(pointTowards, getPose().getTranslation());
+        return Math.abs(MathUtil.angleModulus(getRotation().getRadians() + Math.PI) - angleTowards) <= POINT_TOWARDS_TOLERANCE;
     }
 }

@@ -9,15 +9,14 @@ import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
+
+import java.util.function.Supplier;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -33,7 +32,7 @@ public class Shooter extends SubsystemBase {
     private static final Measure<Angle> PIVOT_SHOOT = Degrees.of(-50);
     private static final Measure<Angle> PIVOT_EJECT = Degrees.of(30);
     private static final Measure<Angle> PIVOT_AMP = Degrees.of(25);
-    private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(1.5);
+    private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(3);
 
     protected static final SimpleMotorFeedforward FEED_FF = Constants.isReal ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
     protected static final PIDConstants FEED_PID = Constants.isReal ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
@@ -289,7 +288,7 @@ public class Shooter extends SubsystemBase {
 
     public Command eject() {
         return pivotEject().andThen(startEnd(() -> {
-            flywheelsPercent(0.5);
+            flywheelsPercent(1);
             io.feedSetVoltage(12);
         }, () -> {
             flywheelsStop();
@@ -316,22 +315,28 @@ public class Shooter extends SubsystemBase {
         });
     }
 
-    public Command shootDistance(Measure<Distance> distance) {
-        return Commands.sequence(
-                startEnd(
-                        () -> pivotSetpoint = ShooterRegression.getAngle(distance),
-                        () -> {
-                        }
-                ).until(this::pivotAtSetpoint),
-                startEnd(
-                        () -> flywheelsSetpoint = ShooterRegression.getSpeed(distance),
-                        () -> {
-                        }
-                ).until(this::flywheelsAtSetpoint),
+    public Command shootDistance(Supplier<Measure<Distance>> distance) {
+        var cmd = Commands.sequence(
+                run(() -> {
+                    pivotSetpoint = ShooterRegression.getAngle(distance.get());
+                    flywheelsSetpoint = ShooterRegression.getSpeed(distance.get());
+                }).until(() -> this.pivotAtSetpoint() && this.flywheelsAtSetpoint()),
                 feedPercent(1).withTimeout(0.6)
-        ).finallyDo(() -> {
-            pivotSetpoint = Degrees.of(0);
-            flywheelsSetpoint = RPM.of(0);
-        });
+        );
+        return new WrapperCommand(cmd) {
+            @Override
+            public void initialize() {
+                super.initialize();
+                pivotSetpoint = ShooterRegression.getAngle(distance.get());
+                flywheelsSetpoint = ShooterRegression.getSpeed(distance.get());
+            }
+
+            @Override
+            public void end(boolean interrupted) {
+                super.end(interrupted);
+                pivotSetpoint = Degrees.of(0);
+                flywheelsSetpoint = RPM.of(0);
+            }
+        };
     }
 }
