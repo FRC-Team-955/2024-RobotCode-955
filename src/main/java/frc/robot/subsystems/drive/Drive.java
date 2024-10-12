@@ -199,22 +199,22 @@ public class Drive extends SubsystemBase {
 
             if (visionInputs.bestTargetArea > 0.8 && estimateDifference < 0.5) {
                 xyStdDev = 1.0;
-                rotStdDev = 10.0;
+                rotStdDev = 30.0;
             } else if (visionInputs.bestTargetArea > 0.8) {
                 xyStdDev = 1.5;
-                rotStdDev = 10.0;
+                rotStdDev = 35.0;
             } else if (visionInputs.bestTargetArea > 0.5 && estimateDifference < 1) {
                 xyStdDev = 2.0;
-                rotStdDev = 15.0;
+                rotStdDev = 40.0;
             } else if (visionInputs.bestTargetArea > 0.2 && estimateDifference < 2) {
                 xyStdDev = 4.0;
-                rotStdDev = 30.0;
+                rotStdDev = 80.0;
             } else if (visionInputs.bestTargetArea > 0.05 && estimateDifference < 5) {
                 xyStdDev = 10.0;
-                rotStdDev = 30.0;
+                rotStdDev = 120.0;
             } else {
                 xyStdDev = 30.0;
-                rotStdDev = 90.0;
+                rotStdDev = 360.0;
             }
 
             if (visionInputs.numTargets >= 2) {
@@ -223,8 +223,9 @@ public class Drive extends SubsystemBase {
             }
 
             poseEstimator.addVisionMeasurement(
-                    //new Pose2d(visionInputs.estimatedPose.toPose2d().getTranslation(), rawGyroRotation),
-                    visionInputs.estimatedPose.toPose2d(),
+                    DriverStation.isDisabled()
+                            ? visionInputs.estimatedPose.toPose2d()
+                            : new Pose2d(visionInputs.estimatedPose.toPose2d().getTranslation(), getRotation()),
                     visionInputs.timestampSeconds,
                     VecBuilder.fill(xyStdDev, xyStdDev, Units.degreesToRadians(rotStdDev))
             );
