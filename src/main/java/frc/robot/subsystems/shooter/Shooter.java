@@ -44,8 +44,8 @@ public class Shooter extends SubsystemBase {
     private static final Measure<Velocity<Angle>> FEED_SETPOINT_TOLERANCE = RPM.of(10);
     private static final double FEED_BEAM_BRAKE_DEBOUNCE = 0.05;
 
-    private static final SimpleMotorFeedforward FLYWHEEL_TOP_FF = Constants.isReal ? new SimpleMotorFeedforward(0.23795, 0.011308, 0.0069895) : new SimpleMotorFeedforward(0, 0.058);
-    private static final SimpleMotorFeedforward FLYWHEEL_BOTTOM_FF = Constants.isReal ? new SimpleMotorFeedforward(0.23279, 0.0113005, 0.0064997) : new SimpleMotorFeedforward(0, 0.058);
+    private static final SimpleMotorFeedforward FLYWHEEL_TOP_FF = Constants.isReal ? new SimpleMotorFeedforward(0.23795, 0.011308, 0.0069895) : new SimpleMotorFeedforward(0, 0.04);
+    private static final SimpleMotorFeedforward FLYWHEEL_BOTTOM_FF = Constants.isReal ? new SimpleMotorFeedforward(0.23279, 0.0113005, 0.0064997) : new SimpleMotorFeedforward(0, 0.04);
     private static final PIDConstants FLYWHEEL_TOP_PID = Constants.isReal ? new PIDConstants(0, 0) : new PIDConstants(0.1, 0);
     private static final PIDConstants FLYWHEEL_BOTTOM_PID = Constants.isReal ? new PIDConstants(0, 0) : new PIDConstants(0.1, 0);
     protected static final double FLYWHEEL_GEAR_RATIO = 1 / 2.0;

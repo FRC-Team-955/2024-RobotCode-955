@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.factories.CalculatedShootFactory;
 import frc.robot.factories.FourPieceWingAutoFactory;
 import frc.robot.factories.HandoffFactory;
 import frc.robot.subsystems.drive.*;
@@ -243,27 +244,7 @@ public class RobotContainer {
         driverController.leftTrigger(0.25).toggleOnTrue(shooter.shoot());
         */
 
-        driverController.leftTrigger(0.25).toggleOnTrue(
-                //shooter.shootConfigurable()
-                Commands.race(
-                        drive.driveJoystickPointShooterTowards(
-                                driverController::getLeftY,
-                                driverController::getLeftX,
-                                FieldLocations.SPEAKER
-                        ),
-                        Commands.sequence(
-                                Commands.waitUntil(() -> drive.pointingShooterTowardsPoint(FieldLocations.SPEAKER.get())),
-                                shooter.shootDistance(drive::distanceToSpeaker)
-                        )
-                )
-
-//                shooter.shoot()
-//                Commands.deferredProxy(
-//                        () -> drive.disableVision.get() ?
-//                        shooter.shoot() :
-//                        shooter.shootDistance(drive.distanceToSpeaker())
-//                )
-        );
+        driverController.leftTrigger(0.25).toggleOnTrue(CalculatedShootFactory.get(driverController::getLeftY, driverController::getLeftX));
 
         driverController.leftBumper().toggleOnTrue(shooter.amp());
 

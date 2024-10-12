@@ -19,23 +19,22 @@ public class FourPieceWingAutoFactory {
         final var W2toW3 = factory.trajectory("W2-W3", loop);
         loop.enabled().onTrue(
                 drive.setPose(() -> StoW1.getInitialPose().get())
-                        .andThen(
-                                StoW1.cmd().alongWith(intake.intake().withTimeout(5))
-                        )
+                        .andThen(StoW1.cmd().alongWith(intake.intake()))
         );
-        StoW1.done().onTrue(
-                W1toW2.cmd()
-//                intake.intake().withTimeout(3)
-        );
-        W1toW2.done().onTrue(
-                W2toW3.cmd()
-//               HandoffFactory.get()
-//                       .andThen(shooter.eject().withTimeout(2))
-//                        .andThen(W2toW3.cmd().andThen(Commands.waitSeconds(1)).raceWith(intake.intake()))
-        );
-        W2toW3.done().onTrue(
-                HandoffFactory.get()
-        );
+        StoW1.done().onTrue(Commands.sequence(
+                HandoffFactory.get(),
+                CalculatedShootFactory.get(() -> 0, () -> 0),
+                W1toW2.cmd().alongWith(intake.intake())
+        ));
+        W1toW2.done().onTrue(Commands.sequence(
+                HandoffFactory.get(),
+                CalculatedShootFactory.get(() -> 0, () -> 0),
+                W2toW3.cmd().alongWith(intake.intake())
+        ));
+        W2toW3.done().onTrue(Commands.sequence(
+                HandoffFactory.get(),
+                CalculatedShootFactory.get(() -> 0, () -> 0)
+        ));
         return loop.cmd();
     }
 }

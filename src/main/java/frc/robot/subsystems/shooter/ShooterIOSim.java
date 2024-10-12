@@ -56,7 +56,7 @@ public class ShooterIOSim extends ShooterIO {
 
     @Override
     public void updateInputs(ShooterIOInputs inputs) {
-        inputs.hasNote = Timer.getFPGATimestamp() % 10 > 5;
+        inputs.hasNote = Timer.getFPGATimestamp() % 6 > 3;
 
         if (pivotClosedLoop) {
             pivotAppliedVolts = pivotPid.calculate(pivotSim.getAngleRads()) + pivotFfVolts;
