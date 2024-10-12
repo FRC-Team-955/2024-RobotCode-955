@@ -4,6 +4,10 @@ import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
@@ -21,8 +25,8 @@ import java.util.function.Supplier;
 import static edu.wpi.first.units.Units.*;
 
 public class Shooter extends SubsystemBase {
-    protected static final ArmFeedforward PIVOT_FF = Constants.isReal ? new ArmFeedforward(0.574, 0.90, 0.65051, 0.21235) : new ArmFeedforward(0, 0.5, 0);
-    protected static final PIDConstants PIVOT_PID = Constants.isReal ? new PIDConstants(0.15/*, 0.011*/) : new PIDConstants(2.5, 0);
+    protected static final ArmFeedforward PIVOT_FF = Constants.isReal ? new ArmFeedforward(0.574, 0.90, 0.65051, 0.21235) : new ArmFeedforward(0, 0.4, 0);
+    protected static final PIDConstants PIVOT_PID = Constants.isReal ? new PIDConstants(0.15/*, 0.011*/) : new PIDConstants(5, 0);
     protected static final double PIVOT_GEAR_RATIO = 40;
     private static final Measure<Angle> PIVOT_ENCODER_OFFSET = Radians.of(0.0);
     private static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-90);
@@ -181,6 +185,10 @@ public class Shooter extends SubsystemBase {
                 Logger.recordOutput("Shooter/Flywheels/FFBottomVolts", ffBottomVolts);
                 io.flywheelsSetSetpoint(flywheelsSetpointRadPerSec, ffTopVolts, ffBottomVolts);
             }
+        }
+
+        if (Constants.isSim) {
+            Logger.recordOutput("Shooter/Component", new Pose3d(new Translation3d(-0.27, 0, 0.59), new Rotation3d(0, -inputs.pivotPositionRad, 0)));
         }
     }
 

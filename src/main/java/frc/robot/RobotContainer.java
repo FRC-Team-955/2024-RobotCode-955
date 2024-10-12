@@ -65,7 +65,7 @@ public class RobotContainer {
                         new VisionIO()
                 );
                 intake = new Intake(new IntakeIOSim(DCMotor.getNEO(1), 0.3, 0.045, DCMotor.getNEO(1)));
-                shooter = new Shooter(new ShooterIOSim(/*DCMotor.getNEO(1), 0.4, 0.083, DCMotor.getNEO(1), DCMotor.getNEO(1), DCMotor.getNEO(1)*/));
+                shooter = new Shooter(new ShooterIOSim(DCMotor.getNEO(1), 0.4, 0.083, DCMotor.getNEO(1), DCMotor.getNEO(1), DCMotor.getNEO(1)));
             }
 
             case REPLAY -> {

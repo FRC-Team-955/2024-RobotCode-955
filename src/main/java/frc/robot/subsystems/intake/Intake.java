@@ -3,6 +3,10 @@ package frc.robot.subsystems.intake;
 import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Velocity;
@@ -15,8 +19,8 @@ import org.littletonrobotics.junction.Logger;
 import static edu.wpi.first.units.Units.*;
 
 public class Intake extends SubsystemBase {
-    protected static final ArmFeedforward PIVOT_FF = Constants.isReal ? new ArmFeedforward(0, 0.6, 0) : new ArmFeedforward(0, 0.3, 0);
-    protected static final PIDConstants PIVOT_PID = Constants.isReal ? new PIDConstants(0.12, 0.003) : new PIDConstants(2.5, 0);
+    protected static final ArmFeedforward PIVOT_FF = Constants.isReal ? new ArmFeedforward(0, 0.6, 0) : new ArmFeedforward(0, 0.28, 0);
+    protected static final PIDConstants PIVOT_PID = Constants.isReal ? new PIDConstants(0.12, 0.003) : new PIDConstants(8, 0);
     protected static final double PIVOT_GEAR_RATIO = 45;
     private static final Measure<Angle> PIVOT_ENCODER_OFFSET = Radians.of(0.0);
     protected static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-141);
@@ -87,6 +91,10 @@ public class Intake extends SubsystemBase {
                 Logger.recordOutput("Intake/Feed/FFVolts", ffVolts);
                 io.feedSetSetpoint(feedSetpointRadPerSec, ffVolts);
             }
+        }
+
+        if (Constants.isSim) {
+            Logger.recordOutput("Intake/Component", new Pose3d(new Translation3d(0.27, 0, 0.22), new Rotation3d(0, inputs.pivotPositionRad + Units.degreesToRadians(-10), 0)));
         }
     }
 
