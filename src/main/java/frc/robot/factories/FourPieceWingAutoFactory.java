@@ -1,8 +1,11 @@
 package frc.robot.factories;
 
 import choreo.auto.AutoFactory;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Shooter;
@@ -18,7 +21,7 @@ public class FourPieceWingAutoFactory {
         final var W1toW2 = factory.trajectory("W1-W2", loop);
         final var W2toW3 = factory.trajectory("W2-W3", loop);
         loop.enabled().onTrue(
-                drive.setPose(() -> StoW1.getInitialPose().get())
+                AutoInitFactory.get(loop, "S-W1", StoW1::getInitialPose)
                         .andThen(StoW1.cmd().alongWith(intake.intake()))
         );
         StoW1.done().onTrue(Commands.sequence(
