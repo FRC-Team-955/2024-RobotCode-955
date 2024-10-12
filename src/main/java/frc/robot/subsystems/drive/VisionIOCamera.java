@@ -12,47 +12,40 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class VisionIOCamera extends VisionIO {
-    private final Transform3d robotToCam = new Transform3d(
+    private static final Transform3d ROBOT_TO_CAM = new Transform3d(
             // Supposedly forward is positive x, left is positive y, up is positive z
             new Translation3d(Units.inchesToMeters(-10.325), Units.inchesToMeters(-5.135), Units.inchesToMeters(12.458)),
             new Rotation3d(0, -Units.degreesToRadians(30), Math.PI)
     );
+    private static final AprilTagFieldLayout APRILTAG_FIELD_LAYOUT = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
 
-    PhotonCamera cam;
-
-    AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
-
-    PhotonPoseEstimator photonPoseEstimator;
-
-    EstimatedRobotPose estimatedPose = null;
-    List<PhotonTrackedTarget> targets = null;
-    PhotonTrackedTarget bestTarget = null;
-    ArrayList<Integer> ids;
-
+    private final PhotonCamera cam;
+    private final PhotonPoseEstimator photonPoseEstimator;
 
     // ids are Shooter_Cam
     public VisionIOCamera(String id) {
         cam = new PhotonCamera(id);
         photonPoseEstimator = new PhotonPoseEstimator(
-                aprilTagFieldLayout,
+                APRILTAG_FIELD_LAYOUT,
                 PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
                 cam,
-                robotToCam
+                ROBOT_TO_CAM
         );
     }
 
     @Override
     public void updateInputs(VisionIOInputs inputs) {
         var result = cam.getLatestResult();
-        boolean hasTargets = result.hasTargets();
+        inputs.hasTargets = result.hasTargets();
         Optional<EstimatedRobotPose> poseUpdate = photonPoseEstimator.update();
-        boolean hasEstimatedPose = poseUpdate.isPresent();
-        if (hasTargets) {
+        inputs.hasEstimatedPose = poseUpdate.isPresent();
+        List<PhotonTrackedTarget> targets = null;
+        PhotonTrackedTarget bestTarget = null;
+        if (inputs.hasTargets) {
             targets = result.getTargets();
             bestTarget = result.getBestTarget();
             inputs.bestTargetAmbiguity = bestTarget.getPoseAmbiguity();
@@ -67,15 +60,13 @@ public class VisionIOCamera extends VisionIO {
             inputs.bestTargetArea = 0;
             inputs.numTargets = 0;
         }
-        if (hasEstimatedPose) {
-            estimatedPose = poseUpdate.get();
+        if (inputs.hasEstimatedPose) {
+            EstimatedRobotPose estimatedPose = poseUpdate.get();
             inputs.estimatedPose = estimatedPose.estimatedPose;
             inputs.timestampSeconds = estimatedPose.timestampSeconds;
         } else {
             inputs.estimatedPose = new Pose3d();
             inputs.timestampSeconds = 0;
         }
-        inputs.hasEstimatedPose = hasEstimatedPose;
-        inputs.hasTargets = hasTargets;
     }
 }

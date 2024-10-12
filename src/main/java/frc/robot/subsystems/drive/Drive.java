@@ -8,8 +8,6 @@ import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
@@ -82,13 +80,12 @@ public class Drive extends SubsystemBase {
             new SwerveModulePosition()
     };
     private Rotation2d rawGyroRotation = new Rotation2d();
-    private final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
     private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
     private final PIDController choreoFeedbackX = new PIDController(1, 0, 0);
     private final PIDController choreoFeedbackY = new PIDController(1, 0, 0);
     private final PIDController choreoFeedbackTheta = new PIDController(1, 0, 0);
-    private final PIDController pointTowardsController = new PIDController(1.8, 0, 0.1);
+    private final PIDController pointTowardsController = new PIDController(2, 0, 0.1);
 
     private static Drive instance;
 
@@ -379,19 +376,18 @@ public class Drive extends SubsystemBase {
                 this,
                 this::getPose,
                 this::choreoController,
-                this::runVelocity,
                 Util::shouldFlip,
-                new AutoFactory.ChoreoAutoBindings()
+                new AutoFactory.AutoBindings()
         );
     }
 
-    private ChassisSpeeds choreoController(Pose2d pose, SwerveSample sample) {
-        return ChassisSpeeds.fromFieldRelativeSpeeds(
+    private void choreoController(Pose2d pose, SwerveSample sample) {
+        runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
                 sample.vx + choreoFeedbackX.calculate(pose.getX(), sample.x),
                 sample.vy + choreoFeedbackY.calculate(pose.getY(), sample.y),
                 sample.omega + choreoFeedbackTheta.calculate(pose.getRotation().getRadians(), sample.heading),
                 pose.getRotation()
-        );
+        ));
     }
 
     private void runDrive(double linearMagnitude, Rotation2d linearDirection, double omega) {

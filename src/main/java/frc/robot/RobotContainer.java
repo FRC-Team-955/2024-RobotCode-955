@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.factories.CalculatedShootFactory;
 import frc.robot.factories.FourPieceWingAutoFactory;
 import frc.robot.factories.HandoffFactory;
+import frc.robot.factories.ThreePieceMidlineAutoFactory;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
@@ -130,6 +131,7 @@ public class RobotContainer {
 
         var factory = drive.createAutoFactory();
         autoChooser.addDefaultOption("4 Piece Wing", FourPieceWingAutoFactory.get(factory));
+        autoChooser.addDefaultOption("3 Piece Midline", ThreePieceMidlineAutoFactory.get(factory));
 
         // Set up SysId routines
         autoChooser.addOption(

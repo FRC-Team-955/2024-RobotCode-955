@@ -24,6 +24,7 @@ public final class Constants {
      * True if {@link #mode} is SIM
      */
     public static final boolean isSim = mode == Mode.SIM;
+
     public enum Mode {
         /**
          * Real robot

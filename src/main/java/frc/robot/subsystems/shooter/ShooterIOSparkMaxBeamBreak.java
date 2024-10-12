@@ -4,7 +4,6 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.revrobotics.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
 
 public class ShooterIOSparkMaxBeamBreak extends ShooterIO {
     private final DigitalInput beamBreak;
