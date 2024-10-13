@@ -92,50 +92,28 @@ public class Drive extends SubsystemBase {
 
     public static Drive get() {
         if (instance == null)
-            instance = switch (Constants.mode) {
-                case REAL -> new Drive(
-                        new GyroIOPigeon2(10),
-                        new ModuleIOSparkMaxCANcoder(0),
-                        new ModuleIOSparkMaxCANcoder(1),
-                        new ModuleIOSparkMaxCANcoder(2),
-                        new ModuleIOSparkMaxCANcoder(3),
-                        new VisionIOCamera("Shooter_Cam")
-                );
-                case SIM -> new Drive(
-                        new GyroIO(),
-                        new ModuleIOSim(),
-                        new ModuleIOSim(),
-                        new ModuleIOSim(),
-                        new ModuleIOSim(),
-                        new VisionIO()
-                );
-                case REPLAY -> new Drive(
-                        new GyroIO(),
-                        new ModuleIO(),
-                        new ModuleIO(),
-                        new ModuleIO(),
-                        new ModuleIO(),
-                        new VisionIO()
-                );
-            };
+            instance = new Drive();
 
         return instance;
     }
 
-    private Drive(
-            GyroIO gyroIO,
-            ModuleIO flModuleIO,
-            ModuleIO frModuleIO,
-            ModuleIO blModuleIO,
-            ModuleIO brModuleIO,
-            VisionIO visionIO
-    ) {
-        this.gyroIO = gyroIO;
-        modules[0] = new Module(flModuleIO, 0);
-        modules[1] = new Module(frModuleIO, 1);
-        modules[2] = new Module(blModuleIO, 2);
-        modules[3] = new Module(brModuleIO, 3);
-        this.visionIO = visionIO;
+    private Drive() {
+        gyroIO = switch (Constants.mode) {
+            case REAL -> new GyroIOPigeon2(10);
+            case SIM, REPLAY -> new GyroIO();
+        };
+        visionIO = switch (Constants.mode) {
+            case REAL -> new VisionIOCamera("Shooter_Cam");
+            case SIM, REPLAY -> new VisionIO();
+        };
+        for (int i = 0; i < 4; i++) {
+            final var moduleIO = switch (Constants.mode) {
+                case REAL -> new ModuleIOSparkMaxCANcoder(i);
+                case SIM -> new ModuleIOSim();
+                case REPLAY -> new ModuleIO();
+            };
+            modules[i] = new Module(moduleIO, i);
+        }
 
         choreoFeedbackTheta.enableContinuousInput(-Math.PI, Math.PI);
         pointTowardsController.enableContinuousInput(-Math.PI, Math.PI);

@@ -50,25 +50,25 @@ public class Intake extends SubsystemBase {
 
     public static Intake get() {
         if (instance == null)
-            instance = switch (Constants.mode) {
-                case REAL -> new Intake(new IntakeIOSparkMax(
-                        3,
-                        16
-                ));
-                case SIM -> new Intake(new IntakeIOSim(
-                        DCMotor.getNEO(1),
-                        0.3,
-                        0.045,
-                        DCMotor.getNEO(1)
-                ));
-                case REPLAY -> new Intake(new IntakeIO());
-            };
+            instance = new Intake();
 
         return instance;
     }
 
-    private Intake(IntakeIO io) {
-        this.io = io;
+    private Intake() {
+        io = switch (Constants.mode) {
+            case REAL -> new IntakeIOSparkMax(
+                    3,
+                    16
+            );
+            case SIM -> new IntakeIOSim(
+                    DCMotor.getNEO(1),
+                    0.3,
+                    0.045,
+                    DCMotor.getNEO(1)
+            );
+            case REPLAY -> new IntakeIO();
+        };
 
         io.pivotConfigurePID(PIVOT_PID);
         io.pivotSetPosition(PIVOT_INITIAL_POSITION.in(Radians));

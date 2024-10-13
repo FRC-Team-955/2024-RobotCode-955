@@ -77,30 +77,30 @@ public class Shooter extends SubsystemBase {
 
     public static Shooter get() {
         if (instance == null)
-            instance = switch (Constants.mode) {
-                case REAL -> new Shooter(new ShooterIOSparkMaxBeamBreak(
-                        6,
-                        7,
-                        9,
-                        10,
-                        8
-                ));
-                case SIM -> new Shooter(new ShooterIOSim(
-                        DCMotor.getNEO(1),
-                        0.4,
-                        0.083,
-                        DCMotor.getNEO(1),
-                        DCMotor.getNEO(1),
-                        DCMotor.getNEO(1)
-                ));
-                case REPLAY -> new Shooter(new ShooterIO());
-            };
+            instance = new Shooter();
 
         return instance;
     }
 
-    private Shooter(ShooterIO io) {
-        this.io = io;
+    private Shooter() {
+        io = switch (Constants.mode) {
+            case REAL -> new ShooterIOSparkMaxBeamBreak(
+                    6,
+                    7,
+                    9,
+                    10,
+                    8
+            );
+            case SIM -> new ShooterIOSim(
+                    DCMotor.getNEO(1),
+                    0.4,
+                    0.083,
+                    DCMotor.getNEO(1),
+                    DCMotor.getNEO(1),
+                    DCMotor.getNEO(1)
+            );
+            case REPLAY -> new ShooterIO();
+        };
 
         io.pivotConfigurePID(PIVOT_PID);
         io.pivotSetPosition(PIVOT_INITIAL_POSITION.in(Radians));
