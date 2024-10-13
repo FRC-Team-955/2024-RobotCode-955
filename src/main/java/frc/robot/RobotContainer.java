@@ -2,8 +2,6 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -14,15 +12,9 @@ import frc.robot.factories.CalculatedShootFactory;
 import frc.robot.factories.FourPieceWingAutoFactory;
 import frc.robot.factories.HandoffFactory;
 import frc.robot.factories.ThreePieceMidlineAutoFactory;
-import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.IntakeIO;
-import frc.robot.subsystems.intake.IntakeIOSim;
-import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.ShooterIO;
-import frc.robot.subsystems.shooter.ShooterIOSim;
-import frc.robot.subsystems.shooter.ShooterIOSparkMaxBeamBreak;
 import frc.robot.util.CommandNintendoSwitchProController;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -38,71 +30,11 @@ public class RobotContainer {
     private final LoggedDashboardChooser<Command> autoChooser = new LoggedDashboardChooser<>("Auto Choices"); //AutoBuilder.buildAutoChooser());
 
     /* Subsystems */
-    private Drive drive;
-    private Intake intake;
-    private Shooter shooter;
+    private final Drive drive = Drive.get();
+    private final Intake intake = Intake.get();
+    private final Shooter shooter = Shooter.get();
 
     public RobotContainer() {
-        switch (Constants.mode) {
-            case REAL -> {
-                drive = new Drive(
-                        new GyroIOPigeon2(10),
-                        new ModuleIOSparkMaxCANcoder(0),
-                        new ModuleIOSparkMaxCANcoder(1),
-                        new ModuleIOSparkMaxCANcoder(2),
-                        new ModuleIOSparkMaxCANcoder(3),
-                        new VisionIOCamera("Shooter_Cam")
-                );
-                intake = new Intake(new IntakeIOSparkMax(3, 16));
-                shooter = new Shooter(new ShooterIOSparkMaxBeamBreak(6, 7, 9, 10, 8));
-            }
-
-            case SIM -> {
-                drive = new Drive(
-                        new GyroIO(),
-                        new ModuleIOSim(),
-                        new ModuleIOSim(),
-                        new ModuleIOSim(),
-                        new ModuleIOSim(),
-                        new VisionIO()
-                );
-                intake = new Intake(new IntakeIOSim(DCMotor.getNEO(1), 0.3, 0.045, DCMotor.getNEO(1)));
-                shooter = new Shooter(new ShooterIOSim(DCMotor.getNEO(1), 0.4, 0.083, DCMotor.getNEO(1), DCMotor.getNEO(1), DCMotor.getNEO(1)));
-            }
-
-            case REPLAY -> {
-                drive = new Drive(
-                        new GyroIO(),
-                        new ModuleIO(),
-                        new ModuleIO(),
-                        new ModuleIO(),
-                        new ModuleIO(),
-                        new VisionIO()
-                );
-                intake = new Intake(new IntakeIO());
-                shooter = new Shooter(new ShooterIO());
-            }
-        }
-
-        // Check fields and warn if subsystems are uninitialized
-        for (var field : getClass().getDeclaredFields()) {
-            try {
-                if (field.get(this) == null) {
-                    var msg = "RobotContainer." + field.getName() + " is null. If the field is a subsystem please fix it";
-                    if (Constants.isSim) {
-                        throw new RuntimeException(msg);
-                    } else {
-                        for (int i = 0; i < 3; i++) {
-                            // Without the i the driver station will recognize duplicate messages
-                            DriverStation.reportError("(" + (i + 1) + ") " + msg, false);
-                        }
-                    }
-                }
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
         addAutos();
         setDefaultCommands();
         configureButtonBindings();

@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WrapperCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants;
 import frc.robot.FieldLocations;
 import frc.robot.Util;
 import frc.robot.util.LocalADStarAK;
@@ -90,10 +91,38 @@ public class Drive extends SubsystemBase {
     private static Drive instance;
 
     public static Drive get() {
+        if (instance == null)
+            instance = switch (Constants.mode) {
+                case REAL -> new Drive(
+                        new GyroIOPigeon2(10),
+                        new ModuleIOSparkMaxCANcoder(0),
+                        new ModuleIOSparkMaxCANcoder(1),
+                        new ModuleIOSparkMaxCANcoder(2),
+                        new ModuleIOSparkMaxCANcoder(3),
+                        new VisionIOCamera("Shooter_Cam")
+                );
+                case SIM -> new Drive(
+                        new GyroIO(),
+                        new ModuleIOSim(),
+                        new ModuleIOSim(),
+                        new ModuleIOSim(),
+                        new ModuleIOSim(),
+                        new VisionIO()
+                );
+                case REPLAY -> new Drive(
+                        new GyroIO(),
+                        new ModuleIO(),
+                        new ModuleIO(),
+                        new ModuleIO(),
+                        new ModuleIO(),
+                        new VisionIO()
+                );
+            };
+
         return instance;
     }
 
-    public Drive(
+    private Drive(
             GyroIO gyroIO,
             ModuleIO flModuleIO,
             ModuleIO frModuleIO,
@@ -101,10 +130,6 @@ public class Drive extends SubsystemBase {
             ModuleIO brModuleIO,
             VisionIO visionIO
     ) {
-        if (instance != null)
-            throw new RuntimeException("Duplicate subsystem created!");
-        instance = this;
-
         this.gyroIO = gyroIO;
         modules[0] = new Module(flModuleIO, 0);
         modules[1] = new Module(frModuleIO, 1);

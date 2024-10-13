@@ -6,6 +6,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
@@ -48,14 +49,25 @@ public class Intake extends SubsystemBase {
     private static Intake instance;
 
     public static Intake get() {
+        if (instance == null)
+            instance = switch (Constants.mode) {
+                case REAL -> new Intake(new IntakeIOSparkMax(
+                        3,
+                        16
+                ));
+                case SIM -> new Intake(new IntakeIOSim(
+                        DCMotor.getNEO(1),
+                        0.3,
+                        0.045,
+                        DCMotor.getNEO(1)
+                ));
+                case REPLAY -> new Intake(new IntakeIO());
+            };
+
         return instance;
     }
 
-    public Intake(IntakeIO io) {
-        if (instance != null)
-            throw new RuntimeException("Duplicate subsystem created!");
-        instance = this;
-
+    private Intake(IntakeIO io) {
         this.io = io;
 
         io.pivotConfigurePID(PIVOT_PID);

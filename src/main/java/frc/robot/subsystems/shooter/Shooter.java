@@ -7,6 +7,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
@@ -75,14 +76,30 @@ public class Shooter extends SubsystemBase {
     private static Shooter instance;
 
     public static Shooter get() {
+        if (instance == null)
+            instance = switch (Constants.mode) {
+                case REAL -> new Shooter(new ShooterIOSparkMaxBeamBreak(
+                        6,
+                        7,
+                        9,
+                        10,
+                        8
+                ));
+                case SIM -> new Shooter(new ShooterIOSim(
+                        DCMotor.getNEO(1),
+                        0.4,
+                        0.083,
+                        DCMotor.getNEO(1),
+                        DCMotor.getNEO(1),
+                        DCMotor.getNEO(1)
+                ));
+                case REPLAY -> new Shooter(new ShooterIO());
+            };
+
         return instance;
     }
 
-    public Shooter(ShooterIO io) {
-        if (instance != null)
-            throw new RuntimeException("Duplicate subsystem created!");
-        instance = this;
-
+    private Shooter(ShooterIO io) {
         this.io = io;
 
         io.pivotConfigurePID(PIVOT_PID);
