@@ -155,7 +155,10 @@ public class Shooter extends SubsystemBase {
                 },
                 () -> {
                 },
-                (interrupted) -> goal = Goal.DEFAULT,
+                (interrupted) -> {
+                    goal = Goal.DEFAULT;
+                    processGoal();
+                },
                 // end if the goal changed
                 () -> goal != newGoal,
                 this
