@@ -88,6 +88,9 @@ public class Module {
         angleSetpoint = optimizedState.angle;
         speedSetpoint = optimizedState.speedMetersPerSecond;
 
+        if (Drive.Dashboard.disableDriving.get())
+            speedSetpoint = 0.0;
+
         return optimizedState;
     }
 

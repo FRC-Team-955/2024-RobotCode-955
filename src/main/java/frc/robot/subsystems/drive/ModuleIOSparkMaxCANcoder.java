@@ -113,11 +113,7 @@ public class ModuleIOSparkMaxCANcoder extends ModuleIO {
 
     @Override
     public void setDriveVoltage(double volts) {
-        if (!Drive.get().disableDriving.get()) {
-            driveSparkMax.setVoltage(volts);
-        } else {
-            driveSparkMax.stopMotor();
-        }
+        driveSparkMax.setVoltage(volts);
     }
 
     @Override

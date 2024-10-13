@@ -6,6 +6,8 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
+import static edu.wpi.first.units.Units.Radians;
+
 public class IntakeIOSim extends IntakeIO {
     private final SingleJointedArmSim pivotSim;
     private PIDController pivotPid;
@@ -33,7 +35,7 @@ public class IntakeIOSim extends IntakeIO {
                 -Math.PI * 2,
                 Math.PI * 2,
                 true,
-                0.0
+                Intake.PIVOT_INITIAL_POSITION.in(Radians)
         );
 
         feedSim = new FlywheelSim(feedMotor, Intake.FEED_GEAR_RATIO, 0.004);

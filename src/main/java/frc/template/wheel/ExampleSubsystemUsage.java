@@ -6,7 +6,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Velocity;
-import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.Logger;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
@@ -44,7 +44,7 @@ public final class ExampleSubsystemUsage {
         if (wheelSetpointRadPerSec != null) {
             Logger.recordOutput("ExampleSubsystem/Setpoint", wheelSetpointRadPerSec);
 
-            if (RobotState.isEnabled()) {
+            if (DriverStation.isEnabled()) {
                 var ffVolts = wheelFeedforward.calculate(wheelSetpointRadPerSec, 0);
                 Logger.recordOutput("ExampleSubsystem/FFVolts", ffVolts);
                 wheelIO.setSetpoint(wheelSetpointRadPerSec, ffVolts);

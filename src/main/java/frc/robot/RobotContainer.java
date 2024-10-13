@@ -29,6 +29,8 @@ public class RobotContainer {
 
     private final LoggedDashboardChooser<Command> autoChooser = new LoggedDashboardChooser<>("Auto Choices"); //AutoBuilder.buildAutoChooser());
 
+    private final RobotState robotState = RobotState.get();
+
     /* Subsystems */
     private final Drive drive = Drive.get();
     private final Intake intake = Intake.get();
@@ -52,8 +54,7 @@ public class RobotContainer {
 
         autoChooser.addOption("shoot & move",
                 Commands.sequence(
-                        intake.pivotHover(),
-                        shooter.pivotShoot(),
+                        shooter.shootSubwoofer(),
 //                        shooter.shootPercent(0.5, 0.6),
                         drive.driveVelocity(new ChassisSpeeds(2, 0, 0), 3)
                 )
@@ -68,19 +69,19 @@ public class RobotContainer {
         // Set up SysId routines
         autoChooser.addOption(
                 "Drive SysId (Quasistatic Forward)",
-                drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
+                drive.sysId.quasistatic(SysIdRoutine.Direction.kForward)
         );
         autoChooser.addOption(
                 "Drive SysId (Quasistatic Reverse)",
-                drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse)
+                drive.sysId.quasistatic(SysIdRoutine.Direction.kReverse)
         );
         autoChooser.addOption(
                 "Drive SysId (Dynamic Forward)",
-                drive.sysIdDynamic(SysIdRoutine.Direction.kForward)
+                drive.sysId.dynamic(SysIdRoutine.Direction.kForward)
         );
         autoChooser.addOption(
                 "Drive SysId (Dynamic Reverse)",
-                drive.sysIdDynamic(SysIdRoutine.Direction.kReverse)
+                drive.sysId.dynamic(SysIdRoutine.Direction.kReverse)
         );
 
         autoChooser.addOption(
@@ -144,17 +145,10 @@ public class RobotContainer {
                         () -> -driverController.getRightX()
                 )
         );
-
-        intake.setDefaultCommand(intake.pivotHover());
-        shooter.setDefaultCommand(Commands.either(
-                shooter.pivotHover(),
-                shooter.pivotWaitForIntake(),
-                () -> intake.isClearOfShooter() || shooter.alreadyAtHover()
-        ));
     }
 
     private void configureButtonBindings() {
-        driverController.y().onTrue(drive.resetRotationCommand());
+        driverController.y().onTrue(robotState.resetRotation());
 
         driverController.rightTrigger(0.25).whileTrue(
                 intake.intake()
@@ -168,8 +162,8 @@ public class RobotContainer {
                 //                                shooter.feedHandoff()
                 //                        ),
                 //                        shooter.pivotWaitForIntake(),
-                //                        intake.pivotHover(),
-                //                        shooter.pivotHover()
+                //                        intake.hover(),
+                //                        shooter.hover()
                 //                )
                 //                .withTimeout(3)
                 //                .schedule())
@@ -190,8 +184,8 @@ public class RobotContainer {
 
         driverController.x().toggleOnTrue(Commands.parallel(
                 shooter.eject(),
-                intake.eject()
-        ).withTimeout(1));
+                intake.eject().withTimeout(1)
+        ).withName("Eject"));
 
         driverController.rightBumper().toggleOnTrue(HandoffFactory.get());
     }

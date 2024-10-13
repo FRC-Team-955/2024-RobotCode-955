@@ -11,26 +11,42 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Velocity;
-import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import lombok.Getter;
 import org.littletonrobotics.junction.Logger;
+
+import java.util.function.Supplier;
 
 import static edu.wpi.first.units.Units.*;
 
 public class Intake extends SubsystemBase {
+    public enum Goal {
+        HOVER(() -> Degrees.of(-110), RPM::zero),
+        INTAKE(() -> Degrees.of(0), RPM::zero),
+        EJECT(() -> Degrees.of(-70), RPM::zero),
+
+        HANDOFF_READY(() -> Degrees.of(-145), RPM::zero),
+        HANDOFF_FEED(() -> Degrees.of(-145), () -> RPM.of(-100));
+
+        public static final Goal DEFAULT = Goal.HOVER;
+
+        public final Supplier<Measure<Angle>> pivotSetpoint;
+        public final Supplier<Measure<Velocity<Angle>>> feedSetpoint;
+
+        Goal(Supplier<Measure<Angle>> pivotSetpoint, Supplier<Measure<Velocity<Angle>>> feedSetpoint) {
+            this.pivotSetpoint = pivotSetpoint;
+            this.feedSetpoint = feedSetpoint;
+        }
+    }
+
     protected static final ArmFeedforward PIVOT_FF = Constants.isReal ? new ArmFeedforward(0, 0.6, 0) : new ArmFeedforward(0, 0.28, 0);
     protected static final PIDConstants PIVOT_PID = Constants.isReal ? new PIDConstants(0.12, 0.003) : new PIDConstants(8, 0);
     protected static final double PIVOT_GEAR_RATIO = 45;
-    private static final Measure<Angle> PIVOT_ENCODER_OFFSET = Radians.of(0.0);
     protected static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-141);
-    private static final Measure<Angle> PIVOT_CLEAR_OF_SHOOTER = Degrees.of(-130);
-    private static final Measure<Angle> PIVOT_HOVER = Degrees.of(-110);
-    private static final Measure<Angle> PIVOT_HANDOFF = Degrees.of(-145);
-    private static final Measure<Angle> PIVOT_INTAKE = Degrees.of(0);
-    private static final Measure<Angle> PIVOT_EJECT = Degrees.of(-70);
-    private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(7);
+    private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(5);
 
     protected static final SimpleMotorFeedforward FEED_FF = Constants.isReal ? new SimpleMotorFeedforward(0.5, 1.2) : new SimpleMotorFeedforward(0, 0.058);
     protected static final PIDConstants FEED_PID = Constants.isReal ? new PIDConstants(0, 0) : new PIDConstants(0.1, 0);
@@ -41,10 +57,26 @@ public class Intake extends SubsystemBase {
     private final IntakeIO io;
 
     private final ArmFeedforward pivotFeedforward = PIVOT_FF;
-    private Measure<Angle> pivotSetpoint = PIVOT_INITIAL_POSITION;
+    private Measure<Angle> pivotSetpoint = null;
 
     private final SimpleMotorFeedforward feedFeedforward = FEED_FF;
-    private final Measure<Velocity<Angle>> feedSetpoint = null;
+    private Measure<Velocity<Angle>> feedSetpoint = null;
+
+    @Getter
+    private Goal goal = Goal.DEFAULT;
+
+    private Command goal(Goal newGoal) {
+        return startEnd(
+                () -> {
+                    goal = newGoal;
+                    processGoal();
+                },
+                () -> {
+                    goal = Goal.DEFAULT;
+                    processGoal();
+                }
+        );
+    }
 
     private static Intake instance;
 
@@ -78,16 +110,24 @@ public class Intake extends SubsystemBase {
         io.feedConfigurePID(FEED_PID);
     }
 
+    private void processGoal() {
+        Logger.recordOutput("Intake/Goal", goal);
+        pivotSetpoint = goal.pivotSetpoint.get();
+        feedSetpoint = goal.feedSetpoint.get();
+    }
+
     @Override
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Inputs/Intake", inputs);
 
+        processGoal();
+
         Logger.recordOutput("Intake/Pivot/ClosedLoop", pivotSetpoint != null);
         if (pivotSetpoint != null) {
             Logger.recordOutput("Intake/Pivot/Setpoint", pivotSetpoint);
 
-            if (RobotState.isEnabled()) {
+            if (DriverStation.isEnabled()) {
                 var pivotSetpointRad = pivotSetpoint.in(Radians);
                 var ffVolts = pivotFeedforward.calculate(pivotSetpointRad, 0);
                 Logger.recordOutput("Intake/Pivot/FFVolts", ffVolts);
@@ -99,7 +139,7 @@ public class Intake extends SubsystemBase {
         if (feedSetpoint != null) {
             Logger.recordOutput("Intake/Feed/Setpoint", feedSetpoint);
 
-            if (RobotState.isEnabled()) {
+            if (DriverStation.isEnabled()) {
                 var feedSetpointRadPerSec = feedSetpoint.in(RadiansPerSecond);
                 var ffVolts = feedFeedforward.calculate(feedSetpointRadPerSec, 0);
                 Logger.recordOutput("Intake/Feed/FFVolts", ffVolts);
@@ -112,58 +152,31 @@ public class Intake extends SubsystemBase {
         }
     }
 
-    public boolean isClearOfShooter() {
-        return inputs.pivotPositionRad >= PIVOT_CLEAR_OF_SHOOTER.in(Radians);
-    }
-
-    private boolean pivotAtSetpoint() {
+    public boolean pivotAtSetpoint() {
         return Math.abs(inputs.pivotPositionRad - pivotSetpoint.in(Radians)) <= PIVOT_SETPOINT_TOLERANCE.in(Radians);
     }
 
-    private Command pivotSetpoint(Measure<Angle> setpoint) {
-        return startEnd(
-                () -> pivotSetpoint = setpoint,
-                () -> {
-                }
-        ).until(this::pivotAtSetpoint);
+    public boolean feedAtSetpoint() {
+        return Math.abs(inputs.feedVelocityRadPerSec - feedSetpoint.in(RadiansPerSecond)) <= FEED_SETPOINT_TOLERANCE.in(RadiansPerSecond);
     }
 
-    private Command feedPercent(double percent) {
-        return startEnd(
-                () -> io.feedSetVoltage(percent * 12.0),
-                () -> io.feedSetVoltage(0)
-        );
+    public Command hover() {
+        return goal(Goal.HOVER).withName("Intake Handoff");
     }
 
-    public Command pivotHover() {
-        return pivotSetpoint(PIVOT_HOVER);
+    public Command handoffReady() {
+        return goal(Goal.HANDOFF_READY).withName("Intake Handoff Ready");
     }
 
-    public Command pivotHandoff() {
-        return pivotSetpoint(PIVOT_HANDOFF);
-    }
-
-    private Command pivotIntake() {
-        return pivotSetpoint(PIVOT_INTAKE);
-    }
-
-    private Command pivotEject() {
-        return pivotSetpoint(PIVOT_EJECT);
-    }
-
-    private Command feedUntilHasNote() {
-        return feedPercent(0.5).until(() -> inputs.hasNote);
+    public Command handoffFeed() {
+        return goal(Goal.HANDOFF_FEED).withName("Intake Handoff Feed");
     }
 
     public Command intake() {
-        return pivotIntake().andThen(feedUntilHasNote());
-    }
-
-    public Command feedHandoff() {
-        return feedPercent(-0.15);
+        return goal(Goal.INTAKE).withName("Intake Intake");//.until(() -> inputs.hasNote);
     }
 
     public Command eject() {
-        return pivotEject().andThen(feedPercent(-0.1));
+        return goal(Goal.EJECT).withName("Intake Eject");
     }
 }

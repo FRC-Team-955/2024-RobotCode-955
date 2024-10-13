@@ -5,16 +5,16 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
-import frc.robot.subsystems.drive.Drive;
+import frc.robot.RobotState;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 
 public class AutoInitFactory {
     public static Command get(AutoLoop loop, String initialTrajectoryName, Supplier<Optional<Pose2d>> initialPoseSupplier) {
-        final var drive = Drive.get();
+        final var robotState = RobotState.get();
 
-        return drive.setPose(() -> {
+        return robotState.setPose(() -> {
             var initialPose = initialPoseSupplier.get();
             if (initialPose.isPresent()) {
                 return initialPose.get();
@@ -26,8 +26,8 @@ public class AutoInitFactory {
                     DriverStation.reportError(msg, false);
 
                 loop.kill();
-                return drive.getPose();
+                return robotState.getPose();
             }
-        });
+        }).withName("Auto Init");
     }
 }

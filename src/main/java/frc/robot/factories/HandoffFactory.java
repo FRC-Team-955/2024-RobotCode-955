@@ -11,15 +11,27 @@ public class HandoffFactory {
         final var intake = Intake.get();
 
         return Commands.sequence(
-                shooter.pivotWaitForIntake(),
-                intake.pivotHandoff(),
-                shooter.pivotHandoff(),
                 Commands.race(
-                        intake.feedHandoff(),
-                        shooter.feedHandoff()
+                        intake.hover(),
+                        shooter.handoffWaitForIntake()
+                                .until(shooter::pivotAtSetpoint)
                 ),
-                shooter.pivotWaitForIntake(),
-                intake.pivotHover()
-        );
+                Commands.race(
+                        intake.handoffReady()
+                                .until(intake::pivotAtSetpoint),
+                        shooter.handoffWaitForIntake()
+                ),
+                Commands.race(
+                        intake.handoffReady(),
+                        shooter.handoffReady()
+                                .until(shooter::pivotAtSetpoint)
+                ),
+                Commands.race(
+                        intake.handoffFeed(),
+                        shooter.handoffFeed()
+                                .until(shooter::hasNoteDebounced)
+                )
+        ).withName("Handoff");
     }
+
 }

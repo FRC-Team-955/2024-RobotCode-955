@@ -5,7 +5,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
-import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color;
@@ -106,7 +106,7 @@ public final class ExampleSubsystemUsage extends SubsystemBase {
         if (armSetpointRad != null) {
             Logger.recordOutput("ExampleSubsystem/Setpoint", armSetpointRad);
 
-            if (RobotState.isEnabled()) {
+            if (DriverStation.isEnabled()) {
                 var ffVolts = armFeedforward.calculate(armSetpointRad, 0);
                 Logger.recordOutput("ExampleSubsystem/FFVolts", ffVolts);
                 armIO.setSetpoint(armSetpointRad, ffVolts);

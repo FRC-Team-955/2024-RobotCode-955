@@ -21,8 +21,8 @@ public class CalculatedShootFactory {
                 ),
                 Commands.sequence(
                         Commands.waitUntil(() -> drive.pointingShooterTowardsPoint(FieldLocations.SPEAKER.get())),
-                        shooter.shootDistance(drive::distanceToSpeaker)
+                        shooter.shootCalculated()
                 )
-        );
+        ).withName("Calculated Shoot");
     }
 }

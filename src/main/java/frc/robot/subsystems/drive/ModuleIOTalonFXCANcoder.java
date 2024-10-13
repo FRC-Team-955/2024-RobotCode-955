@@ -144,11 +144,7 @@ public class ModuleIOTalonFXCANcoder extends ModuleIO {
 
     @Override
     public void setDriveVoltage(double volts) {
-        if (!Drive.get().disableDriving.get()) {
-            driveTalon.setControl(new VoltageOut(volts));
-        } else {
-            driveTalon.stopMotor();
-        }
+        driveTalon.setControl(new VoltageOut(volts));
     }
 
     @Override
