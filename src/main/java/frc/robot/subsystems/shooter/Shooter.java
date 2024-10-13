@@ -77,7 +77,9 @@ public class Shooter extends SubsystemBase {
 
     public static Shooter get() {
         if (instance == null)
-            instance = new Shooter();
+            synchronized (Shooter.class) {
+                instance = new Shooter();
+            }
 
         return instance;
     }

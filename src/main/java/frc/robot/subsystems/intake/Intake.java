@@ -50,7 +50,9 @@ public class Intake extends SubsystemBase {
 
     public static Intake get() {
         if (instance == null)
-            instance = new Intake();
+            synchronized (Intake.class) {
+                instance = new Intake();
+            }
 
         return instance;
     }

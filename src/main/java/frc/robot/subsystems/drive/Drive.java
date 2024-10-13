@@ -92,7 +92,9 @@ public class Drive extends SubsystemBase {
 
     public static Drive get() {
         if (instance == null)
-            instance = new Drive();
+            synchronized (Drive.class) {
+                instance = new Drive();
+            }
 
         return instance;
     }
