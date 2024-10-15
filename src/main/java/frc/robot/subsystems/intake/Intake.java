@@ -152,12 +152,16 @@ public class Intake extends SubsystemBase {
         }
     }
 
-    public boolean pivotAtSetpoint() {
-        return Math.abs(inputs.pivotPositionRad - pivotSetpoint.in(Radians)) <= PIVOT_SETPOINT_TOLERANCE.in(Radians);
+    public boolean pivotClearOfShooter() {
+        return Radians.of(inputs.pivotPositionRad).gte(Degrees.of(-130));
     }
 
-    public boolean feedAtSetpoint() {
-        return Math.abs(inputs.feedVelocityRadPerSec - feedSetpoint.in(RadiansPerSecond)) <= FEED_SETPOINT_TOLERANCE.in(RadiansPerSecond);
+    public boolean atGoal() {
+        boolean pivotAtSetpoint = pivotSetpoint == null ||
+                Math.abs(inputs.pivotPositionRad - pivotSetpoint.in(Radians)) <= PIVOT_SETPOINT_TOLERANCE.in(Radians);
+        boolean feedAtSetpoint = feedSetpoint == null ||
+                Math.abs(inputs.feedVelocityRadPerSec - feedSetpoint.in(RadiansPerSecond)) <= FEED_SETPOINT_TOLERANCE.in(RadiansPerSecond);
+        return pivotAtSetpoint && feedAtSetpoint;
     }
 
     public Command hover() {

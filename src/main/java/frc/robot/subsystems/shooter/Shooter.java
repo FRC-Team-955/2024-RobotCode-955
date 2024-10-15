@@ -20,12 +20,14 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.Util;
+import frc.robot.subsystems.intake.Intake;
 import frc.robot.util.GoalBasedCommandRunner;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -37,8 +39,22 @@ public class Shooter extends SubsystemBase {
         public static final LoggedDashboardNumber shootConfigurableAngle = new LoggedDashboardNumber("Shoot Configurable Angle (Degrees)", 0);
     }
 
+    // trick Java into letting us use an enum before it is defined
+    private static final Goal GOAL_WAIT_FOR_INTAKE = Goal.WAIT_FOR_INTAKE;
+
     public enum Goal {
-        HOVER(() -> Degrees.of(-90), RPM::zero, () -> FeedSetpoint.velocity(RPM.zero())),
+        HOVER(
+                () -> Degrees.of(-90),
+                RPM::zero,
+                () -> FeedSetpoint.velocity(RPM.zero()),
+                () -> Intake.get().pivotClearOfShooter() ? Optional.empty() : Optional.of(GOAL_WAIT_FOR_INTAKE)
+        ),
+        WAIT_FOR_INTAKE(
+                () -> Degrees.of(-30),
+                RPM::zero,
+                () -> FeedSetpoint.velocity(RPM.zero()),
+                () -> Intake.get().pivotClearOfShooter() ? Optional.of(Goal.HOVER) : Optional.empty()
+        ),
         SHOOT_CALCULATED(
                 () -> ShooterRegression.getAngle(RobotState.get().getDistanceToSpeaker()),
                 () -> ShooterRegression.getSpeed(RobotState.get().getDistanceToSpeaker()),
@@ -55,14 +71,14 @@ public class Shooter extends SubsystemBase {
 
         HANDOFF_WAIT_FOR_INTAKE(() -> Degrees.of(-30), RPM::zero, () -> FeedSetpoint.velocity(RPM.zero())),
         HANDOFF_READY(() -> Degrees.of(-45), RPM::zero, () -> FeedSetpoint.velocity(RPM.zero())),
-        HANDOFF_FEED(() -> Degrees.of(-45), RPM::zero, () -> FeedSetpoint.velocity(RPM.of(-100))),
-        ;
+        HANDOFF_FEED(() -> Degrees.of(-45), RPM::zero, () -> FeedSetpoint.velocity(RPM.of(-100)));
 
         public static final Goal DEFAULT = Goal.HOVER;
 
         public final Supplier<Measure<Angle>> pivotSetpoint;
         public final Supplier<Measure<Velocity<Angle>>> flywheelsSetpoint;
         public final Supplier<FeedSetpoint> feedSetpoint;
+        public final Supplier<Optional<Goal>> goalChange;
 
         Goal(
                 Supplier<Measure<Angle>> pivotSetpoint,
@@ -72,6 +88,19 @@ public class Shooter extends SubsystemBase {
             this.pivotSetpoint = pivotSetpoint;
             this.flywheelsSetpoint = flywheelsSetpoint;
             this.feedSetpoint = feedCommand;
+            this.goalChange = Optional::empty;
+        }
+
+        Goal(
+                Supplier<Measure<Angle>> pivotSetpoint,
+                Supplier<Measure<Velocity<Angle>>> flywheelsSetpoint,
+                Supplier<FeedSetpoint> feedCommand,
+                Supplier<Optional<Goal>> goalChange
+        ) {
+            this.pivotSetpoint = pivotSetpoint;
+            this.flywheelsSetpoint = flywheelsSetpoint;
+            this.feedSetpoint = feedCommand;
+            this.goalChange = goalChange;
         }
 
         public static class FeedSetpoint {
@@ -230,7 +259,7 @@ public class Shooter extends SubsystemBase {
         );
 
         var feedCommandRunner = new GoalBasedCommandRunner<>("ShooterFeed", () -> goal);
-        new Trigger(() -> goal.feedSetpoint.get().isShoot() && pivotAtSetpoint() && flywheelsAtSetpoint())
+        new Trigger(() -> goal.feedSetpoint.get().isShoot() && atGoal())
                 .onTrue(
                         feedCommandRunner
                                 .startEnd(
@@ -246,6 +275,8 @@ public class Shooter extends SubsystemBase {
     }
 
     private void processGoal() {
+        if (goal.goalChange != null)
+            goal.goalChange.get().ifPresent((newGoal) -> goal = newGoal);
         Logger.recordOutput("Shooter/Goal", goal);
         pivotSetpoint = goal.pivotSetpoint.get();
         flywheelsSetpoint = goal.flywheelsSetpoint.get();
@@ -307,17 +338,13 @@ public class Shooter extends SubsystemBase {
         return hasNoteDebouncer.calculate(inputs.hasNote);
     }
 
-    public boolean pivotAtSetpoint() {
-        return Math.abs(inputs.pivotPositionRad - pivotSetpoint.in(Radians)) <= PIVOT_SETPOINT_TOLERANCE.in(Radians);
-    }
-
-    public boolean feedAtSetpoint() {
-        return Math.abs(inputs.feedVelocityRadPerSec - feedSetpoint.in(RadiansPerSecond)) <= FEED_SETPOINT_TOLERANCE.in(RadiansPerSecond);
-    }
-
-    public boolean flywheelsAtSetpoint() {
-        return Math.abs(inputs.flywheelTopVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= FLYWHEEL_SETPOINT_TOLERANCE.in(RadiansPerSecond) &&
-                Math.abs(inputs.flywheelBottomVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= FLYWHEEL_SETPOINT_TOLERANCE.in(RadiansPerSecond);
+    public boolean atGoal() {
+        boolean pivotAtSetpoint = pivotSetpoint == null || Math.abs(inputs.pivotPositionRad - pivotSetpoint.in(Radians)) <= PIVOT_SETPOINT_TOLERANCE.in(Radians);
+        boolean feedAtSetpoint = feedSetpoint == null || Math.abs(inputs.feedVelocityRadPerSec - feedSetpoint.in(RadiansPerSecond)) <= FEED_SETPOINT_TOLERANCE.in(RadiansPerSecond);
+        boolean flywheelsAtSetpoint = flywheelsSetpoint == null ||
+                (Math.abs(inputs.flywheelTopVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= FLYWHEEL_SETPOINT_TOLERANCE.in(RadiansPerSecond) &&
+                        Math.abs(inputs.flywheelBottomVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= FLYWHEEL_SETPOINT_TOLERANCE.in(RadiansPerSecond));
+        return pivotAtSetpoint && feedAtSetpoint && flywheelsAtSetpoint;
     }
 
     public Command handoffWaitForIntake() {

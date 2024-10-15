@@ -14,17 +14,17 @@ public class HandoffFactory {
                 Commands.race(
                         intake.hover(),
                         shooter.handoffWaitForIntake()
-                                .until(shooter::pivotAtSetpoint)
+                                .until(shooter::atGoal)
                 ),
                 Commands.race(
                         intake.handoffReady()
-                                .until(intake::pivotAtSetpoint),
+                                .until(intake::atGoal),
                         shooter.handoffWaitForIntake()
                 ),
                 Commands.race(
                         intake.handoffReady(),
                         shooter.handoffReady()
-                                .until(shooter::pivotAtSetpoint)
+                                .until(shooter::atGoal)
                 ),
                 Commands.race(
                         intake.handoffFeed(),
