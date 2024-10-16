@@ -43,6 +43,7 @@ public class Shooter extends SubsystemBase {
     private static final Goal GOAL_WAIT_FOR_INTAKE = Goal.WAIT_FOR_INTAKE;
 
     public enum Goal {
+        CHARACTERIZATION(() -> null, () -> null, () -> null),
         HOVER(
                 () -> Degrees.of(-90),
                 RPM::zero,
@@ -235,28 +236,25 @@ public class Shooter extends SubsystemBase {
 
         pivotSysId = Util.sysIdRoutine(
                 "Shooter/Pivot",
-                (voltage) -> {
-                    pivotSetpoint = null;
-                    io.pivotSetVoltage(voltage.in(Volts));
-                },
+                (voltage) -> io.pivotSetVoltage(voltage.in(Volts)),
+                () -> goal = Goal.CHARACTERIZATION,
+                () -> goal = Goal.DEFAULT,
                 this
         );
 
         feedSysId = Util.sysIdRoutine(
                 "Shooter/Feed",
-                (voltage) -> {
-                    feedSetpoint = null;
-                    io.feedSetVoltage(voltage.in(Volts));
-                },
+                (voltage) -> io.feedSetVoltage(voltage.in(Volts)),
+                () -> goal = Goal.CHARACTERIZATION,
+                () -> goal = Goal.DEFAULT,
                 this
         );
 
         flywheelsSysId = Util.sysIdRoutine(
                 "Shooter/Flywheels",
-                (voltage) -> {
-                    flywheelsSetpoint = null;
-                    io.flywheelsSetVoltage(voltage.in(Volts));
-                },
+                (voltage) -> io.flywheelsSetVoltage(voltage.in(Volts)),
+                () -> goal = Goal.CHARACTERIZATION,
+                () -> goal = Goal.DEFAULT,
                 this
         );
 
@@ -282,12 +280,14 @@ public class Shooter extends SubsystemBase {
         Logger.recordOutput("Shooter/Goal", goal);
         pivotSetpoint = goal.pivotSetpoint.get();
         flywheelsSetpoint = goal.flywheelsSetpoint.get();
-//        goal.feedSetpoint.get().ifVelocity((velocity) -> feedSetpoint = velocity);
+        var feedSetpoint = goal.feedSetpoint.get();
+//        if (feedSetpoint != null)
+//            feedSetpoint.ifVelocity((velocity) -> this.feedSetpoint = velocity);
         if (goal == Goal.EJECT) {
             io.feedSetVoltage(12);
         } else if (goal == Goal.HANDOFF_FEED) {
             io.feedSetVoltage(3.5);
-        } else if (!goal.feedSetpoint.get().isShoot()) {
+        } else if (feedSetpoint !=null && !feedSetpoint.isShoot()) {
             io.feedSetVoltage(0);
         }
     }

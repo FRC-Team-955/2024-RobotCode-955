@@ -25,7 +25,7 @@ import static edu.wpi.first.units.Units.Meters;
 
 public class RobotState {
     public static class Dashboard {
-        public static final LoggedDashboardBoolean tuningMode = new LoggedDashboardBoolean("1 Robot/Tuning Mode", false);
+        public static final LoggedDashboardBoolean tuningMode = new LoggedDashboardBoolean("1 Tuning Mode", false);
     }
 
     @Getter

@@ -14,7 +14,10 @@ import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.Util;
+import frc.robot.subsystems.shooter.Shooter;
 import lombok.Getter;
 import org.littletonrobotics.junction.Logger;
 
@@ -24,6 +27,7 @@ import static edu.wpi.first.units.Units.*;
 
 public class Intake extends SubsystemBase {
     public enum Goal {
+        CHARACTERIZATION(() -> null, () -> null),
         HOVER(() -> Degrees.of(-110), RPM::zero),
         INTAKE(() -> Degrees.of(0), RPM::zero),
         EJECT(() -> Degrees.of(-110), RPM::zero),
@@ -58,9 +62,11 @@ public class Intake extends SubsystemBase {
 
     private final ArmFeedforward pivotFeedforward = PIVOT_FF;
     private Measure<Angle> pivotSetpoint = null;
+    public final SysIdRoutine pivotSysId;
 
     private final SimpleMotorFeedforward feedFeedforward = FEED_FF;
     private Measure<Velocity<Angle>> feedSetpoint = null;
+    public final SysIdRoutine feedSysId;
 
     @Getter
     private Goal goal = Goal.DEFAULT;
@@ -108,6 +114,22 @@ public class Intake extends SubsystemBase {
         io.pivotSetPosition(PIVOT_INITIAL_POSITION.in(Radians));
 
         io.feedConfigurePID(FEED_PID);
+
+        pivotSysId = Util.sysIdRoutine(
+                "Intake/Pivot",
+                (voltage) -> io.pivotSetVoltage(voltage.in(Volts)),
+                () -> goal = Goal.CHARACTERIZATION,
+                () -> goal = Goal.DEFAULT,
+                this
+        );
+
+        feedSysId = Util.sysIdRoutine(
+                "Intake/Feed",
+                (voltage) -> io.feedSetVoltage(voltage.in(Volts)),
+                () -> goal = Goal.CHARACTERIZATION,
+                () -> goal = Goal.DEFAULT,
+                this
+        );
     }
 
     private void processGoal() {

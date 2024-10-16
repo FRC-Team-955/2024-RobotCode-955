@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import org.littletonrobotics.junction.Logger;
@@ -35,13 +36,35 @@ public class Util {
         return Math.atan2(from.getY() - to.getY(), from.getX() - to.getX());
     }
 
-    public static SysIdRoutine sysIdRoutine(String name, Consumer<Measure<Voltage>> voltageConsumer, Subsystem subsystem) {
+    /**
+     * start and end should be used to set the goal to characterization
+     */
+    public static SysIdRoutine sysIdRoutine(
+            String name,
+            Consumer<Measure<Voltage>> voltageConsumer,
+            Runnable start,
+            Runnable end,
+            Subsystem subsystem
+    ) {
+        // Java forces us to do this if we want to use the variable in the lambda
+        var ref = new Object() {
+            boolean hasStarted = false;
+        };
         return new SysIdRoutine(
                 new SysIdRoutine.Config(
                         null,
                         null,
                         null,
-                        (state) -> Logger.recordOutput(name + "/SysIdState", state.toString())
+                        (state) -> {
+                            Logger.recordOutput(name + "/SysIdState", state.toString());
+                            if (!ref.hasStarted && state != SysIdRoutineLog.State.kNone) {
+                                start.run();
+                                ref.hasStarted = true;
+                            } else if (ref.hasStarted && state == SysIdRoutineLog.State.kNone) {
+                                end.run();
+                                ref.hasStarted = false;
+                            }
+                        }
                 ),
                 new SysIdRoutine.Mechanism(
                         voltageConsumer,

@@ -43,6 +43,7 @@ public class Drive extends SubsystemBase {
     }
 
     public enum State {
+        CHARACTERIZATION,
         IDLE,
         DRIVE_JOYSTICK,
         POINT_TOWARDS,
@@ -57,7 +58,7 @@ public class Drive extends SubsystemBase {
     //    private static final double MAX_LINEAR_SPEED = Units.feetToMeters(14.5);
     private static final double DRIVE_BASE_WIDTH = Units.inchesToMeters(21.75); // Measured from the center of the swerve wheels
     private static final double DRIVE_BASE_LENGTH = DRIVE_BASE_WIDTH;
-    private static final double DRIVE_BASE_RADIUS = Math.hypot(DRIVE_BASE_WIDTH / 2.0, DRIVE_BASE_LENGTH / 2.0);
+    public static final double DRIVE_BASE_RADIUS = Math.hypot(DRIVE_BASE_WIDTH / 2.0, DRIVE_BASE_LENGTH / 2.0);
     public static final Translation2d[] MODULE_TRANSLATIONS = new Translation2d[]{
             new Translation2d(DRIVE_BASE_WIDTH / 2.0, DRIVE_BASE_LENGTH / 2.0),
             new Translation2d(DRIVE_BASE_WIDTH / 2.0, -DRIVE_BASE_LENGTH / 2.0),
@@ -384,5 +385,13 @@ public class Drive extends SubsystemBase {
     public boolean pointingShooterTowardsPoint(Translation2d pointTowards) {
         var angleTowards = Util.angle(pointTowards, robotState.getTranslation());
         return Math.abs(MathUtil.angleModulus(robotState.getRotation().getRadians() + Math.PI) - angleTowards) <= POINT_TOWARDS_TOLERANCE;
+    }
+
+    protected void startCharacterization() {
+        state = State.CHARACTERIZATION;
+    }
+
+    protected void stopCharacterization() {
+        state = State.DEFAULT;
     }
 }

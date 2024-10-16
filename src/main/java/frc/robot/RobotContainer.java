@@ -1,6 +1,5 @@
 package frc.robot;
 
-import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -13,6 +12,7 @@ import frc.robot.factories.FourPieceWingAutoFactory;
 import frc.robot.factories.HandoffFactory;
 import frc.robot.factories.ThreePieceMidlineAutoFactory;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.WheelRadiusCharacterization;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.util.CommandNintendoSwitchProController;
@@ -27,7 +27,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
     private final CommandXboxController driverController = Constants.Simulation.useNintendoSwitchProController ? new CommandNintendoSwitchProController(0) : new CommandXboxController(0);
 
-    private final LoggedDashboardChooser<Command> autoChooser = new LoggedDashboardChooser<>("Auto Choices"); //AutoBuilder.buildAutoChooser());
+    private final LoggedDashboardChooser<Command> autoChooser = new LoggedDashboardChooser<>("Auto Choices");
+    private final LoggedDashboardChooser<Command> characterizationChooser = new LoggedDashboardChooser<>("Characterization Choices");
 
     private final RobotState robotState = RobotState.get();
 
@@ -38,6 +39,7 @@ public class RobotContainer {
 
     public RobotContainer() {
         addAutos();
+        addCharacterizations();
         setDefaultCommands();
         configureButtonBindings();
 
@@ -50,89 +52,136 @@ public class RobotContainer {
                 drive.driveVelocity(new ChassisSpeeds(2, 0, 0), 3)
         );
 
-        autoChooser.addOption("none", null);
+        autoChooser.addOption("None", null);
 
-        autoChooser.addOption("shoot & move",
-                Commands.sequence(
-                        shooter.shootSubwoofer(),
-//                        shooter.shootPercent(0.5, 0.6),
-                        drive.driveVelocity(new ChassisSpeeds(2, 0, 0), 3)
-                )
-        );
-
-        NamedCommands.registerCommand("shoot", Commands.print("test").andThen(Commands.waitSeconds(2)));
+        autoChooser.addOption("Shoot & Move", Commands.sequence(
+                shooter.shootSubwoofer(),
+                drive.driveVelocity(new ChassisSpeeds(2, 0, 0), 3)
+        ));
 
         var factory = drive.createAutoFactory();
         autoChooser.addDefaultOption("4 Piece Wing", FourPieceWingAutoFactory.get(factory));
-        autoChooser.addDefaultOption("3 Piece Midline", ThreePieceMidlineAutoFactory.get(factory));
+        autoChooser.addOption("3 Piece Midline", ThreePieceMidlineAutoFactory.get(factory));
 
-        // Set up SysId routines
-        autoChooser.addOption(
+        autoChooser.addOption("Characterization", Commands.deferredProxy(characterizationChooser::get));
+    }
+
+    private void addCharacterizations() {
+        ////////////////////// DRIVE //////////////////////
+
+        characterizationChooser.addOption(
+                "Drive Wheel Radius (Clockwise)",
+                new WheelRadiusCharacterization(WheelRadiusCharacterization.Direction.CLOCKWISE)
+        );
+        characterizationChooser.addOption(
+                "Drive Wheel Radius (Counter-Clockwise)",
+                new WheelRadiusCharacterization(WheelRadiusCharacterization.Direction.COUNTER_CLOCKWISE)
+        );
+
+        characterizationChooser.addOption(
                 "Drive SysId (Quasistatic Forward)",
                 drive.sysId.quasistatic(SysIdRoutine.Direction.kForward)
         );
-        autoChooser.addOption(
+        characterizationChooser.addOption(
                 "Drive SysId (Quasistatic Reverse)",
                 drive.sysId.quasistatic(SysIdRoutine.Direction.kReverse)
         );
-        autoChooser.addOption(
+        characterizationChooser.addOption(
                 "Drive SysId (Dynamic Forward)",
                 drive.sysId.dynamic(SysIdRoutine.Direction.kForward)
         );
-        autoChooser.addOption(
+        characterizationChooser.addOption(
                 "Drive SysId (Dynamic Reverse)",
                 drive.sysId.dynamic(SysIdRoutine.Direction.kReverse)
         );
 
-        autoChooser.addOption(
+        ////////////////////// SHOOTER //////////////////////
+
+        characterizationChooser.addOption(
                 "Shooter Pivot SysId (Quasistatic Forward)",
                 shooter.pivotSysId.quasistatic(SysIdRoutine.Direction.kForward)
         );
-        autoChooser.addOption(
+        characterizationChooser.addOption(
                 "Shooter Pivot SysId (Quasistatic Reverse)",
                 shooter.pivotSysId.quasistatic(SysIdRoutine.Direction.kReverse)
         );
-        autoChooser.addOption(
+        characterizationChooser.addOption(
                 "Shooter Pivot SysId (Dynamic Forward)",
                 shooter.pivotSysId.dynamic(SysIdRoutine.Direction.kForward)
         );
-        autoChooser.addOption(
+        characterizationChooser.addOption(
                 "Shooter Pivot SysId (Dynamic Reverse)",
                 shooter.pivotSysId.dynamic(SysIdRoutine.Direction.kReverse)
         );
 
-        autoChooser.addOption(
+        characterizationChooser.addOption(
                 "Shooter Feed SysId (Quasistatic Forward)",
                 shooter.feedSysId.quasistatic(SysIdRoutine.Direction.kForward)
         );
-        autoChooser.addOption(
+        characterizationChooser.addOption(
                 "Shooter Feed SysId (Quasistatic Reverse)",
                 shooter.feedSysId.quasistatic(SysIdRoutine.Direction.kReverse)
         );
-        autoChooser.addOption(
+        characterizationChooser.addOption(
                 "Shooter Feed SysId (Dynamic Forward)",
                 shooter.feedSysId.dynamic(SysIdRoutine.Direction.kForward)
         );
-        autoChooser.addOption(
+        characterizationChooser.addOption(
                 "Shooter Feed SysId (Dynamic Reverse)",
                 shooter.feedSysId.dynamic(SysIdRoutine.Direction.kReverse)
         );
 
-        autoChooser.addOption(
+        characterizationChooser.addOption(
                 "Shooter Flywheels SysId (Quasistatic Forward)",
                 shooter.flywheelsSysId.quasistatic(SysIdRoutine.Direction.kForward)
         );
-        autoChooser.addOption(
+        characterizationChooser.addOption(
                 "Shooter Flywheels SysId (Quasistatic Reverse)",
                 shooter.flywheelsSysId.quasistatic(SysIdRoutine.Direction.kReverse)
         );
-        autoChooser.addOption(
+        characterizationChooser.addOption(
                 "Shooter Flywheels SysId (Dynamic Forward)",
                 shooter.flywheelsSysId.dynamic(SysIdRoutine.Direction.kForward)
         );
-        autoChooser.addOption(
+        characterizationChooser.addOption(
                 "Shooter Flywheels SysId (Dynamic Reverse)",
                 shooter.flywheelsSysId.dynamic(SysIdRoutine.Direction.kReverse)
+        );
+
+        ////////////////////// INTAKE //////////////////////
+
+        characterizationChooser.addOption(
+                "Intake Pivot SysId (Quasistatic Forward)",
+                intake.pivotSysId.quasistatic(SysIdRoutine.Direction.kForward)
+        );
+        characterizationChooser.addOption(
+                "Intake Pivot SysId (Quasistatic Reverse)",
+                intake.pivotSysId.quasistatic(SysIdRoutine.Direction.kReverse)
+        );
+        characterizationChooser.addOption(
+                "Intake Pivot SysId (Dynamic Forward)",
+                intake.pivotSysId.dynamic(SysIdRoutine.Direction.kForward)
+        );
+        characterizationChooser.addOption(
+                "Intake Pivot SysId (Dynamic Reverse)",
+                intake.pivotSysId.dynamic(SysIdRoutine.Direction.kReverse)
+        );
+
+        characterizationChooser.addOption(
+                "Intake Feed SysId (Quasistatic Forward)",
+                intake.feedSysId.quasistatic(SysIdRoutine.Direction.kForward)
+        );
+        characterizationChooser.addOption(
+                "Intake Feed SysId (Quasistatic Reverse)",
+                intake.feedSysId.quasistatic(SysIdRoutine.Direction.kReverse)
+        );
+        characterizationChooser.addOption(
+                "Intake Feed SysId (Dynamic Forward)",
+                intake.feedSysId.dynamic(SysIdRoutine.Direction.kForward)
+        );
+        characterizationChooser.addOption(
+                "Intake Feed SysId (Dynamic Reverse)",
+                intake.feedSysId.dynamic(SysIdRoutine.Direction.kReverse)
         );
     }
 
