@@ -6,7 +6,7 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 import org.littletonrobotics.junction.networktables.LoggedDashboardInput;
 
-public class DashboardNumber implements LoggedDashboardInput {
+public class DashboardBoolean implements LoggedDashboardInput {
     private final LoggableInputs inputs = new LoggableInputs() {
         public void toLog(LogTable table) {
             table.put(key, value);
@@ -18,26 +18,26 @@ public class DashboardNumber implements LoggedDashboardInput {
     };
 
     private final String key;
-    private final double defaultValue;
-    private double value;
+    private final boolean defaultValue;
+    private boolean value;
 
-    public DashboardNumber(DashboardSubsystem subsystem, String key, double defaultValue) {
+    public DashboardBoolean(DashboardSubsystem subsystem, String key, boolean defaultValue) {
         this.key = subsystem.prefix() + "/" + key;
         this.defaultValue = defaultValue;
         this.value = defaultValue;
 
-        SmartDashboard.putNumber(key, SmartDashboard.getNumber(key, defaultValue));
+        SmartDashboard.putBoolean(key, SmartDashboard.getBoolean(key, defaultValue));
         periodic();
         Logger.registerDashboardInput(this);
     }
 
-    public double getRaw() {
+    public boolean get() {
         return value;
     }
 
     public void periodic() {
         if (!Logger.hasReplaySource()) {
-            value = SmartDashboard.getNumber(key, defaultValue);
+            value = SmartDashboard.getBoolean(key, defaultValue);
         }
         Logger.processInputs(prefix, inputs);
     }

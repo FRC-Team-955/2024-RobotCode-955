@@ -24,23 +24,26 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.Util;
+import frc.robot.dashboard.DashboardSubsystem;
+import frc.robot.dashboard.TuningDashboardAnglularVelocity;
+import frc.robot.dashboard.TuningDashboardBoolean;
+import frc.robot.dashboard.TuningDashboardVelocity;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
-import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 import java.util.Arrays;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.*;
 
 public class Drive extends SubsystemBase {
     public static class Dashboard {
-        public static final LoggedDashboardBoolean disableDriving = new LoggedDashboardBoolean("Disable Driving", false);
-        private static final LoggedDashboardNumber maxLinearSpeed = new LoggedDashboardNumber("Max Linear Speed (m per sec)", Units.feetToMeters(15));
-        private static final LoggedDashboardNumber maxAngularSpeed = new LoggedDashboardNumber("Max Angular Speed (deg per sec)", 317);
-        public static final LoggedDashboardBoolean disableVision = new LoggedDashboardBoolean("Disable Vision", false);
+        public static final TuningDashboardBoolean disableDriving = new TuningDashboardBoolean(DashboardSubsystem.DRIVE, "Disable Driving", false);
+        public static final TuningDashboardBoolean disableVision = new TuningDashboardBoolean(DashboardSubsystem.DRIVE, "Disable Vision", false);
+
+        private static final TuningDashboardVelocity maxLinearSpeed = new TuningDashboardVelocity(DashboardSubsystem.DRIVE, "Max Linear Speed", FeetPerSecond.of(15));
+        private static final TuningDashboardAnglularVelocity maxAngularSpeed = new TuningDashboardAnglularVelocity(DashboardSubsystem.DRIVE, "Max Angular Speed", DegreesPerSecond.of(317));
     }
 
     public enum State {
@@ -328,9 +331,9 @@ public class Drive extends SubsystemBase {
         // Convert to field relative speeds & send command
         runVelocity(
                 ChassisSpeeds.fromFieldRelativeSpeeds(
-                        linearVelocity.getX() * Dashboard.maxLinearSpeed.get(),
-                        linearVelocity.getY() * Dashboard.maxLinearSpeed.get(),
-                        omega * Units.degreesToRadians(Dashboard.maxAngularSpeed.get()),
+                        linearVelocity.getX() * Dashboard.maxLinearSpeed.get().in(MetersPerSecond),
+                        linearVelocity.getY() * Dashboard.maxLinearSpeed.get().in(MetersPerSecond),
+                        omega * Dashboard.maxAngularSpeed.get().in(RadiansPerSecond),
                         Util.shouldFlip()
                                 ? robotState.getRotation()
                                 : robotState.getRotation().plus(new Rotation2d(Math.PI))

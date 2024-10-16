@@ -20,12 +20,15 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.Util;
+import frc.robot.dashboard.DashboardAngle;
+import frc.robot.dashboard.DashboardSubsystem;
+import frc.robot.dashboard.TuningDashboardAngle;
+import frc.robot.dashboard.TuningDashboardAnglularVelocityRPM;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.util.GoalBasedCommandRunner;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -35,8 +38,10 @@ import static edu.wpi.first.units.Units.*;
 
 public class Shooter extends SubsystemBase {
     public static class Dashboard {
-        public static final LoggedDashboardNumber shootConfigurableSpeed = new LoggedDashboardNumber("Shoot Configurable Speed (RPM)", 0);
-        public static final LoggedDashboardNumber shootConfigurableAngle = new LoggedDashboardNumber("Shoot Configurable Angle (Degrees)", 0);
+        public static final DashboardAngle shootingSkew = new DashboardAngle(DashboardSubsystem.SHOOTER, "Shooting Skew", Degrees.zero());
+
+        public static final TuningDashboardAnglularVelocityRPM shootConfigurableSpeed = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Shoot Configurable Speed", RPM.zero());
+        public static final TuningDashboardAngle shootConfigurableAngle = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Shoot Configurable Angle", Degrees.zero());
     }
 
     // trick Java into letting us use an enum before it is defined
@@ -59,16 +64,16 @@ public class Shooter extends SubsystemBase {
                         : (Intake.get().pivotClearOfShooter() ? Optional.of(Goal.HOVER) : Optional.empty())
         ),
         SHOOT_CALCULATED(
-                () -> ShooterRegression.getAngle(RobotState.get().getDistanceToSpeaker()),
+                () -> ShooterRegression.getAngle(RobotState.get().getDistanceToSpeaker()).plus(Dashboard.shootingSkew.get()),
                 () -> ShooterRegression.getSpeed(RobotState.get().getDistanceToSpeaker()),
                 FeedSetpoint::shoot
         ),
         SHOOT_CONFIGURABLE(
-                () -> Degrees.of(Dashboard.shootConfigurableAngle.get()),
-                () -> RPM.of(Dashboard.shootConfigurableSpeed.get()),
+                Dashboard.shootConfigurableAngle::get,
+                Dashboard.shootConfigurableSpeed::get,
                 FeedSetpoint::shoot
         ),
-        SHOOT_SUBWOOFER(() -> Degrees.of(-50), RPM::zero, FeedSetpoint::shoot),
+        SHOOT_SUBWOOFER(() -> Degrees.of(-50).plus(Dashboard.shootingSkew.get()), RPM::zero, FeedSetpoint::shoot),
         AMP(() -> Degrees.of(25), () -> RPM.of(2000), FeedSetpoint::shoot),
         EJECT(() -> Degrees.of(-60), () -> RPM.of(2000), FeedSetpoint::shoot),
 

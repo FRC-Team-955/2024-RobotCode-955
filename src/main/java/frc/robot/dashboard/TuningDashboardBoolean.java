@@ -8,9 +8,9 @@ import org.littletonrobotics.junction.inputs.LoggableInputs;
 import org.littletonrobotics.junction.networktables.LoggedDashboardInput;
 
 /**
- * Dashboard number that only appears in tuning mode.
+ * Dashboard boolean that only appears in tuning mode.
  */
-public class TuningDashboardNumber implements LoggedDashboardInput {
+public class TuningDashboardBoolean implements LoggedDashboardInput {
     private final LoggableInputs inputs = new LoggableInputs() {
         public void toLog(LogTable table) {
             table.put(key, value);
@@ -22,11 +22,11 @@ public class TuningDashboardNumber implements LoggedDashboardInput {
     };
 
     private final String key;
-    private final double defaultValue;
-    private double value;
+    private final boolean defaultValue;
+    private boolean value;
     private boolean currentlyShown = false;
 
-    public TuningDashboardNumber(DashboardSubsystem subsystem, String key, double defaultValue) {
+    public TuningDashboardBoolean(DashboardSubsystem subsystem, String key, boolean defaultValue) {
         this.key = subsystem.prefix() + "/" + key;
         this.defaultValue = defaultValue;
         this.value = defaultValue;
@@ -35,13 +35,13 @@ public class TuningDashboardNumber implements LoggedDashboardInput {
         Logger.registerDashboardInput(this);
     }
 
-    public double getRaw() {
+    public boolean get() {
         return value;
     }
 
     public void periodic() {
         if (RobotState.Dashboard.tuningMode.get() && !currentlyShown) {
-            SmartDashboard.putNumber(key, SmartDashboard.getNumber(key, value));
+            SmartDashboard.putBoolean(key, SmartDashboard.getBoolean(key, value));
             currentlyShown = true;
         } else if (!RobotState.Dashboard.tuningMode.get() && currentlyShown) {
             // Only hide if it was changed
@@ -53,7 +53,7 @@ public class TuningDashboardNumber implements LoggedDashboardInput {
 
         if (currentlyShown) {
             if (!Logger.hasReplaySource()) {
-                value = SmartDashboard.getNumber(key, value);
+                value = SmartDashboard.getBoolean(key, value);
             }
             Logger.processInputs(prefix, inputs);
         }
