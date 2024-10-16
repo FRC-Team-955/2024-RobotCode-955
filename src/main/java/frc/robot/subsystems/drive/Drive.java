@@ -37,8 +37,8 @@ import static edu.wpi.first.units.Units.Volts;
 public class Drive extends SubsystemBase {
     public static class Dashboard {
         public static final LoggedDashboardBoolean disableDriving = new LoggedDashboardBoolean("Disable Driving", false);
-        private static final LoggedDashboardNumber maxLinearSpeed = new LoggedDashboardNumber("Max Linear Speed (m/sec)", Units.feetToMeters(15));
-        private static final LoggedDashboardNumber maxAngularSpeed = new LoggedDashboardNumber("Max Angular Speed (deg/sec)", 270);
+        private static final LoggedDashboardNumber maxLinearSpeed = new LoggedDashboardNumber("Max Linear Speed (m per sec)", Units.feetToMeters(15));
+        private static final LoggedDashboardNumber maxAngularSpeed = new LoggedDashboardNumber("Max Angular Speed (deg per sec)", 317);
         public static final LoggedDashboardBoolean disableVision = new LoggedDashboardBoolean("Disable Vision", false);
     }
 
@@ -84,7 +84,7 @@ public class Drive extends SubsystemBase {
     private final PIDController choreoFeedbackX = new PIDController(1, 0, 0);
     private final PIDController choreoFeedbackY = new PIDController(1, 0, 0);
     private final PIDController choreoFeedbackTheta = new PIDController(1, 0, 0);
-    private final PIDController pointTowardsController = new PIDController(2, 0, 0.1);
+    private final PIDController pointTowardsController = new PIDController(1.9, 0, 0.1);
 
     private State state = State.DEFAULT;
 
@@ -196,14 +196,15 @@ public class Drive extends SubsystemBase {
             }
 
             if (visionInputs.numTargets >= 2) {
-                xyStdDev -= visionInputs.bestTargetArea > 0.8 ? 0.25 : 0.5;
-                rotStdDev -= 8.0;
+                xyStdDev *= visionInputs.bestTargetArea > 0.8 ? 0.25 : 0.5;
+                rotStdDev *= 0.5;
             }
 
             robotState.addVisionMeasurement(
-                    DriverStation.isDisabled()
-                            ? visionInputs.estimatedPose.toPose2d()
-                            : new Pose2d(visionInputs.estimatedPose.toPose2d().getTranslation(), robotState.getRotation()),
+//                    DriverStation.isDisabled()
+//                            ? visionInputs.estimatedPose.toPose2d()
+//                            : new Pose2d(visionInputs.estimatedPose.toPose2d().getTranslation(), robotState.getRotation()),
+                    visionInputs.estimatedPose.toPose2d(),
                     visionInputs.timestampSeconds,
                     VecBuilder.fill(xyStdDev, xyStdDev, Units.degreesToRadians(rotStdDev))
             );

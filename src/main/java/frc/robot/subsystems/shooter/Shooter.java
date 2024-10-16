@@ -53,7 +53,9 @@ public class Shooter extends SubsystemBase {
                 () -> Degrees.of(-30),
                 RPM::zero,
                 () -> FeedSetpoint.velocity(RPM.zero()),
-                () -> Intake.get().pivotClearOfShooter() ? Optional.of(Goal.HOVER) : Optional.empty()
+                () -> get().goal == Goal.HOVER && get().atGoal()
+                        ? Optional.empty()
+                        : (Intake.get().pivotClearOfShooter() ? Optional.of(Goal.HOVER) : Optional.empty())
         ),
         SHOOT_CALCULATED(
                 () -> ShooterRegression.getAngle(RobotState.get().getDistanceToSpeaker()),
@@ -66,12 +68,12 @@ public class Shooter extends SubsystemBase {
                 FeedSetpoint::shoot
         ),
         SHOOT_SUBWOOFER(() -> Degrees.of(-50), RPM::zero, FeedSetpoint::shoot),
-        AMP(() -> Degrees.of(25), RPM::zero, FeedSetpoint::shoot),
-        EJECT(() -> Degrees.of(30), () -> RPM.of(2000), FeedSetpoint::shoot),
+        AMP(() -> Degrees.of(25), () -> RPM.of(2000), FeedSetpoint::shoot),
+        EJECT(() -> Degrees.of(-60), () -> RPM.of(2000), FeedSetpoint::shoot),
 
         HANDOFF_WAIT_FOR_INTAKE(() -> Degrees.of(-30), RPM::zero, () -> FeedSetpoint.velocity(RPM.zero())),
-        HANDOFF_READY(() -> Degrees.of(-45), RPM::zero, () -> FeedSetpoint.velocity(RPM.zero())),
-        HANDOFF_FEED(() -> Degrees.of(-45), RPM::zero, () -> FeedSetpoint.velocity(RPM.of(-100)));
+        HANDOFF_READY(() -> Degrees.of(-50), RPM::zero, () -> FeedSetpoint.velocity(RPM.zero())),
+        HANDOFF_FEED(() -> Degrees.of(-50), RPM::zero, () -> FeedSetpoint.velocity(RPM.of(-100)));
 
         public static final Goal DEFAULT = Goal.HOVER;
 
@@ -280,7 +282,14 @@ public class Shooter extends SubsystemBase {
         Logger.recordOutput("Shooter/Goal", goal);
         pivotSetpoint = goal.pivotSetpoint.get();
         flywheelsSetpoint = goal.flywheelsSetpoint.get();
-        goal.feedSetpoint.get().ifVelocity((velocity) -> feedSetpoint = velocity);
+//        goal.feedSetpoint.get().ifVelocity((velocity) -> feedSetpoint = velocity);
+        if (goal == Goal.EJECT) {
+            io.feedSetVoltage(12);
+        } else if (goal == Goal.HANDOFF_FEED) {
+            io.feedSetVoltage(3.5);
+        } else if (!goal.feedSetpoint.get().isShoot()) {
+            io.feedSetVoltage(0);
+        }
     }
 
     @Override

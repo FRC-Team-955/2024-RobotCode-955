@@ -17,12 +17,17 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
 import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
 
 import java.util.function.Supplier;
 
 import static edu.wpi.first.units.Units.Meters;
 
 public class RobotState {
+    public static class Dashboard {
+        public static final LoggedDashboardBoolean tuningMode = new LoggedDashboardBoolean("1 Robot/Tuning Mode", false);
+    }
+
     @Getter
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(Drive.MODULE_TRANSLATIONS);
     private final SwerveModulePosition[] lastModulePositions = new SwerveModulePosition[]{

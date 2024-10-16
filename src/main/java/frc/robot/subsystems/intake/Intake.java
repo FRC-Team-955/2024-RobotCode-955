@@ -26,7 +26,7 @@ public class Intake extends SubsystemBase {
     public enum Goal {
         HOVER(() -> Degrees.of(-110), RPM::zero),
         INTAKE(() -> Degrees.of(0), RPM::zero),
-        EJECT(() -> Degrees.of(-70), RPM::zero),
+        EJECT(() -> Degrees.of(-110), RPM::zero),
 
         HANDOFF_READY(() -> Degrees.of(-145), RPM::zero),
         HANDOFF_FEED(() -> Degrees.of(-145), () -> RPM.of(-100));
@@ -113,7 +113,16 @@ public class Intake extends SubsystemBase {
     private void processGoal() {
         Logger.recordOutput("Intake/Goal", goal);
         pivotSetpoint = goal.pivotSetpoint.get();
-        feedSetpoint = goal.feedSetpoint.get();
+//        feedSetpoint = goal.feedSetpoint.get();
+        if (goal == Goal.INTAKE) {
+            io.feedSetVoltage(7);
+        } else if (goal == Goal.HANDOFF_FEED) {
+            io.feedSetVoltage(-4);
+        } else if (goal == Goal.EJECT) {
+            io.feedSetVoltage(-12);
+        } else {
+            io.feedSetVoltage(0);
+        }
     }
 
     @Override
