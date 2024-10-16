@@ -29,6 +29,7 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
+import java.util.Arrays;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -144,6 +145,8 @@ public class Drive extends SubsystemBase {
                         modules[i].runCharacterization(voltage.in(Volts));
                     }
                 },
+                () -> state = State.CHARACTERIZATION,
+                () -> state = State.DEFAULT,
                 this
         );
     }
@@ -276,6 +279,10 @@ public class Drive extends SubsystemBase {
             states[i] = modules[i].getPosition();
         }
         return states;
+    }
+
+    protected double[] getWheelRadiusCharacterizationPositions() {
+        return Arrays.stream(modules).mapToDouble(Module::getPositionRad).toArray();
     }
 
     public Command driveVelocity(ChassisSpeeds velocities, double seconds) {

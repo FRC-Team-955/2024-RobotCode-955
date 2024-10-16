@@ -18,7 +18,6 @@ import frc.robot.dashboard.TuningDashboardNumber;
 import lombok.RequiredArgsConstructor;
 import org.littletonrobotics.junction.Logger;
 
-import java.util.Arrays;
 import java.util.function.DoubleSupplier;
 
 public class WheelRadiusCharacterization extends Command {
@@ -48,12 +47,6 @@ public class WheelRadiusCharacterization extends Command {
         this.omegaDirection = omegaDirection;
     }
 
-    private double[] getPositions() {
-        return Arrays.stream(drive.getModulePositions())
-                .mapToDouble((m) -> m.angle.getRadians())
-                .toArray();
-    }
-
     @Override
     public void initialize() {
         // Reset
@@ -61,7 +54,7 @@ public class WheelRadiusCharacterization extends Command {
         lastGyroYawRads = gyroYawRadsSupplier.getAsDouble();
         accumGyroYawRads = 0.0;
 
-        startWheelPositions = getPositions();
+        startWheelPositions = drive.getWheelRadiusCharacterizationPositions();
 
         omegaLimiter.reset(0);
     }
@@ -76,9 +69,9 @@ public class WheelRadiusCharacterization extends Command {
         accumGyroYawRads += MathUtil.angleModulus(gyroYawRadsSupplier.getAsDouble() - lastGyroYawRads);
         lastGyroYawRads = gyroYawRadsSupplier.getAsDouble();
         double averageWheelPosition = 0.0;
-        double[] wheelPositiions = getPositions();
+        double[] wheelPositions = drive.getWheelRadiusCharacterizationPositions();
         for (int i = 0; i < 4; i++) {
-            averageWheelPosition += Math.abs(wheelPositiions[i] - startWheelPositions[i]);
+            averageWheelPosition += Math.abs(wheelPositions[i] - startWheelPositions[i]);
         }
         averageWheelPosition /= 4.0;
 
@@ -87,7 +80,8 @@ public class WheelRadiusCharacterization extends Command {
         Logger.recordOutput("Drive/RadiusCharacterization/AccumGyroYawRads", accumGyroYawRads);
         Logger.recordOutput(
                 "Drive/RadiusCharacterization/CurrentWheelRadiusInches",
-                Units.metersToInches(currentEffectiveWheelRadius));
+                Units.metersToInches(currentEffectiveWheelRadius)
+        );
     }
 
     @Override
@@ -96,10 +90,7 @@ public class WheelRadiusCharacterization extends Command {
         if (accumGyroYawRads <= Math.PI * 2.0) {
             System.out.println("Not enough data for characterization");
         } else {
-            System.out.println(
-                    "Effective Wheel Radius: "
-                            + Units.metersToInches(currentEffectiveWheelRadius)
-                            + " inches");
+            System.out.println("Effective Wheel Radius: " + Units.metersToInches(currentEffectiveWheelRadius) + " inches");
         }
     }
 }

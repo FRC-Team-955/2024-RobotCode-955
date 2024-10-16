@@ -168,7 +168,7 @@ public class Shooter extends SubsystemBase {
     public final SysIdRoutine pivotSysId;
 
     private final SimpleMotorFeedforward feedFeedforward = FEED_FF;
-    private Measure<Velocity<Angle>> feedSetpoint = null;
+    private final Measure<Velocity<Angle>> feedSetpoint = null;
     public final SysIdRoutine feedSysId;
 
     private final SimpleMotorFeedforward flywheelTopFeedforward = FLYWHEEL_TOP_FF;
@@ -287,7 +287,7 @@ public class Shooter extends SubsystemBase {
             io.feedSetVoltage(12);
         } else if (goal == Goal.HANDOFF_FEED) {
             io.feedSetVoltage(3.5);
-        } else if (feedSetpoint !=null && !feedSetpoint.isShoot()) {
+        } else if (feedSetpoint != null && !feedSetpoint.isShoot()) {
             io.feedSetVoltage(0);
         }
     }

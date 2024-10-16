@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Util;
-import frc.robot.subsystems.shooter.Shooter;
 import lombok.Getter;
 import org.littletonrobotics.junction.Logger;
 
@@ -65,7 +64,7 @@ public class Intake extends SubsystemBase {
     public final SysIdRoutine pivotSysId;
 
     private final SimpleMotorFeedforward feedFeedforward = FEED_FF;
-    private Measure<Velocity<Angle>> feedSetpoint = null;
+    private final Measure<Velocity<Angle>> feedSetpoint = null;
     public final SysIdRoutine feedSysId;
 
     @Getter
