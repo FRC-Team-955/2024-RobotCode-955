@@ -28,25 +28,25 @@ import static edu.wpi.first.units.Units.*;
 public class Intake extends SubsystemBase {
     ////////////////////// GOAL SETPOINTS //////////////////////
 
-    private final TuningDashboardAngle hoverPivot = new TuningDashboardAngle(DashboardSubsystem.INTAKE, "Hover Pivot", Degrees.of(-110));
+    private static final TuningDashboardAngle hoverPivot = new TuningDashboardAngle(DashboardSubsystem.INTAKE, "Hover Pivot", Degrees.of(-110));
 
-    private final TuningDashboardAngle intakePivot = new TuningDashboardAngle(DashboardSubsystem.INTAKE, "Intake Pivot", Degrees.of(0));
-    private final TuningDashboardAnglularVelocityRPM intakeFeed = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.INTAKE, "Intake Feed", RPM.of(1200));
+    private static final TuningDashboardAngle intakePivot = new TuningDashboardAngle(DashboardSubsystem.INTAKE, "Intake Pivot", Degrees.of(0));
+    private static final TuningDashboardAnglularVelocityRPM intakeFeed = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.INTAKE, "Intake Feed", RPM.of(1500));
 
-    private final TuningDashboardAngle ejectPivot = new TuningDashboardAngle(DashboardSubsystem.INTAKE, "Eject Pivot", Degrees.of(-110));
-    private final TuningDashboardAnglularVelocityRPM ejectFeed = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.INTAKE, "Eject Feed", RPM.of(-1000));
+    private static final TuningDashboardAngle ejectPivot = new TuningDashboardAngle(DashboardSubsystem.INTAKE, "Eject Pivot", Degrees.of(-110));
+    private static final TuningDashboardAnglularVelocityRPM ejectFeed = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.INTAKE, "Eject Feed", RPM.of(-1000));
 
-    private final TuningDashboardAngle handoffPivot = new TuningDashboardAngle(DashboardSubsystem.INTAKE, "Handoff Pivot", Degrees.of(-145));
-    private final TuningDashboardAnglularVelocityRPM handoffFeed = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.INTAKE, "Handoff Feed", RPM.of(-530));
+    private static final TuningDashboardAngle handoffPivot = new TuningDashboardAngle(DashboardSubsystem.INTAKE, "Handoff Pivot", Degrees.of(-145));
+    private static final TuningDashboardAnglularVelocityRPM handoffFeed = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.INTAKE, "Handoff Feed", RPM.of(-600));
 
     public enum Goal {
         CHARACTERIZATION(() -> null, () -> null),
-        HOVER(() -> get().hoverPivot.get(), RPM::zero),
-        INTAKE(() -> get().intakePivot.get(), () -> get().intakeFeed.get()),
-        EJECT(() -> get().ejectPivot.get(), () -> get().ejectFeed.get()),
+        HOVER(hoverPivot::get, RPM::zero),
+        INTAKE(intakePivot::get, intakeFeed::get),
+        EJECT(ejectPivot::get, ejectFeed::get),
 
-        HANDOFF_READY(() -> get().handoffPivot.get(), RPM::zero),
-        HANDOFF_FEED(() -> get().handoffPivot.get(), () -> get().handoffFeed.get());
+        HANDOFF_READY(handoffPivot::get, RPM::zero),
+        HANDOFF_FEED(handoffPivot::get, handoffFeed::get);
 
         public static final Goal DEFAULT = Goal.HOVER;
 

@@ -18,7 +18,6 @@ public final class ShooterRegression {
     3.3                     | -28.5                   | 4250
     4.05                    | -25.5                   | 5000
     4.342                   | -22.3                   | 5200
-    5.104                   | -18                     | 5780
     */
 
     public static Measure<Angle> getAngle(Measure<Distance> distance) {

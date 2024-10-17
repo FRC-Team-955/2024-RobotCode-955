@@ -91,7 +91,7 @@ public class Module {
         angleSetpoint = optimizedState.angle;
         speedSetpoint = optimizedState.speedMetersPerSecond;
 
-        if (Drive.get().disableDriving.get())
+        if (Drive.disableDriving.get())
             speedSetpoint = 0.0;
 
         return optimizedState;

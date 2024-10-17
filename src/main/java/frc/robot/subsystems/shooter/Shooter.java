@@ -34,29 +34,28 @@ import java.util.function.Supplier;
 import static edu.wpi.first.units.Units.*;
 
 public class Shooter extends SubsystemBase {
-    private final DashboardAngle shootingSkew = new DashboardAngle(DashboardSubsystem.SHOOTER, "Shooting Skew", Degrees.of(3));
-
+    private static final DashboardAngle shootingSkew = new DashboardAngle(DashboardSubsystem.SHOOTER, "Shooting Skew", Degrees.of(3));
 
     ////////////////////// GOAL SETPOINTS //////////////////////
 
-    private final TuningDashboardAngle hoverPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Hover Pivot", Degrees.of(-90));
+    private static final TuningDashboardAngle hoverPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Hover Pivot", Degrees.of(-90));
 
-    private final TuningDashboardAngle waitForIntakePivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Wait For Intake Pivot", Degrees.of(-30));
+    private static final TuningDashboardAngle waitForIntakePivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Wait For Intake Pivot", Degrees.of(-30));
 
-    private final TuningDashboardAngle ejectPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Eject Pivot", Degrees.of(-60));
-    private final TuningDashboardAnglularVelocityRPM ejectFlywheels = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Eject Flywheels", RPM.of(-2000));
+    private static final TuningDashboardAngle ejectPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Eject Pivot", Degrees.of(-60));
+    private static final TuningDashboardAnglularVelocityRPM ejectFlywheels = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Eject Flywheels", RPM.of(3000));
 
-    private final TuningDashboardAngle shootConfigurablePivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Shoot Configurable Pivot", Degrees.zero());
-    private final TuningDashboardAnglularVelocityRPM shootConfigurableFlywheels = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Shoot Configurable Flywheels", RPM.zero());
+    private static final TuningDashboardAngle shootConfigurablePivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Shoot Configurable Pivot", Degrees.zero());
+    private static final TuningDashboardAnglularVelocityRPM shootConfigurableFlywheels = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Shoot Configurable Flywheels", RPM.zero());
 
-    private final TuningDashboardAngle shootSubwooferPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Shoot Subwoofer Pivot", Degrees.of(25));
-    private final TuningDashboardAnglularVelocityRPM shootSubwooferFlywheels = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Shoot Subwoofer Flywheels", RPM.of(2000));
+    private static final TuningDashboardAngle shootSubwooferPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Shoot Subwoofer Pivot", Degrees.of(25));
+    private static final TuningDashboardAnglularVelocityRPM shootSubwooferFlywheels = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Shoot Subwoofer Flywheels", RPM.of(3500));
 
-    private final TuningDashboardAngle ampPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Amp Pivot", Degrees.of(25));
-    private final TuningDashboardAnglularVelocityRPM ampFlywheels = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Amp Flywheels", RPM.of(2000));
+    private static final TuningDashboardAngle ampPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Amp Pivot", Degrees.of(25));
+    private static final TuningDashboardAnglularVelocityRPM ampFlywheels = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Amp Flywheels", RPM.of(2000));
 
-    private final TuningDashboardAngle handoffPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Handoff Pivot", Degrees.of(-50));
-    private final TuningDashboardAnglularVelocityRPM handoffFeed = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Handoff Feed", RPM.of(530));
+    private static final TuningDashboardAngle handoffPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Handoff Pivot", Degrees.of(-50));
+    private static final TuningDashboardAnglularVelocityRPM handoffFeed = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Handoff Feed", RPM.of(600));
 
     // trick Java into letting us use an enum before it is defined
     private static final Goal GOAL_WAIT_FOR_INTAKE = Goal.WAIT_FOR_INTAKE;
@@ -64,40 +63,53 @@ public class Shooter extends SubsystemBase {
     public enum Goal {
         CHARACTERIZATION(() -> null, () -> null, () -> null),
         HOVER(
-                () -> get().hoverPivot.get(),
+                hoverPivot::get,
                 RPM::zero,
                 () -> FeedSetpoint.velocity(RPM.zero()),
-                () -> Intake.get().pivotClearOfShooter() ? Optional.empty() : Optional.of(GOAL_WAIT_FOR_INTAKE)
+                () -> Intake.get().pivotClearOfShooter() || get().atGoal() ? Optional.empty() : Optional.of(GOAL_WAIT_FOR_INTAKE)
         ),
         WAIT_FOR_INTAKE(
-                () -> get().waitForIntakePivot.get(),
+                waitForIntakePivot::get,
                 RPM::zero,
                 () -> FeedSetpoint.velocity(RPM.zero()),
-                () -> get().goal == Goal.HOVER && get().atGoal()
-                        ? Optional.empty()
-                        : (Intake.get().pivotClearOfShooter() ? Optional.of(Goal.HOVER) : Optional.empty())
+                () -> Intake.get().pivotClearOfShooter() ? Optional.of(Goal.HOVER) : Optional.empty()
+        ),
+        SHOOT_CALCULATED_SPINUP(
+                () -> get().pivotSetpoint,
+                () -> ShooterRegression.getSpeed(RobotState.get().getDistanceToSpeaker()),
+                () -> FeedSetpoint.velocity(RPM.zero())
         ),
         SHOOT_CALCULATED(
-                () -> ShooterRegression.getAngle(RobotState.get().getDistanceToSpeaker()).plus(get().shootingSkew.get()),
+                () -> ShooterRegression.getAngle(RobotState.get().getDistanceToSpeaker()).plus(shootingSkew.get()),
                 () -> ShooterRegression.getSpeed(RobotState.get().getDistanceToSpeaker()),
                 FeedSetpoint::shoot
         ),
         SHOOT_CONFIGURABLE(
-                () -> get().shootConfigurablePivot.get(),
-                () -> get().shootConfigurableFlywheels.get(),
+                shootConfigurablePivot::get,
+                shootConfigurableFlywheels::get,
                 FeedSetpoint::shoot
         ),
         SHOOT_SUBWOOFER(
-                () -> get().shootSubwooferPivot.get().plus(get().shootingSkew.get()),
-                () -> get().shootSubwooferFlywheels.get(),
+                () -> shootSubwooferPivot.get().plus(shootingSkew.get()),
+                shootSubwooferFlywheels::get,
                 FeedSetpoint::shoot
         ),
-        AMP(() -> get().ampPivot.get(), () -> get().ampFlywheels.get(), FeedSetpoint::shoot),
-        EJECT(() -> get().ejectPivot.get(), () -> get().ejectFlywheels.get(), FeedSetpoint::shoot),
+        AMP(ampPivot::get, ampFlywheels::get, FeedSetpoint::shoot),
+        EJECT(ejectPivot::get, ejectFlywheels::get, FeedSetpoint::shoot),
 
-        HANDOFF_WAIT_FOR_INTAKE(() -> get().waitForIntakePivot.get(), RPM::zero, () -> FeedSetpoint.velocity(RPM.zero())),
-        HANDOFF_READY(() -> get().handoffPivot.get(), RPM::zero, () -> FeedSetpoint.velocity(RPM.zero())),
-        HANDOFF_FEED(() -> get().handoffPivot.get(), RPM::zero, () -> FeedSetpoint.velocity(get().handoffFeed.get()));
+        HANDOFF_WAIT_FOR_INTAKE(
+                waitForIntakePivot::get,
+                RPM::zero,
+                () -> FeedSetpoint.velocity(RPM.zero())
+        ),
+        HANDOFF_READY(
+                handoffPivot::get,
+                RPM::zero,
+                () -> FeedSetpoint.velocity(RPM.zero())
+        ),
+        HANDOFF_FEED(
+                handoffPivot::get,
+                RPM::zero, () -> FeedSetpoint.velocity(handoffFeed.get()));
 
         public static final Goal DEFAULT = Goal.HOVER;
 
@@ -407,6 +419,10 @@ public class Shooter extends SubsystemBase {
 
     public Command shootSubwoofer() {
         return goal(Goal.SHOOT_SUBWOOFER).withName("Shooter Shoot Subwoofer");
+    }
+
+    public Command shootCalculatedSpinup() {
+        return goal(Goal.SHOOT_CALCULATED_SPINUP).withName("Shooter Shoot Calculated Spinup");
     }
 
     public Command shootCalculated() {

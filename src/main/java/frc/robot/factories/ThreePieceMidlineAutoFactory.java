@@ -19,15 +19,15 @@ public class ThreePieceMidlineAutoFactory {
                         .andThen(BStoLP.cmd())
         );
         BStoLP.done().onTrue(Commands.sequence(
-                CalculatedShootFactory.get(() -> 0, () -> 0),
+                CalculatedShootFactory.get(),
                 LPtoM4toTP.cmd()
         ));
         LPtoM4toTP.done().onTrue(Commands.sequence(
-                CalculatedShootFactory.get(() -> 0, () -> 0),
+                CalculatedShootFactory.get(),
                 TPtoM3toTP.cmd()
         ));
         TPtoM3toTP.done().onTrue(Commands.sequence(
-                CalculatedShootFactory.get(() -> 0, () -> 0)
+                CalculatedShootFactory.get()
         ));
 
         final var INTAKE_TIMEOUT = 0.6;

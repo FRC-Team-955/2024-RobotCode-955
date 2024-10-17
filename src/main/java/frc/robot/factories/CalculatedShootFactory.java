@@ -9,6 +9,10 @@ import frc.robot.subsystems.shooter.Shooter;
 import java.util.function.DoubleSupplier;
 
 public class CalculatedShootFactory {
+    public static Command get() {
+        return get(() -> 0, () -> 0);
+    }
+
     public static Command get(DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
         final var drive = Drive.get();
         final var shooter = Shooter.get();

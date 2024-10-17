@@ -35,11 +35,11 @@ import java.util.function.Supplier;
 import static edu.wpi.first.units.Units.*;
 
 public class Drive extends SubsystemBase {
-    protected final TuningDashboardBoolean disableDriving = new TuningDashboardBoolean(DashboardSubsystem.DRIVE, "Disable Driving", false);
+    protected static final TuningDashboardBoolean disableDriving = new TuningDashboardBoolean(DashboardSubsystem.DRIVE, "Disable Driving", false);
     private final TuningDashboardBoolean disableVision = new TuningDashboardBoolean(DashboardSubsystem.DRIVE, "Disable Vision", false);
 
-    private final TuningDashboardVelocity maxLinearSpeed = new TuningDashboardVelocity(DashboardSubsystem.DRIVE, "Max Linear Speed", FeetPerSecond.of(15));
-    private final TuningDashboardAnglularVelocity maxAngularSpeed = new TuningDashboardAnglularVelocity(DashboardSubsystem.DRIVE, "Max Angular Speed", DegreesPerSecond.of(317));
+    private static final TuningDashboardVelocity maxLinearSpeed = new TuningDashboardVelocity(DashboardSubsystem.DRIVE, "Max Linear Speed", FeetPerSecond.of(15));
+    private static final TuningDashboardAnglularVelocity maxAngularSpeed = new TuningDashboardAnglularVelocity(DashboardSubsystem.DRIVE, "Max Angular Speed", DegreesPerSecond.of(317));
 
     public enum State {
         CHARACTERIZATION,
@@ -81,8 +81,8 @@ public class Drive extends SubsystemBase {
 
     public final SysIdRoutine sysId;
 
-    private final TuningDashboardPIDController choreoFeedbackX = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Choreo X PID", new PIDConstants(1, 0, 0));
-    private final TuningDashboardPIDController choreoFeedbackY = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Choreo Y PID", new PIDConstants(1, 0, 0));
+    private final TuningDashboardPIDController choreoFeedbackX = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Choreo X PID", new PIDConstants(1.5, 0, 0));
+    private final TuningDashboardPIDController choreoFeedbackY = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Choreo Y PID", new PIDConstants(1.5, 0, 0));
     private final TuningDashboardPIDController choreoFeedbackTheta = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Choreo Theta PID", new PIDConstants(1, 0, 0));
     private final TuningDashboardPIDController pointTowardsController = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Point Towards PID", new PIDConstants(2.1, 0, 0.1));
 
