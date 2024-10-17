@@ -14,14 +14,16 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotState;
 import frc.robot.dashboard.DashboardSubsystem;
-import frc.robot.dashboard.TuningDashboardNumber;
+import frc.robot.dashboard.TuningDashboardAnglularVelocity;
 import lombok.RequiredArgsConstructor;
 import org.littletonrobotics.junction.Logger;
 
 import java.util.function.DoubleSupplier;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+
 public class WheelRadiusCharacterization extends Command {
-    private static final TuningDashboardNumber characterizationSpeed = new TuningDashboardNumber(DashboardSubsystem.DRIVE, "Wheel Radius Characterization Rotation Speed (rad per sec)", 0.1);
+    private static final TuningDashboardAnglularVelocity characterizationSpeed = new TuningDashboardAnglularVelocity(DashboardSubsystem.DRIVE, "Wheel Radius Characterization Rotation Speed (rad per sec)", RadiansPerSecond.of(0.1));
     private static final DoubleSupplier gyroYawRadsSupplier = () -> RobotState.get().getRotation().getRadians();
 
     @RequiredArgsConstructor
@@ -45,6 +47,7 @@ public class WheelRadiusCharacterization extends Command {
 
     public WheelRadiusCharacterization(Direction omegaDirection) {
         this.omegaDirection = omegaDirection;
+        addRequirements(drive);
     }
 
     @Override
@@ -62,7 +65,7 @@ public class WheelRadiusCharacterization extends Command {
     @Override
     public void execute() {
         // Run drive at velocity
-        var omega = omegaLimiter.calculate(omegaDirection.value * characterizationSpeed.get());
+        var omega = omegaLimiter.calculate(omegaDirection.value * characterizationSpeed.get().in(RadiansPerSecond));
         drive.runVelocity(new ChassisSpeeds(0, 0, omega));
 
         // Get yaw and wheel positions

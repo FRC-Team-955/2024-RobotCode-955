@@ -5,6 +5,7 @@
       "/AdvantageKit/RealOutputs/Shooter/Mechanism": "Mechanism2d",
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Auto Choices": "String Chooser",
+      "/SmartDashboard/Characterization Choices": "String Chooser",
       "/SmartDashboard/Command Scheduler": "Scheduler"
     },
     "windows": {

@@ -40,10 +40,10 @@ public class TuningDashboardNumber implements LoggedDashboardInput {
     }
 
     public void periodic() {
-        if (RobotState.Dashboard.tuningMode.get() && !currentlyShown) {
+        if (RobotState.tuningMode.get() && !currentlyShown) {
             SmartDashboard.putNumber(key, SmartDashboard.getNumber(key, value));
             currentlyShown = true;
-        } else if (!RobotState.Dashboard.tuningMode.get() && currentlyShown) {
+        } else if (!RobotState.tuningMode.get() && currentlyShown) {
             // Only hide if it was changed
             if (value == defaultValue) {
                 SmartDashboard.getEntry(key).unpublish();

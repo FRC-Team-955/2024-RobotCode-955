@@ -16,19 +16,25 @@ public class FourPieceWingAutoFactory {
 
         loop.enabled().onTrue(
                 AutoInitFactory.get(loop, "S-W1", StoW1::getInitialPose)
-                        .andThen(StoW1.cmd().alongWith(intake.intake()))
+                        .andThen(
+                                CalculatedShootFactory.get(() -> 0, () -> 0),
+                                StoW1.cmd().alongWith(intake.intake())
+                        )
         );
         StoW1.done().onTrue(Commands.sequence(
+                intake.intake().withTimeout(0.3),
                 HandoffFactory.get(),
                 CalculatedShootFactory.get(() -> 0, () -> 0),
                 W1toW2.cmd().alongWith(intake.intake())
         ));
         W1toW2.done().onTrue(Commands.sequence(
+                intake.intake().withTimeout(0.3),
                 HandoffFactory.get(),
                 CalculatedShootFactory.get(() -> 0, () -> 0),
                 W2toW3.cmd().alongWith(intake.intake())
         ));
         W2toW3.done().onTrue(Commands.sequence(
+                intake.intake().withTimeout(0.3),
                 HandoffFactory.get(),
                 CalculatedShootFactory.get(() -> 0, () -> 0)
         ));

@@ -24,9 +24,7 @@ import java.util.function.Supplier;
 import static edu.wpi.first.units.Units.Meters;
 
 public class RobotState {
-    public static class Dashboard {
-        public static final LoggedDashboardBoolean tuningMode = new LoggedDashboardBoolean("1 Tuning Mode", false);
-    }
+    public static final LoggedDashboardBoolean tuningMode = new LoggedDashboardBoolean("1 Tuning Mode", false);
 
     @Getter
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(Drive.MODULE_TRANSLATIONS);

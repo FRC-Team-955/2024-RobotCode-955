@@ -26,7 +26,7 @@ public class DashboardBoolean implements LoggedDashboardInput {
         this.defaultValue = defaultValue;
         this.value = defaultValue;
 
-        SmartDashboard.putBoolean(key, SmartDashboard.getBoolean(key, defaultValue));
+        SmartDashboard.putBoolean(this.key, SmartDashboard.getBoolean(this.key, defaultValue));
         periodic();
         Logger.registerDashboardInput(this);
     }

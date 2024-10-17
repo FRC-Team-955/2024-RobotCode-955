@@ -26,7 +26,7 @@ public class DashboardNumber implements LoggedDashboardInput {
         this.defaultValue = defaultValue;
         this.value = defaultValue;
 
-        SmartDashboard.putNumber(key, SmartDashboard.getNumber(key, defaultValue));
+        SmartDashboard.putNumber(this.key, SmartDashboard.getNumber(this.key, defaultValue));
         periodic();
         Logger.registerDashboardInput(this);
     }

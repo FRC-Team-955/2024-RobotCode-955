@@ -188,11 +188,14 @@ public class ShooterIOSim extends ShooterIO {
     }
 
     @Override
-    public void flywheelsConfigurePID(PIDConstants pidTopConstants, PIDConstants pidBottomConstants) {
-        flywheelTopPid = new PIDController(pidTopConstants.kP, pidTopConstants.kI, pidTopConstants.kD);
-        flywheelTopPid.setIZone(pidTopConstants.iZone);
+    public void flywheelsTopConfigurePID(PIDConstants pidConstants) {
+        flywheelTopPid = new PIDController(pidConstants.kP, pidConstants.kI, pidConstants.kD);
+        flywheelTopPid.setIZone(pidConstants.iZone);
+    }
 
-        flywheelBottomPid = new PIDController(pidBottomConstants.kP, pidBottomConstants.kI, pidBottomConstants.kD);
-        flywheelBottomPid.setIZone(pidBottomConstants.iZone);
+    @Override
+    public void flywheelsBottomConfigurePID(PIDConstants pidConstants) {
+        flywheelBottomPid = new PIDController(pidConstants.kP, pidConstants.kI, pidConstants.kD);
+        flywheelBottomPid.setIZone(pidConstants.iZone);
     }
 }

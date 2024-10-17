@@ -1,12 +1,15 @@
 package frc.robot.subsystems.drive;
 
-import edu.wpi.first.math.controller.PIDController;
+import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
+import frc.robot.dashboard.DashboardSubsystem;
+import frc.robot.dashboard.TuningDashboardPIDController;
+import frc.robot.dashboard.TuningDashboardSimpleFeedforward;
 import org.littletonrobotics.junction.Logger;
 
 public class Module {
@@ -16,9 +19,9 @@ public class Module {
     private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
     private final int index;
 
-    private final SimpleMotorFeedforward driveFeedforward;
-    private final PIDController driveFeedback;
-    private final PIDController turnFeedback;
+    private final TuningDashboardSimpleFeedforward driveFeedforward;
+    private final TuningDashboardPIDController driveFeedback;
+    private final TuningDashboardPIDController turnFeedback;
     private Rotation2d angleSetpoint = null; // Setpoint for closed loop control, null for open loop
     private Double speedSetpoint = null; // Setpoint for closed loop control, null for open loop
     private Rotation2d turnRelativeOffset = null; // Relative + Offset = Absolute
@@ -29,19 +32,19 @@ public class Module {
 
         switch (Constants.mode) {
             case REAL, REPLAY -> {
-                driveFeedforward = new SimpleMotorFeedforward(0.1, 0.13);
-                driveFeedback = new PIDController(0.05, 0.0, 0.0);
-                turnFeedback = new PIDController(4.2, 0.0, 0.0);
+                driveFeedforward = new TuningDashboardSimpleFeedforward(DashboardSubsystem.DRIVE, "Module " + index + " Drive FF", new SimpleMotorFeedforward(0.0689045, 0.1370225, 0.009731425));
+                driveFeedback = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Module " + index + " Drive PID", new PIDConstants(0.05, 0.0, 0.0));
+                turnFeedback = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Module " + index + " Turn PID", new PIDConstants(5.0, 0.0, 0.0));
             }
             case SIM -> {
-                driveFeedforward = new SimpleMotorFeedforward(0.0, 0.13);
-                driveFeedback = new PIDController(0.1, 0.0, 0.0);
-                turnFeedback = new PIDController(10.0, 0.0, 0.0);
+                driveFeedforward = new TuningDashboardSimpleFeedforward(DashboardSubsystem.DRIVE, "Module " + index + " Drive FF", new SimpleMotorFeedforward(0.0, 0.13));
+                driveFeedback = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Module " + index + " Drive PID", new PIDConstants(0.1, 0.0, 0.0));
+                turnFeedback = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Module " + index + " Turn PID", new PIDConstants(10.0, 0.0, 0.0));
             }
             default -> throw new RuntimeException("unreachable");
         }
 
-        turnFeedback.enableContinuousInput(-Math.PI, Math.PI);
+        turnFeedback.get().enableContinuousInput(-Math.PI, Math.PI);
         setBrakeMode(true);
     }
 
@@ -57,7 +60,7 @@ public class Module {
 
         // Run closed loop turn control
         if (angleSetpoint != null) {
-            io.setTurnVoltage(turnFeedback.calculate(getAngle().getRadians(), angleSetpoint.getRadians()));
+            io.setTurnVoltage(turnFeedback.get().calculate(getAngle().getRadians(), angleSetpoint.getRadians()));
 
             // Run closed loop drive control
             // Only allowed if closed loop turn control is running
@@ -67,11 +70,11 @@ public class Module {
                 // When the error is 90°, the velocity setpoint should be 0. As the wheel turns
                 // towards the setpoint, its velocity should increase. This is achieved by
                 // taking the component of the velocity in the direction of the setpoint.
-                double adjustSpeedSetpoint = speedSetpoint * Math.cos(turnFeedback.getPositionError());
+                double adjustSpeedSetpoint = speedSetpoint * Math.cos(turnFeedback.get().getPositionError());
 
                 // Run drive controller
                 double velocityRadPerSec = adjustSpeedSetpoint / WHEEL_RADIUS;
-                io.setDriveVoltage(driveFeedforward.calculate(velocityRadPerSec) + driveFeedback.calculate(inputs.driveVelocityRadPerSec, velocityRadPerSec));
+                io.setDriveVoltage(driveFeedforward.get().calculate(velocityRadPerSec) + driveFeedback.get().calculate(inputs.driveVelocityRadPerSec, velocityRadPerSec));
             }
         }
     }
@@ -88,7 +91,7 @@ public class Module {
         angleSetpoint = optimizedState.angle;
         speedSetpoint = optimizedState.speedMetersPerSecond;
 
-        if (Drive.Dashboard.disableDriving.get())
+        if (Drive.get().disableDriving.get())
             speedSetpoint = 0.0;
 
         return optimizedState;

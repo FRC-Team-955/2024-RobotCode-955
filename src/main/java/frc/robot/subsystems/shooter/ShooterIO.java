@@ -68,6 +68,9 @@ public class ShooterIO {
     public void flywheelsSetBrakeMode(boolean enabled) {
     }
 
-    public void flywheelsConfigurePID(PIDConstants pidTopConstants, PIDConstants pidBottomConstants) {
+    public void flywheelsTopConfigurePID(PIDConstants pidConstants) {
+    }
+
+    public void flywheelsBottomConfigurePID(PIDConstants pidConstants) {
     }
 }

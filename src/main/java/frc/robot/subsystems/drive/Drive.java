@@ -4,9 +4,9 @@ import choreo.Choreo;
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
+import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -24,10 +24,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.Util;
-import frc.robot.dashboard.DashboardSubsystem;
-import frc.robot.dashboard.TuningDashboardAnglularVelocity;
-import frc.robot.dashboard.TuningDashboardBoolean;
-import frc.robot.dashboard.TuningDashboardVelocity;
+import frc.robot.dashboard.*;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -38,13 +35,11 @@ import java.util.function.Supplier;
 import static edu.wpi.first.units.Units.*;
 
 public class Drive extends SubsystemBase {
-    public static class Dashboard {
-        public static final TuningDashboardBoolean disableDriving = new TuningDashboardBoolean(DashboardSubsystem.DRIVE, "Disable Driving", false);
-        public static final TuningDashboardBoolean disableVision = new TuningDashboardBoolean(DashboardSubsystem.DRIVE, "Disable Vision", false);
+    protected final TuningDashboardBoolean disableDriving = new TuningDashboardBoolean(DashboardSubsystem.DRIVE, "Disable Driving", false);
+    private final TuningDashboardBoolean disableVision = new TuningDashboardBoolean(DashboardSubsystem.DRIVE, "Disable Vision", false);
 
-        private static final TuningDashboardVelocity maxLinearSpeed = new TuningDashboardVelocity(DashboardSubsystem.DRIVE, "Max Linear Speed", FeetPerSecond.of(15));
-        private static final TuningDashboardAnglularVelocity maxAngularSpeed = new TuningDashboardAnglularVelocity(DashboardSubsystem.DRIVE, "Max Angular Speed", DegreesPerSecond.of(317));
-    }
+    private final TuningDashboardVelocity maxLinearSpeed = new TuningDashboardVelocity(DashboardSubsystem.DRIVE, "Max Linear Speed", FeetPerSecond.of(15));
+    private final TuningDashboardAnglularVelocity maxAngularSpeed = new TuningDashboardAnglularVelocity(DashboardSubsystem.DRIVE, "Max Angular Speed", DegreesPerSecond.of(317));
 
     public enum State {
         CHARACTERIZATION,
@@ -86,10 +81,10 @@ public class Drive extends SubsystemBase {
 
     public final SysIdRoutine sysId;
 
-    private final PIDController choreoFeedbackX = new PIDController(1, 0, 0);
-    private final PIDController choreoFeedbackY = new PIDController(1, 0, 0);
-    private final PIDController choreoFeedbackTheta = new PIDController(1, 0, 0);
-    private final PIDController pointTowardsController = new PIDController(1.9, 0, 0.1);
+    private final TuningDashboardPIDController choreoFeedbackX = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Choreo X PID", new PIDConstants(1, 0, 0));
+    private final TuningDashboardPIDController choreoFeedbackY = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Choreo Y PID", new PIDConstants(1, 0, 0));
+    private final TuningDashboardPIDController choreoFeedbackTheta = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Choreo Theta PID", new PIDConstants(1, 0, 0));
+    private final TuningDashboardPIDController pointTowardsController = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Point Towards PID", new PIDConstants(2.1, 0, 0.1));
 
     private State state = State.DEFAULT;
 
@@ -138,8 +133,8 @@ public class Drive extends SubsystemBase {
             modules[i] = new Module(moduleIO, i);
         }
 
-        choreoFeedbackTheta.enableContinuousInput(-Math.PI, Math.PI);
-        pointTowardsController.enableContinuousInput(-Math.PI, Math.PI);
+        choreoFeedbackTheta.get().enableContinuousInput(-Math.PI, Math.PI);
+        pointTowardsController.get().enableContinuousInput(-Math.PI, Math.PI);
 
         sysId = Util.sysIdRoutine(
                 "Drive",
@@ -175,7 +170,7 @@ public class Drive extends SubsystemBase {
 
         robotState.applyOdometryUpdate(gyroInputs.isConnected ? new Rotation2d(gyroInputs.yawPositionRad) : null);
 
-        if (!Dashboard.disableVision.get() && visionInputs.hasEstimatedPose) {
+        if (!disableVision.get() && visionInputs.hasEstimatedPose) {
             Translation2d estimatedPosition = robotState.getPose().getTranslation();
             double estimateDifference = visionInputs.estimatedPose.toPose2d().getTranslation().getDistance(estimatedPosition);
 
@@ -227,7 +222,7 @@ public class Drive extends SubsystemBase {
         // Calculate module setpoints
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] setpointStates = robotState.getKinematics().toSwerveModuleStates(discreteSpeeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, Dashboard.maxLinearSpeed.get());
+        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, maxLinearSpeed.get());
 
         // Send setpoints to modules
         SwerveModuleState[] optimizedSetpointStates = new SwerveModuleState[4];
@@ -307,9 +302,9 @@ public class Drive extends SubsystemBase {
     private void choreoController(Pose2d pose, SwerveSample sample) {
         Logger.recordOutput("Drive/TrajectorySetpoint", sample.getPose());
         runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
-                sample.vx + choreoFeedbackX.calculate(pose.getX(), sample.x),
-                sample.vy + choreoFeedbackY.calculate(pose.getY(), sample.y),
-                sample.omega + choreoFeedbackTheta.calculate(pose.getRotation().getRadians(), sample.heading),
+                sample.vx + choreoFeedbackX.get().calculate(pose.getX(), sample.x),
+                sample.vy + choreoFeedbackY.get().calculate(pose.getY(), sample.y),
+                sample.omega + choreoFeedbackTheta.get().calculate(pose.getRotation().getRadians(), sample.heading),
                 pose.getRotation()
         ));
     }
@@ -331,9 +326,9 @@ public class Drive extends SubsystemBase {
         // Convert to field relative speeds & send command
         runVelocity(
                 ChassisSpeeds.fromFieldRelativeSpeeds(
-                        linearVelocity.getX() * Dashboard.maxLinearSpeed.get().in(MetersPerSecond),
-                        linearVelocity.getY() * Dashboard.maxLinearSpeed.get().in(MetersPerSecond),
-                        omega * Dashboard.maxAngularSpeed.get().in(RadiansPerSecond),
+                        linearVelocity.getX() * maxLinearSpeed.get().in(MetersPerSecond),
+                        linearVelocity.getY() * maxLinearSpeed.get().in(MetersPerSecond),
+                        omega * maxAngularSpeed.get().in(RadiansPerSecond),
                         Util.shouldFlip()
                                 ? robotState.getRotation()
                                 : robotState.getRotation().plus(new Rotation2d(Math.PI))
@@ -381,7 +376,7 @@ public class Drive extends SubsystemBase {
 
             var angleTowards = Util.angle(point, robotState.getTranslation());
             Logger.recordOutput("Drive/PointTowards/Setpoint", angleTowards);
-            var omega = pointTowardsController.calculate(robotState.getRotation().getRadians() + Math.PI, angleTowards);
+            var omega = pointTowardsController.get().calculate(robotState.getRotation().getRadians() + Math.PI, angleTowards);
 
             runDrive(
                     calculateLinearMagnitude(x, y),

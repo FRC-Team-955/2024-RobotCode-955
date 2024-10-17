@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Util;
+import frc.robot.dashboard.*;
 import lombok.Getter;
 import org.littletonrobotics.junction.Logger;
 
@@ -25,14 +26,27 @@ import java.util.function.Supplier;
 import static edu.wpi.first.units.Units.*;
 
 public class Intake extends SubsystemBase {
+    ////////////////////// GOAL SETPOINTS //////////////////////
+
+    private final TuningDashboardAngle hoverPivot = new TuningDashboardAngle(DashboardSubsystem.INTAKE, "Hover Pivot", Degrees.of(-110));
+
+    private final TuningDashboardAngle intakePivot = new TuningDashboardAngle(DashboardSubsystem.INTAKE, "Intake Pivot", Degrees.of(0));
+    private final TuningDashboardAnglularVelocityRPM intakeFeed = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.INTAKE, "Intake Feed", RPM.of(1200));
+
+    private final TuningDashboardAngle ejectPivot = new TuningDashboardAngle(DashboardSubsystem.INTAKE, "Eject Pivot", Degrees.of(-110));
+    private final TuningDashboardAnglularVelocityRPM ejectFeed = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.INTAKE, "Eject Feed", RPM.of(-1000));
+
+    private final TuningDashboardAngle handoffPivot = new TuningDashboardAngle(DashboardSubsystem.INTAKE, "Handoff Pivot", Degrees.of(-145));
+    private final TuningDashboardAnglularVelocityRPM handoffFeed = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.INTAKE, "Handoff Feed", RPM.of(-530));
+
     public enum Goal {
         CHARACTERIZATION(() -> null, () -> null),
-        HOVER(() -> Degrees.of(-110), RPM::zero),
-        INTAKE(() -> Degrees.of(0), RPM::zero),
-        EJECT(() -> Degrees.of(-110), RPM::zero),
+        HOVER(() -> get().hoverPivot.get(), RPM::zero),
+        INTAKE(() -> get().intakePivot.get(), () -> get().intakeFeed.get()),
+        EJECT(() -> get().ejectPivot.get(), () -> get().ejectFeed.get()),
 
-        HANDOFF_READY(() -> Degrees.of(-145), RPM::zero),
-        HANDOFF_FEED(() -> Degrees.of(-145), () -> RPM.of(-100));
+        HANDOFF_READY(() -> get().handoffPivot.get(), RPM::zero),
+        HANDOFF_FEED(() -> get().handoffPivot.get(), () -> get().handoffFeed.get());
 
         public static final Goal DEFAULT = Goal.HOVER;
 
@@ -45,13 +59,13 @@ public class Intake extends SubsystemBase {
         }
     }
 
-    protected static final ArmFeedforward PIVOT_FF = Constants.isReal ? new ArmFeedforward(0, 0.6, 0) : new ArmFeedforward(0, 0.28, 0);
-    protected static final PIDConstants PIVOT_PID = Constants.isReal ? new PIDConstants(0.12, 0.003) : new PIDConstants(8, 0);
+    private static final ArmFeedforward PIVOT_FF = Constants.isReal ? new ArmFeedforward(0, 0.6, 0) : new ArmFeedforward(0, 0.28, 0);
+    private static final PIDConstants PIVOT_PID = Constants.isReal ? new PIDConstants(0.12, 0.003) : new PIDConstants(8, 0);
     protected static final double PIVOT_GEAR_RATIO = 45;
     protected static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-141);
     private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(5);
 
-    protected static final SimpleMotorFeedforward FEED_FF = Constants.isReal ? new SimpleMotorFeedforward(0.5, 1.2) : new SimpleMotorFeedforward(0, 0.058);
+    protected static final SimpleMotorFeedforward FEED_FF = Constants.isReal ? new SimpleMotorFeedforward(0.21091, 0.080256, 0.0097204) : new SimpleMotorFeedforward(0, 0.058);
     protected static final PIDConstants FEED_PID = Constants.isReal ? new PIDConstants(0, 0) : new PIDConstants(0.1, 0);
     protected static final double FEED_GEAR_RATIO = 4;
     protected static final Measure<Velocity<Angle>> FEED_SETPOINT_TOLERANCE = RPM.of(10);
@@ -59,12 +73,14 @@ public class Intake extends SubsystemBase {
     private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
     private final IntakeIO io;
 
-    private final ArmFeedforward pivotFeedforward = PIVOT_FF;
+    private final TuningDashboardArmFeedforward pivotFeedforward = new TuningDashboardArmFeedforward(DashboardSubsystem.INTAKE, "Pivot FF", PIVOT_FF);
+    private final TuningDashboardPIDConstants pivotPID = new TuningDashboardPIDConstants(DashboardSubsystem.INTAKE, "Pivot PID", PIVOT_PID);
     private Measure<Angle> pivotSetpoint = null;
     public final SysIdRoutine pivotSysId;
 
-    private final SimpleMotorFeedforward feedFeedforward = FEED_FF;
-    private final Measure<Velocity<Angle>> feedSetpoint = null;
+    private final TuningDashboardSimpleFeedforward feedFeedforward = new TuningDashboardSimpleFeedforward(DashboardSubsystem.INTAKE, "Feed FF", FEED_FF);
+    private final TuningDashboardPIDConstants feedPID = new TuningDashboardPIDConstants(DashboardSubsystem.INTAKE, "Feed PID", FEED_PID);
+    private Measure<Velocity<Angle>> feedSetpoint = null;
     public final SysIdRoutine feedSysId;
 
     @Getter
@@ -134,16 +150,7 @@ public class Intake extends SubsystemBase {
     private void processGoal() {
         Logger.recordOutput("Intake/Goal", goal);
         pivotSetpoint = goal.pivotSetpoint.get();
-//        feedSetpoint = goal.feedSetpoint.get();
-        if (goal == Goal.INTAKE) {
-            io.feedSetVoltage(7);
-        } else if (goal == Goal.HANDOFF_FEED) {
-            io.feedSetVoltage(-4);
-        } else if (goal == Goal.EJECT) {
-            io.feedSetVoltage(-12);
-        } else {
-            io.feedSetVoltage(0);
-        }
+        feedSetpoint = goal.feedSetpoint.get();
     }
 
     @Override
@@ -153,13 +160,16 @@ public class Intake extends SubsystemBase {
 
         processGoal();
 
+        pivotPID.ifChanged(io::pivotConfigurePID);
+        feedPID.ifChanged(io::feedConfigurePID);
+
         Logger.recordOutput("Intake/Pivot/ClosedLoop", pivotSetpoint != null);
         if (pivotSetpoint != null) {
             Logger.recordOutput("Intake/Pivot/Setpoint", pivotSetpoint);
 
             if (DriverStation.isEnabled()) {
                 var pivotSetpointRad = pivotSetpoint.in(Radians);
-                var ffVolts = pivotFeedforward.calculate(pivotSetpointRad, 0);
+                var ffVolts = pivotFeedforward.get().calculate(pivotSetpointRad, 0);
                 Logger.recordOutput("Intake/Pivot/FFVolts", ffVolts);
                 io.pivotSetSetpoint(pivotSetpointRad, ffVolts);
             }
@@ -171,7 +181,7 @@ public class Intake extends SubsystemBase {
 
             if (DriverStation.isEnabled()) {
                 var feedSetpointRadPerSec = feedSetpoint.in(RadiansPerSecond);
-                var ffVolts = feedFeedforward.calculate(feedSetpointRadPerSec, 0);
+                var ffVolts = feedFeedforward.get().calculate(feedSetpointRadPerSec, 0);
                 Logger.recordOutput("Intake/Feed/FFVolts", ffVolts);
                 io.feedSetSetpoint(feedSetpointRadPerSec, ffVolts);
             }

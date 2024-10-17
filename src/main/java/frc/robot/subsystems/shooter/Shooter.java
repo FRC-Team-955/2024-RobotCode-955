@@ -20,10 +20,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.Util;
-import frc.robot.dashboard.DashboardAngle;
-import frc.robot.dashboard.DashboardSubsystem;
-import frc.robot.dashboard.TuningDashboardAngle;
-import frc.robot.dashboard.TuningDashboardAnglularVelocityRPM;
+import frc.robot.dashboard.*;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.util.GoalBasedCommandRunner;
 import lombok.Getter;
@@ -37,12 +34,29 @@ import java.util.function.Supplier;
 import static edu.wpi.first.units.Units.*;
 
 public class Shooter extends SubsystemBase {
-    public static class Dashboard {
-        public static final DashboardAngle shootingSkew = new DashboardAngle(DashboardSubsystem.SHOOTER, "Shooting Skew", Degrees.zero());
+    private final DashboardAngle shootingSkew = new DashboardAngle(DashboardSubsystem.SHOOTER, "Shooting Skew", Degrees.of(3));
 
-        public static final TuningDashboardAnglularVelocityRPM shootConfigurableSpeed = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Shoot Configurable Speed", RPM.zero());
-        public static final TuningDashboardAngle shootConfigurableAngle = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Shoot Configurable Angle", Degrees.zero());
-    }
+
+    ////////////////////// GOAL SETPOINTS //////////////////////
+
+    private final TuningDashboardAngle hoverPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Hover Pivot", Degrees.of(-90));
+
+    private final TuningDashboardAngle waitForIntakePivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Wait For Intake Pivot", Degrees.of(-30));
+
+    private final TuningDashboardAngle ejectPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Eject Pivot", Degrees.of(-60));
+    private final TuningDashboardAnglularVelocityRPM ejectFlywheels = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Eject Flywheels", RPM.of(-2000));
+
+    private final TuningDashboardAngle shootConfigurablePivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Shoot Configurable Pivot", Degrees.zero());
+    private final TuningDashboardAnglularVelocityRPM shootConfigurableFlywheels = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Shoot Configurable Flywheels", RPM.zero());
+
+    private final TuningDashboardAngle shootSubwooferPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Shoot Subwoofer Pivot", Degrees.of(25));
+    private final TuningDashboardAnglularVelocityRPM shootSubwooferFlywheels = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Shoot Subwoofer Flywheels", RPM.of(2000));
+
+    private final TuningDashboardAngle ampPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Amp Pivot", Degrees.of(25));
+    private final TuningDashboardAnglularVelocityRPM ampFlywheels = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Amp Flywheels", RPM.of(2000));
+
+    private final TuningDashboardAngle handoffPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Handoff Pivot", Degrees.of(-50));
+    private final TuningDashboardAnglularVelocityRPM handoffFeed = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Handoff Feed", RPM.of(530));
 
     // trick Java into letting us use an enum before it is defined
     private static final Goal GOAL_WAIT_FOR_INTAKE = Goal.WAIT_FOR_INTAKE;
@@ -50,13 +64,13 @@ public class Shooter extends SubsystemBase {
     public enum Goal {
         CHARACTERIZATION(() -> null, () -> null, () -> null),
         HOVER(
-                () -> Degrees.of(-90),
+                () -> get().hoverPivot.get(),
                 RPM::zero,
                 () -> FeedSetpoint.velocity(RPM.zero()),
                 () -> Intake.get().pivotClearOfShooter() ? Optional.empty() : Optional.of(GOAL_WAIT_FOR_INTAKE)
         ),
         WAIT_FOR_INTAKE(
-                () -> Degrees.of(-30),
+                () -> get().waitForIntakePivot.get(),
                 RPM::zero,
                 () -> FeedSetpoint.velocity(RPM.zero()),
                 () -> get().goal == Goal.HOVER && get().atGoal()
@@ -64,22 +78,26 @@ public class Shooter extends SubsystemBase {
                         : (Intake.get().pivotClearOfShooter() ? Optional.of(Goal.HOVER) : Optional.empty())
         ),
         SHOOT_CALCULATED(
-                () -> ShooterRegression.getAngle(RobotState.get().getDistanceToSpeaker()).plus(Dashboard.shootingSkew.get()),
+                () -> ShooterRegression.getAngle(RobotState.get().getDistanceToSpeaker()).plus(get().shootingSkew.get()),
                 () -> ShooterRegression.getSpeed(RobotState.get().getDistanceToSpeaker()),
                 FeedSetpoint::shoot
         ),
         SHOOT_CONFIGURABLE(
-                Dashboard.shootConfigurableAngle::get,
-                Dashboard.shootConfigurableSpeed::get,
+                () -> get().shootConfigurablePivot.get(),
+                () -> get().shootConfigurableFlywheels.get(),
                 FeedSetpoint::shoot
         ),
-        SHOOT_SUBWOOFER(() -> Degrees.of(-50).plus(Dashboard.shootingSkew.get()), RPM::zero, FeedSetpoint::shoot),
-        AMP(() -> Degrees.of(25), () -> RPM.of(2000), FeedSetpoint::shoot),
-        EJECT(() -> Degrees.of(-60), () -> RPM.of(2000), FeedSetpoint::shoot),
+        SHOOT_SUBWOOFER(
+                () -> get().shootSubwooferPivot.get().plus(get().shootingSkew.get()),
+                () -> get().shootSubwooferFlywheels.get(),
+                FeedSetpoint::shoot
+        ),
+        AMP(() -> get().ampPivot.get(), () -> get().ampFlywheels.get(), FeedSetpoint::shoot),
+        EJECT(() -> get().ejectPivot.get(), () -> get().ejectFlywheels.get(), FeedSetpoint::shoot),
 
-        HANDOFF_WAIT_FOR_INTAKE(() -> Degrees.of(-30), RPM::zero, () -> FeedSetpoint.velocity(RPM.zero())),
-        HANDOFF_READY(() -> Degrees.of(-50), RPM::zero, () -> FeedSetpoint.velocity(RPM.zero())),
-        HANDOFF_FEED(() -> Degrees.of(-50), RPM::zero, () -> FeedSetpoint.velocity(RPM.of(-100)));
+        HANDOFF_WAIT_FOR_INTAKE(() -> get().waitForIntakePivot.get(), RPM::zero, () -> FeedSetpoint.velocity(RPM.zero())),
+        HANDOFF_READY(() -> get().handoffPivot.get(), RPM::zero, () -> FeedSetpoint.velocity(RPM.zero())),
+        HANDOFF_FEED(() -> get().handoffPivot.get(), RPM::zero, () -> FeedSetpoint.velocity(get().handoffFeed.get()));
 
         public static final Goal DEFAULT = Goal.HOVER;
 
@@ -137,9 +155,11 @@ public class Shooter extends SubsystemBase {
                 return type == Type.Shoot;
             }
 
-            public void ifVelocity(Consumer<Measure<Velocity<Angle>>> velocityConsumer) {
+            public void ifVelocity(Consumer<Measure<Velocity<Angle>>> velocityConsumer, Runnable elseRun) {
                 if (type == Type.Velocity)
                     velocityConsumer.accept(velocity);
+                else
+                    elseRun.run();
             }
         }
     }
@@ -150,16 +170,16 @@ public class Shooter extends SubsystemBase {
     protected static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-90);
     private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(1.7);
 
-    protected static final SimpleMotorFeedforward FEED_FF = Constants.isReal ? new SimpleMotorFeedforward(0, 0) : new SimpleMotorFeedforward(0, 0.058);
-    protected static final PIDConstants FEED_PID = Constants.isReal ? new PIDConstants(0.1, 0.0001) : new PIDConstants(0.1, 0);
+    protected static final SimpleMotorFeedforward FEED_FF = Constants.isReal ? new SimpleMotorFeedforward(0.23233, 0.060739, 0.006805) : new SimpleMotorFeedforward(0, 0.058);
+    protected static final PIDConstants FEED_PID = Constants.isReal ? new PIDConstants(0.0, 0.0) : new PIDConstants(0.1, 0);
     protected static final double FEED_GEAR_RATIO = 3;
     private static final Measure<Velocity<Angle>> FEED_SETPOINT_TOLERANCE = RPM.of(10);
-    private static final double FEED_BEAM_BRAKE_DEBOUNCE = 0.05;
+    private static final double FEED_BEAM_BRAKE_DEBOUNCE = 0.00;
 
     private static final SimpleMotorFeedforward FLYWHEEL_TOP_FF = Constants.isReal ? new SimpleMotorFeedforward(0.23795, 0.011308, 0.0069895) : new SimpleMotorFeedforward(0, 0.01);
     private static final SimpleMotorFeedforward FLYWHEEL_BOTTOM_FF = Constants.isReal ? new SimpleMotorFeedforward(0.23279, 0.0113005, 0.0064997) : FLYWHEEL_TOP_FF;
-    private static final PIDConstants FLYWHEEL_TOP_PID = Constants.isReal ? new PIDConstants(0, 0) : new PIDConstants(0.05, 0);
-    private static final PIDConstants FLYWHEEL_BOTTOM_PID = Constants.isReal ? new PIDConstants(0, 0) : FLYWHEEL_TOP_PID;
+    private static final PIDConstants FLYWHEEL_TOP_PID = Constants.isReal ? new PIDConstants(0.0001, 0.0001, 0) : new PIDConstants(0.05, 0);
+    private static final PIDConstants FLYWHEEL_BOTTOM_PID = Constants.isReal ? new PIDConstants(0.0001, 0.0001, 0) : FLYWHEEL_TOP_PID;
     protected static final double FLYWHEEL_GEAR_RATIO = 1 / 2.0;
     private static final Measure<Velocity<Angle>> FLYWHEEL_SETPOINT_TOLERANCE = RPM.of(100);
 
@@ -168,16 +188,20 @@ public class Shooter extends SubsystemBase {
 
     private final Debouncer hasNoteDebouncer = new Debouncer(FEED_BEAM_BRAKE_DEBOUNCE);
 
-    private final ArmFeedforward pivotFeedforward = PIVOT_FF;
+    private final TuningDashboardArmFeedforward pivotFeedforward = new TuningDashboardArmFeedforward(DashboardSubsystem.SHOOTER, "Pivot FF", PIVOT_FF);
+    private final TuningDashboardPIDConstants pivotPID = new TuningDashboardPIDConstants(DashboardSubsystem.SHOOTER, "Pivot PID", PIVOT_PID);
     private Measure<Angle> pivotSetpoint = PIVOT_INITIAL_POSITION;
     public final SysIdRoutine pivotSysId;
 
-    private final SimpleMotorFeedforward feedFeedforward = FEED_FF;
-    private final Measure<Velocity<Angle>> feedSetpoint = null;
+    private final TuningDashboardSimpleFeedforward feedFeedforward = new TuningDashboardSimpleFeedforward(DashboardSubsystem.SHOOTER, "Feed FF", FEED_FF);
+    private final TuningDashboardPIDConstants feedPID = new TuningDashboardPIDConstants(DashboardSubsystem.SHOOTER, "Feed PID", FEED_PID);
+    private Measure<Velocity<Angle>> feedSetpoint = null;
     public final SysIdRoutine feedSysId;
 
-    private final SimpleMotorFeedforward flywheelTopFeedforward = FLYWHEEL_TOP_FF;
-    private final SimpleMotorFeedforward flywheelBottomFeedforward = FLYWHEEL_BOTTOM_FF;
+    private final TuningDashboardSimpleFeedforward flywheelTopFeedforward = new TuningDashboardSimpleFeedforward(DashboardSubsystem.SHOOTER, "Flywheel Top FF", FLYWHEEL_TOP_FF);
+    private final TuningDashboardSimpleFeedforward flywheelBottomFeedforward = new TuningDashboardSimpleFeedforward(DashboardSubsystem.SHOOTER, "Flywheel Bottom FF", FLYWHEEL_BOTTOM_FF);
+    private final TuningDashboardPIDConstants flywheelTopPID = new TuningDashboardPIDConstants(DashboardSubsystem.SHOOTER, "Flywheel Top PID", FLYWHEEL_TOP_PID);
+    private final TuningDashboardPIDConstants flywheelBottomPID = new TuningDashboardPIDConstants(DashboardSubsystem.SHOOTER, "Flywheel Bottom PID", FLYWHEEL_BOTTOM_PID);
     private Measure<Velocity<Angle>> flywheelsSetpoint = null;
     public final SysIdRoutine flywheelsSysId;
 
@@ -237,7 +261,8 @@ public class Shooter extends SubsystemBase {
         io.pivotSetPosition(PIVOT_INITIAL_POSITION.in(Radians));
 
         io.feedConfigurePID(FEED_PID);
-        io.flywheelsConfigurePID(FLYWHEEL_TOP_PID, FLYWHEEL_BOTTOM_PID);
+        io.flywheelsTopConfigurePID(FLYWHEEL_TOP_PID);
+        io.flywheelsBottomConfigurePID(FLYWHEEL_BOTTOM_PID);
 
         pivotSysId = Util.sysIdRoutine(
                 "Shooter/Pivot",
@@ -264,19 +289,23 @@ public class Shooter extends SubsystemBase {
         );
 
         var feedCommandRunner = new GoalBasedCommandRunner<>("ShooterFeed", () -> goal);
-        new Trigger(() -> goal.feedSetpoint.get().isShoot() && atGoal())
-                .onTrue(
-                        feedCommandRunner
-                                .startEnd(
-                                        () -> io.feedSetVoltage(12),
-                                        () -> {
-                                            io.feedSetVoltage(0);
-                                            goal = Goal.DEFAULT;
-                                        }
-                                )
-                                .withTimeout(0.6)
-                                .withName("Shooter Feed Shoot")
-                );
+        new Trigger(() -> {
+            var feedSetpoint = goal.feedSetpoint.get();
+            if (feedSetpoint != null)
+                return feedSetpoint.isShoot() && atGoal();
+            return false;
+        }).onTrue(
+                feedCommandRunner
+                        .startEnd(
+                                () -> io.feedSetVoltage(12),
+                                () -> {
+                                    io.feedSetVoltage(0);
+                                    goal = Goal.DEFAULT;
+                                }
+                        )
+                        .withTimeout(0.8)
+                        .withName("Shooter Feed Shoot")
+        );
     }
 
     private void processGoal() {
@@ -286,15 +315,13 @@ public class Shooter extends SubsystemBase {
         pivotSetpoint = goal.pivotSetpoint.get();
         flywheelsSetpoint = goal.flywheelsSetpoint.get();
         var feedSetpoint = goal.feedSetpoint.get();
-//        if (feedSetpoint != null)
-//            feedSetpoint.ifVelocity((velocity) -> this.feedSetpoint = velocity);
-        if (goal == Goal.EJECT) {
-            io.feedSetVoltage(12);
-        } else if (goal == Goal.HANDOFF_FEED) {
-            io.feedSetVoltage(3.5);
-        } else if (feedSetpoint != null && !feedSetpoint.isShoot()) {
-            io.feedSetVoltage(0);
-        }
+        if (feedSetpoint != null)
+            feedSetpoint.ifVelocity(
+                    (velocity) -> this.feedSetpoint = velocity,
+                    () -> this.feedSetpoint = null
+            );
+        else
+            this.feedSetpoint = null;
     }
 
     @Override
@@ -304,13 +331,18 @@ public class Shooter extends SubsystemBase {
 
         processGoal();
 
+        pivotPID.ifChanged(io::pivotConfigurePID);
+        feedPID.ifChanged(io::feedConfigurePID);
+        flywheelTopPID.ifChanged(io::flywheelsTopConfigurePID);
+        flywheelBottomPID.ifChanged(io::flywheelsBottomConfigurePID);
+
         Logger.recordOutput("Shooter/Pivot/ClosedLoop", pivotSetpoint != null);
         if (pivotSetpoint != null) {
             Logger.recordOutput("Shooter/Pivot/Setpoint", pivotSetpoint);
 
             if (DriverStation.isEnabled()) {
                 var pivotSetpointRad = pivotSetpoint.in(Radians);
-                var ffVolts = pivotFeedforward.calculate(pivotSetpointRad, 0);
+                var ffVolts = pivotFeedforward.get().calculate(pivotSetpointRad, 0);
                 Logger.recordOutput("Shooter/Pivot/FFVolts", ffVolts);
                 io.pivotSetSetpoint(pivotSetpointRad, ffVolts);
             }
@@ -322,7 +354,7 @@ public class Shooter extends SubsystemBase {
 
             if (DriverStation.isEnabled()) {
                 var feedSetpointRadPerSec = feedSetpoint.in(RadiansPerSecond);
-                var ffVolts = feedFeedforward.calculate(feedSetpointRadPerSec, 0);
+                var ffVolts = feedFeedforward.get().calculate(feedSetpointRadPerSec, 0);
                 Logger.recordOutput("Shooter/Feed/FFVolts", ffVolts);
                 io.feedSetSetpoint(feedSetpointRadPerSec, ffVolts);
             }
@@ -334,8 +366,8 @@ public class Shooter extends SubsystemBase {
 
             if (DriverStation.isEnabled()) {
                 var flywheelsSetpointRadPerSec = flywheelsSetpoint.in(RadiansPerSecond);
-                var ffTopVolts = flywheelTopFeedforward.calculate(flywheelsSetpointRadPerSec, 0);
-                var ffBottomVolts = flywheelBottomFeedforward.calculate(flywheelsSetpointRadPerSec, 0);
+                var ffTopVolts = flywheelTopFeedforward.get().calculate(flywheelsSetpointRadPerSec, 0);
+                var ffBottomVolts = flywheelBottomFeedforward.get().calculate(flywheelsSetpointRadPerSec, 0);
                 Logger.recordOutput("Shooter/Flywheels/FFTopVolts", ffTopVolts);
                 Logger.recordOutput("Shooter/Flywheels/FFBottomVolts", ffBottomVolts);
                 io.flywheelsSetSetpoint(flywheelsSetpointRadPerSec, ffTopVolts, ffBottomVolts);
