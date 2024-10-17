@@ -176,11 +176,12 @@ public class Shooter extends SubsystemBase {
         }
     }
 
-    protected static final ArmFeedforward PIVOT_FF = Constants.isReal ? new ArmFeedforward(0.574, 0.90, 0.65051, 0.21235) : new ArmFeedforward(0, 0.4, 0);
+    protected static final ArmFeedforward PIVOT_FF = Constants.isReal ? new ArmFeedforward(0.574, 1.0, 0.65051, 0.21235) : new ArmFeedforward(0, 0.4, 0);
     protected static final PIDConstants PIVOT_PID = Constants.isReal ? new PIDConstants(0.15/*, 0.011*/) : new PIDConstants(5, 0);
     protected static final double PIVOT_GEAR_RATIO = 40;
     protected static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-90);
-    private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(1.7);
+    private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE_SHOOTING = Degrees.of(1.7);
+    private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(5);
 
     protected static final SimpleMotorFeedforward FEED_FF = Constants.isReal ? new SimpleMotorFeedforward(0.23233, 0.060739, 0.006805) : new SimpleMotorFeedforward(0, 0.058);
     protected static final PIDConstants FEED_PID = Constants.isReal ? new PIDConstants(0.0, 0.0) : new PIDConstants(0.1, 0);
@@ -397,7 +398,11 @@ public class Shooter extends SubsystemBase {
     }
 
     public boolean atGoal() {
-        boolean pivotAtSetpoint = pivotSetpoint == null || Math.abs(inputs.pivotPositionRad - pivotSetpoint.in(Radians)) <= PIVOT_SETPOINT_TOLERANCE.in(Radians);
+        var pivotTolerance = switch (goal) {
+            case SHOOT_CALCULATED, SHOOT_CONFIGURABLE -> PIVOT_SETPOINT_TOLERANCE_SHOOTING;
+            default -> PIVOT_SETPOINT_TOLERANCE;
+        };
+        boolean pivotAtSetpoint = pivotSetpoint == null || Math.abs(inputs.pivotPositionRad - pivotSetpoint.in(Radians)) <= pivotTolerance.in(Radians);
         boolean feedAtSetpoint = feedSetpoint == null || Math.abs(inputs.feedVelocityRadPerSec - feedSetpoint.in(RadiansPerSecond)) <= FEED_SETPOINT_TOLERANCE.in(RadiansPerSecond);
         boolean flywheelsAtSetpoint = flywheelsSetpoint == null ||
                 (Math.abs(inputs.flywheelTopVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= FLYWHEEL_SETPOINT_TOLERANCE.in(RadiansPerSecond) &&
