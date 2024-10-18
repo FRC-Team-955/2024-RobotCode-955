@@ -57,7 +57,7 @@ public class Shooter extends SubsystemBase {
     );
     private static final TuningDashboardAnglularVelocityRPM ejectFlywheels = new TuningDashboardAnglularVelocityRPM(
             DashboardSubsystem.SHOOTER, "Eject Flywheels",
-            RPM.of(3000)
+            RPM.of(2000)
     );
 
     private static final TuningDashboardAngle shootConfigurablePivot = new TuningDashboardAngle(
@@ -93,7 +93,7 @@ public class Shooter extends SubsystemBase {
     );
     private static final TuningDashboardAnglularVelocityRPM handoffFeed = new TuningDashboardAnglularVelocityRPM(
             DashboardSubsystem.SHOOTER, "Handoff Feed",
-            RPM.of(600)
+            RPM.of(700)
     );
 
     // trick Java into letting us use an enum before it is defined
@@ -148,7 +148,9 @@ public class Shooter extends SubsystemBase {
         ),
         HANDOFF_FEED(
                 handoffPivot::get,
-                RPM::zero, () -> FeedSetpoint.velocity(handoffFeed.get()));
+                RPM::zero,
+                () -> FeedSetpoint.velocity(handoffFeed.get())
+        );
 
         public static final Goal DEFAULT = Goal.HOVER;
 
@@ -221,6 +223,10 @@ public class Shooter extends SubsystemBase {
     private static final double FEED_BEAM_BRAKE_DEBOUNCE = 0.00;
     protected static final double FLYWHEEL_GEAR_RATIO = 1 / 2.0;
 
+    private static final TuningDashboardAngle pivotFFOffset = new TuningDashboardAngle(
+            DashboardSubsystem.SHOOTER, "Pivot FF Offset",
+            Degrees.of(0)
+    );
     private static final TuningDashboardAngle pivotSetpointToleranceShooting = new TuningDashboardAngle(
             DashboardSubsystem.SHOOTER, "Pivot Tolerance - Shooting",
             Degrees.of(1.7)
@@ -249,10 +255,16 @@ public class Shooter extends SubsystemBase {
                     ? new ArmFeedforward(0.574, 1.0, 0.65051, 0.21235)
                     : new ArmFeedforward(0, 0.4, 0)
     );
-    private final TuningDashboardPIDConstants pivotPID = new TuningDashboardPIDConstants(
-            DashboardSubsystem.SHOOTER, "Pivot PID",
+    private final TuningDashboardPIDConstants pivotPIDShooting = new TuningDashboardPIDConstants(
+            DashboardSubsystem.SHOOTER, "Pivot PID Shooting",
             Constants.isReal
-                    ? new PIDConstants(0.15/*, 0.011*/)
+                    ? new PIDConstants(0.2, 0.001)
+                    : new PIDConstants(5, 0)
+    );
+    private final TuningDashboardPIDConstants pivotPIDNotShooting = new TuningDashboardPIDConstants(
+            DashboardSubsystem.SHOOTER, "Pivot PID Not Shooting",
+            Constants.isReal
+                    ? new PIDConstants(0.075)
                     : new PIDConstants(5, 0)
     );
     private Measure<Angle> pivotSetpoint = PIVOT_INITIAL_POSITION;
@@ -288,12 +300,12 @@ public class Shooter extends SubsystemBase {
     private final TuningDashboardPIDConstants flywheelTopPID = new TuningDashboardPIDConstants(
             DashboardSubsystem.SHOOTER, "Flywheel Top PID",
             Constants.isReal
-                    ? new PIDConstants(0.0001, 0.0001, 0)
+                    ? new PIDConstants(0.0001, 0.001, 0)
                     : new PIDConstants(0.05, 0));
     private final TuningDashboardPIDConstants flywheelBottomPID = new TuningDashboardPIDConstants(
             DashboardSubsystem.SHOOTER, "Flywheel Bottom PID",
             Constants.isReal
-                    ? new PIDConstants(0.0001, 0.0001, 0)
+                    ? new PIDConstants(0.0001, 0.001, 0)
                     : flywheelTopPID.get()
     );
     private Measure<Velocity<Angle>> flywheelsSetpoint = null;
@@ -301,6 +313,7 @@ public class Shooter extends SubsystemBase {
 
     @Getter
     private Goal goal = Goal.DEFAULT;
+    private Goal pivotPIDGoalConfigured = Goal.DEFAULT;
 
     private Command goal(Goal newGoal) {
         return new FunctionalCommand(
@@ -351,7 +364,7 @@ public class Shooter extends SubsystemBase {
             case REPLAY -> new ShooterIO();
         };
 
-        io.pivotConfigurePID(pivotPID.get());
+        io.pivotConfigurePID(pivotPIDNotShooting.get());
         io.pivotSetPosition(PIVOT_INITIAL_POSITION.in(Radians));
 
         io.feedConfigurePID(feedPID.get());
@@ -425,7 +438,16 @@ public class Shooter extends SubsystemBase {
 
         processGoal();
 
-        pivotPID.ifChanged(io::pivotConfigurePID);
+        var pivotPID = switch (goal) {
+            case SHOOT_CALCULATED, SHOOT_CONFIGURABLE, SHOOT_SUBWOOFER, AMP -> pivotPIDShooting;
+            default -> pivotPIDNotShooting;
+        };
+        if (pivotPIDGoalConfigured != goal) {
+            io.pivotConfigurePID(pivotPID.get());
+            pivotPIDGoalConfigured = goal;
+        } else {
+            pivotPID.ifChanged(io::pivotConfigurePID);
+        }
         feedPID.ifChanged(io::feedConfigurePID);
         flywheelTopPID.ifChanged(io::flywheelsTopConfigurePID);
         flywheelBottomPID.ifChanged(io::flywheelsBottomConfigurePID);
@@ -435,7 +457,7 @@ public class Shooter extends SubsystemBase {
             Logger.recordOutput("Shooter/Pivot/Setpoint", pivotSetpoint);
 
             if (DriverStation.isEnabled()) {
-                var pivotSetpointRad = pivotSetpoint.in(Radians);
+                var pivotSetpointRad = pivotSetpoint.plus(pivotFFOffset.get()).in(Radians);
                 var ffVolts = pivotFeedforward.get().calculate(pivotSetpointRad, 0);
                 Logger.recordOutput("Shooter/Pivot/FFVolts", ffVolts);
                 io.pivotSetSetpoint(pivotSetpointRad, ffVolts);

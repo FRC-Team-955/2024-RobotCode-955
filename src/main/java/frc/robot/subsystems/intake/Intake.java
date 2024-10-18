@@ -55,7 +55,7 @@ public class Intake extends SubsystemBase {
             Degrees.of(-145));
     private static final TuningDashboardAnglularVelocityRPM handoffFeed = new TuningDashboardAnglularVelocityRPM(
             DashboardSubsystem.INTAKE, "Handoff Feed",
-            RPM.of(-600)
+            RPM.of(-700)
     );
 
     public enum Goal {
@@ -169,7 +169,7 @@ public class Intake extends SubsystemBase {
         io.pivotConfigurePID(pivotPID.get());
         io.pivotSetPosition(PIVOT_INITIAL_POSITION.in(Radians));
 
-        io.feedConfigurePID(pivotPID.get());
+        io.feedConfigurePID(feedPID.get());
 
         pivotSysId = Util.sysIdRoutine(
                 "Intake/Pivot",
