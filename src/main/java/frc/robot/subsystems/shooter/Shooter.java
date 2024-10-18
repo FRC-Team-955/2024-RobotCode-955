@@ -300,12 +300,12 @@ public class Shooter extends SubsystemBase {
     private final TuningDashboardPIDConstants flywheelTopPID = new TuningDashboardPIDConstants(
             DashboardSubsystem.SHOOTER, "Flywheel Top PID",
             Constants.isReal
-                    ? new PIDConstants(0.0001, 0.001, 0)
+                    ? new PIDConstants(0.0001, 0.01, 0)
                     : new PIDConstants(0.05, 0));
     private final TuningDashboardPIDConstants flywheelBottomPID = new TuningDashboardPIDConstants(
             DashboardSubsystem.SHOOTER, "Flywheel Bottom PID",
             Constants.isReal
-                    ? new PIDConstants(0.0001, 0.001, 0)
+                    ? new PIDConstants(0.0001, 0.01, 0)
                     : flywheelTopPID.get()
     );
     private Measure<Velocity<Angle>> flywheelsSetpoint = null;
