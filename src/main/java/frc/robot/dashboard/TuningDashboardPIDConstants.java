@@ -46,6 +46,10 @@ public class TuningDashboardPIDConstants implements LoggedDashboardInput {
         Logger.registerDashboardInput(this);
     }
 
+    public PIDConstants get() {
+        return value;
+    }
+
     public void ifChanged(Consumer<PIDConstants> ifChanged) {
         if (previouslyChanged) {
             previouslyChanged = false;

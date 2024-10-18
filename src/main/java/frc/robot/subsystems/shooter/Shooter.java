@@ -34,28 +34,67 @@ import java.util.function.Supplier;
 import static edu.wpi.first.units.Units.*;
 
 public class Shooter extends SubsystemBase {
-    private static final DashboardAngle shootingSkew = new DashboardAngle(DashboardSubsystem.SHOOTER, "Shooting Skew", Degrees.of(3));
+    private static final DashboardAngle shootingSkew = new DashboardAngle(
+            DashboardSubsystem.SHOOTER, "Shooting Skew",
+            Degrees.of(3)
+    );
 
     ////////////////////// GOAL SETPOINTS //////////////////////
 
-    private static final TuningDashboardAngle hoverPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Hover Pivot", Degrees.of(-90));
+    private static final TuningDashboardAngle hoverPivot = new TuningDashboardAngle(
+            DashboardSubsystem.SHOOTER, "Hover Pivot",
+            Degrees.of(-90)
+    );
 
-    private static final TuningDashboardAngle waitForIntakePivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Wait For Intake Pivot", Degrees.of(-30));
+    private static final TuningDashboardAngle waitForIntakePivot = new TuningDashboardAngle(
+            DashboardSubsystem.SHOOTER, "Wait For Intake Pivot",
+            Degrees.of(-30)
+    );
 
-    private static final TuningDashboardAngle ejectPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Eject Pivot", Degrees.of(-60));
-    private static final TuningDashboardAnglularVelocityRPM ejectFlywheels = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Eject Flywheels", RPM.of(3000));
+    private static final TuningDashboardAngle ejectPivot = new TuningDashboardAngle(
+            DashboardSubsystem.SHOOTER, "Eject Pivot",
+            Degrees.of(-60)
+    );
+    private static final TuningDashboardAnglularVelocityRPM ejectFlywheels = new TuningDashboardAnglularVelocityRPM(
+            DashboardSubsystem.SHOOTER, "Eject Flywheels",
+            RPM.of(3000)
+    );
 
-    private static final TuningDashboardAngle shootConfigurablePivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Shoot Configurable Pivot", Degrees.zero());
-    private static final TuningDashboardAnglularVelocityRPM shootConfigurableFlywheels = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Shoot Configurable Flywheels", RPM.zero());
+    private static final TuningDashboardAngle shootConfigurablePivot = new TuningDashboardAngle(
+            DashboardSubsystem.SHOOTER, "Shoot Configurable Pivot",
+            Degrees.zero()
+    );
+    private static final TuningDashboardAnglularVelocityRPM shootConfigurableFlywheels = new TuningDashboardAnglularVelocityRPM(
+            DashboardSubsystem.SHOOTER, "Shoot Configurable Flywheels",
+            RPM.zero()
+    );
 
-    private static final TuningDashboardAngle shootSubwooferPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Shoot Subwoofer Pivot", Degrees.of(25));
-    private static final TuningDashboardAnglularVelocityRPM shootSubwooferFlywheels = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Shoot Subwoofer Flywheels", RPM.of(3500));
+    private static final TuningDashboardAngle shootSubwooferPivot = new TuningDashboardAngle(
+            DashboardSubsystem.SHOOTER, "Shoot Subwoofer Pivot",
+            Degrees.of(-50)
+    );
+    private static final TuningDashboardAnglularVelocityRPM shootSubwooferFlywheels = new TuningDashboardAnglularVelocityRPM(
+            DashboardSubsystem.SHOOTER, "Shoot Subwoofer Flywheels",
+            RPM.of(3500)
+    );
 
-    private static final TuningDashboardAngle ampPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Amp Pivot", Degrees.of(25));
-    private static final TuningDashboardAnglularVelocityRPM ampFlywheels = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Amp Flywheels", RPM.of(2000));
+    private static final TuningDashboardAngle ampPivot = new TuningDashboardAngle(
+            DashboardSubsystem.SHOOTER, "Amp Pivot",
+            Degrees.of(25)
+    );
+    private static final TuningDashboardAnglularVelocityRPM ampFlywheels = new TuningDashboardAnglularVelocityRPM(
+            DashboardSubsystem.SHOOTER, "Amp Flywheels",
+            RPM.of(2000)
+    );
 
-    private static final TuningDashboardAngle handoffPivot = new TuningDashboardAngle(DashboardSubsystem.SHOOTER, "Handoff Pivot", Degrees.of(-50));
-    private static final TuningDashboardAnglularVelocityRPM handoffFeed = new TuningDashboardAnglularVelocityRPM(DashboardSubsystem.SHOOTER, "Handoff Feed", RPM.of(600));
+    private static final TuningDashboardAngle handoffPivot = new TuningDashboardAngle(
+            DashboardSubsystem.SHOOTER, "Handoff Pivot",
+            Degrees.of(-50)
+    );
+    private static final TuningDashboardAnglularVelocityRPM handoffFeed = new TuningDashboardAnglularVelocityRPM(
+            DashboardSubsystem.SHOOTER, "Handoff Feed",
+            RPM.of(600)
+    );
 
     // trick Java into letting us use an enum before it is defined
     private static final Goal GOAL_WAIT_FOR_INTAKE = Goal.WAIT_FOR_INTAKE;
@@ -176,45 +215,87 @@ public class Shooter extends SubsystemBase {
         }
     }
 
-    protected static final ArmFeedforward PIVOT_FF = Constants.isReal ? new ArmFeedforward(0.574, 1.0, 0.65051, 0.21235) : new ArmFeedforward(0, 0.4, 0);
-    protected static final PIDConstants PIVOT_PID = Constants.isReal ? new PIDConstants(0.15/*, 0.011*/) : new PIDConstants(5, 0);
     protected static final double PIVOT_GEAR_RATIO = 40;
     protected static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-90);
-    private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE_SHOOTING = Degrees.of(1.7);
-    private static final Measure<Angle> PIVOT_SETPOINT_TOLERANCE = Degrees.of(5);
-
-    protected static final SimpleMotorFeedforward FEED_FF = Constants.isReal ? new SimpleMotorFeedforward(0.23233, 0.060739, 0.006805) : new SimpleMotorFeedforward(0, 0.058);
-    protected static final PIDConstants FEED_PID = Constants.isReal ? new PIDConstants(0.0, 0.0) : new PIDConstants(0.1, 0);
     protected static final double FEED_GEAR_RATIO = 3;
-    private static final Measure<Velocity<Angle>> FEED_SETPOINT_TOLERANCE = RPM.of(10);
     private static final double FEED_BEAM_BRAKE_DEBOUNCE = 0.00;
-
-    private static final SimpleMotorFeedforward FLYWHEEL_TOP_FF = Constants.isReal ? new SimpleMotorFeedforward(0.23795, 0.011308, 0.0069895) : new SimpleMotorFeedforward(0, 0.01);
-    private static final SimpleMotorFeedforward FLYWHEEL_BOTTOM_FF = Constants.isReal ? new SimpleMotorFeedforward(0.23279, 0.0113005, 0.0064997) : FLYWHEEL_TOP_FF;
-    private static final PIDConstants FLYWHEEL_TOP_PID = Constants.isReal ? new PIDConstants(0.0001, 0.0001, 0) : new PIDConstants(0.05, 0);
-    private static final PIDConstants FLYWHEEL_BOTTOM_PID = Constants.isReal ? new PIDConstants(0.0001, 0.0001, 0) : FLYWHEEL_TOP_PID;
     protected static final double FLYWHEEL_GEAR_RATIO = 1 / 2.0;
-    private static final Measure<Velocity<Angle>> FLYWHEEL_SETPOINT_TOLERANCE = RPM.of(100);
+
+    private static final TuningDashboardAngle pivotSetpointToleranceShooting = new TuningDashboardAngle(
+            DashboardSubsystem.SHOOTER, "Pivot Tolerance - Shooting",
+            Degrees.of(1.7)
+    );
+    private static final TuningDashboardAngle pivotSetpointToleranceNotShooting = new TuningDashboardAngle(
+            DashboardSubsystem.SHOOTER, "Pivot Tolerance - Not Shooting",
+            Degrees.of(5)
+    );
+    private static final TuningDashboardAnglularVelocityRPM feedSetpointTolerance = new TuningDashboardAnglularVelocityRPM(
+            DashboardSubsystem.SHOOTER, "Feed Tolerance",
+            RPM.of(10)
+    );
+    private static final TuningDashboardAnglularVelocityRPM flywheelSetpointTolerance = new TuningDashboardAnglularVelocityRPM(
+            DashboardSubsystem.SHOOTER, "Flywheel Tolerance",
+            RPM.of(100)
+    );
 
     private final ShooterIO io;
     private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
 
     private final Debouncer hasNoteDebouncer = new Debouncer(FEED_BEAM_BRAKE_DEBOUNCE);
 
-    private final TuningDashboardArmFeedforward pivotFeedforward = new TuningDashboardArmFeedforward(DashboardSubsystem.SHOOTER, "Pivot FF", PIVOT_FF);
-    private final TuningDashboardPIDConstants pivotPID = new TuningDashboardPIDConstants(DashboardSubsystem.SHOOTER, "Pivot PID", PIVOT_PID);
+    private final TuningDashboardArmFeedforward pivotFeedforward = new TuningDashboardArmFeedforward(
+            DashboardSubsystem.SHOOTER, "Pivot FF",
+            Constants.isReal
+                    ? new ArmFeedforward(0.574, 1.0, 0.65051, 0.21235)
+                    : new ArmFeedforward(0, 0.4, 0)
+    );
+    private final TuningDashboardPIDConstants pivotPID = new TuningDashboardPIDConstants(
+            DashboardSubsystem.SHOOTER, "Pivot PID",
+            Constants.isReal
+                    ? new PIDConstants(0.15/*, 0.011*/)
+                    : new PIDConstants(5, 0)
+    );
     private Measure<Angle> pivotSetpoint = PIVOT_INITIAL_POSITION;
     public final SysIdRoutine pivotSysId;
 
-    private final TuningDashboardSimpleFeedforward feedFeedforward = new TuningDashboardSimpleFeedforward(DashboardSubsystem.SHOOTER, "Feed FF", FEED_FF);
-    private final TuningDashboardPIDConstants feedPID = new TuningDashboardPIDConstants(DashboardSubsystem.SHOOTER, "Feed PID", FEED_PID);
+    private final TuningDashboardSimpleFeedforward feedFeedforward = new TuningDashboardSimpleFeedforward(
+            DashboardSubsystem.SHOOTER, "Feed FF",
+            Constants.isReal
+                    ? new SimpleMotorFeedforward(0.23233, 0.060739, 0.006805)
+                    : new SimpleMotorFeedforward(0, 0.058)
+    );
+    private final TuningDashboardPIDConstants feedPID = new TuningDashboardPIDConstants(
+            DashboardSubsystem.SHOOTER, "Feed PID",
+            Constants.isReal
+                    ? new PIDConstants(0.0001, 0.0001, 0)
+                    : new PIDConstants(0.1, 0)
+    );
     private Measure<Velocity<Angle>> feedSetpoint = null;
     public final SysIdRoutine feedSysId;
 
-    private final TuningDashboardSimpleFeedforward flywheelTopFeedforward = new TuningDashboardSimpleFeedforward(DashboardSubsystem.SHOOTER, "Flywheel Top FF", FLYWHEEL_TOP_FF);
-    private final TuningDashboardSimpleFeedforward flywheelBottomFeedforward = new TuningDashboardSimpleFeedforward(DashboardSubsystem.SHOOTER, "Flywheel Bottom FF", FLYWHEEL_BOTTOM_FF);
-    private final TuningDashboardPIDConstants flywheelTopPID = new TuningDashboardPIDConstants(DashboardSubsystem.SHOOTER, "Flywheel Top PID", FLYWHEEL_TOP_PID);
-    private final TuningDashboardPIDConstants flywheelBottomPID = new TuningDashboardPIDConstants(DashboardSubsystem.SHOOTER, "Flywheel Bottom PID", FLYWHEEL_BOTTOM_PID);
+    private final TuningDashboardSimpleFeedforward flywheelTopFeedforward = new TuningDashboardSimpleFeedforward(
+            DashboardSubsystem.SHOOTER, "Flywheel Top FF",
+            Constants.isReal
+                    ? new SimpleMotorFeedforward(0.23795, 0.011308, 0.0069895)
+                    : new SimpleMotorFeedforward(0, 0.01)
+    );
+    private final TuningDashboardSimpleFeedforward flywheelBottomFeedforward = new TuningDashboardSimpleFeedforward(
+            DashboardSubsystem.SHOOTER, "Flywheel Bottom FF",
+            Constants.isReal
+                    ? new SimpleMotorFeedforward(0.23279, 0.0113005, 0.0064997)
+                    : flywheelTopFeedforward.get()
+    );
+    private final TuningDashboardPIDConstants flywheelTopPID = new TuningDashboardPIDConstants(
+            DashboardSubsystem.SHOOTER, "Flywheel Top PID",
+            Constants.isReal
+                    ? new PIDConstants(0.0001, 0.0001, 0)
+                    : new PIDConstants(0.05, 0));
+    private final TuningDashboardPIDConstants flywheelBottomPID = new TuningDashboardPIDConstants(
+            DashboardSubsystem.SHOOTER, "Flywheel Bottom PID",
+            Constants.isReal
+                    ? new PIDConstants(0.0001, 0.0001, 0)
+                    : flywheelTopPID.get()
+    );
     private Measure<Velocity<Angle>> flywheelsSetpoint = null;
     public final SysIdRoutine flywheelsSysId;
 
@@ -270,12 +351,12 @@ public class Shooter extends SubsystemBase {
             case REPLAY -> new ShooterIO();
         };
 
-        io.pivotConfigurePID(PIVOT_PID);
+        io.pivotConfigurePID(pivotPID.get());
         io.pivotSetPosition(PIVOT_INITIAL_POSITION.in(Radians));
 
-        io.feedConfigurePID(FEED_PID);
-        io.flywheelsTopConfigurePID(FLYWHEEL_TOP_PID);
-        io.flywheelsBottomConfigurePID(FLYWHEEL_BOTTOM_PID);
+        io.feedConfigurePID(feedPID.get());
+        io.flywheelsTopConfigurePID(flywheelTopPID.get());
+        io.flywheelsBottomConfigurePID(flywheelBottomPID.get());
 
         pivotSysId = Util.sysIdRoutine(
                 "Shooter/Pivot",
@@ -399,14 +480,18 @@ public class Shooter extends SubsystemBase {
 
     public boolean atGoal() {
         var pivotTolerance = switch (goal) {
-            case SHOOT_CALCULATED, SHOOT_CONFIGURABLE -> PIVOT_SETPOINT_TOLERANCE_SHOOTING;
-            default -> PIVOT_SETPOINT_TOLERANCE;
+            case SHOOT_CALCULATED, SHOOT_CONFIGURABLE -> pivotSetpointToleranceShooting.get();
+            default -> pivotSetpointToleranceNotShooting.get();
         };
-        boolean pivotAtSetpoint = pivotSetpoint == null || Math.abs(inputs.pivotPositionRad - pivotSetpoint.in(Radians)) <= pivotTolerance.in(Radians);
-        boolean feedAtSetpoint = feedSetpoint == null || Math.abs(inputs.feedVelocityRadPerSec - feedSetpoint.in(RadiansPerSecond)) <= FEED_SETPOINT_TOLERANCE.in(RadiansPerSecond);
-        boolean flywheelsAtSetpoint = flywheelsSetpoint == null ||
-                (Math.abs(inputs.flywheelTopVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= FLYWHEEL_SETPOINT_TOLERANCE.in(RadiansPerSecond) &&
-                        Math.abs(inputs.flywheelBottomVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= FLYWHEEL_SETPOINT_TOLERANCE.in(RadiansPerSecond));
+        var pivotAtSetpoint = pivotSetpoint == null || Math.abs(inputs.pivotPositionRad - pivotSetpoint.in(Radians)) <= pivotTolerance.in(Radians);
+
+        var feedAtSetpoint = feedSetpoint == null || Math.abs(inputs.feedVelocityRadPerSec - feedSetpoint.in(RadiansPerSecond)) <= feedSetpointTolerance.get().in(RadiansPerSecond);
+
+        var flywheelsTolerance = flywheelSetpointTolerance.get().in(RadiansPerSecond);
+        var flywheelsAtSetpoint = flywheelsSetpoint == null ||
+                (Math.abs(inputs.flywheelTopVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= flywheelsTolerance &&
+                        Math.abs(inputs.flywheelBottomVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= flywheelsTolerance);
+
         return pivotAtSetpoint && feedAtSetpoint && flywheelsAtSetpoint;
     }
 

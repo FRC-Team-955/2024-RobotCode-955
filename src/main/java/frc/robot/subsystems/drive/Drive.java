@@ -35,11 +35,23 @@ import java.util.function.Supplier;
 import static edu.wpi.first.units.Units.*;
 
 public class Drive extends SubsystemBase {
-    protected static final TuningDashboardBoolean disableDriving = new TuningDashboardBoolean(DashboardSubsystem.DRIVE, "Disable Driving", false);
-    private final TuningDashboardBoolean disableVision = new TuningDashboardBoolean(DashboardSubsystem.DRIVE, "Disable Vision", false);
+    protected static final TuningDashboardBoolean disableDriving = new TuningDashboardBoolean(
+            DashboardSubsystem.DRIVE, "Disable Driving",
+            false
+    );
+    private final TuningDashboardBoolean disableVision = new TuningDashboardBoolean(
+            DashboardSubsystem.DRIVE, "Disable Vision",
+            false
+    );
 
-    private static final TuningDashboardVelocity maxLinearSpeed = new TuningDashboardVelocity(DashboardSubsystem.DRIVE, "Max Linear Speed", FeetPerSecond.of(15));
-    private static final TuningDashboardAnglularVelocity maxAngularSpeed = new TuningDashboardAnglularVelocity(DashboardSubsystem.DRIVE, "Max Angular Speed", DegreesPerSecond.of(317));
+    private static final TuningDashboardVelocity maxLinearSpeed = new TuningDashboardVelocity(
+            DashboardSubsystem.DRIVE, "Max Linear Speed",
+            FeetPerSecond.of(15)
+    );
+    private static final TuningDashboardAnglularVelocity maxAngularSpeed = new TuningDashboardAnglularVelocity(
+            DashboardSubsystem.DRIVE, "Max Angular Speed",
+            DegreesPerSecond.of(317)
+    );
 
     public enum State {
         CHARACTERIZATION,
