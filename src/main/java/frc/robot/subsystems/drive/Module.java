@@ -13,7 +13,7 @@ import frc.robot.dashboard.TuningDashboardSimpleFeedforward;
 import org.littletonrobotics.junction.Logger;
 
 public class Module {
-    private static final double WHEEL_RADIUS = Units.inchesToMeters(2.0);
+    private static final double WHEEL_RADIUS = Units.inchesToMeters(1.90433686321622);
 
     private final ModuleIO io;
     private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();

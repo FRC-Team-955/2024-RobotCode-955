@@ -34,6 +34,7 @@ public class RobotState {
             new SwerveModulePosition(),
             new SwerveModulePosition()
     };
+    @Getter
     private Rotation2d rawGyroRotation = new Rotation2d();
     private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
