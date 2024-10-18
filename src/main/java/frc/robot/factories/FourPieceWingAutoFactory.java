@@ -20,7 +20,7 @@ public class FourPieceWingAutoFactory {
         final var W3wtoW3 = factory.trajectory("W3w-W3", loop);
 
         loop.enabled().onTrue(
-                AutoInitFactory.get(loop, "S-W1", StoW1w::getInitialPose)
+                AutoInitFactory.get(loop, "4 Piece Wing", StoW1w::getInitialPose)
                         .andThen(
                                 StoW1w.cmd().alongWith(shooter.shootCalculatedSpinup())
                         )

@@ -15,7 +15,7 @@ public class ThreePieceMidlineAutoFactory {
         final var TPtoM3toTP = factory.trajectory("TP-M3-TP", loop);
 
         loop.enabled().onTrue(
-                AutoInitFactory.get(loop, "BS-LP", BStoLP::getInitialPose)
+                AutoInitFactory.get(loop, "3 Piece Midline", BStoLP::getInitialPose)
                         .andThen(BStoLP.cmd())
         );
         BStoLP.done().onTrue(Commands.sequence(
