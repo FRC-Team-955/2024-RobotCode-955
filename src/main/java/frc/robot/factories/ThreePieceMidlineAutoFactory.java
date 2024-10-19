@@ -25,7 +25,7 @@ public class ThreePieceMidlineAutoFactory {
                 LPtoM4toTP.cmd()
         ));
         LPtoM4toTP.done().onTrue(Commands.sequence(
-                HandoffFactory.get().withTimeout(3),
+                HandoffFactory.get().withTimeout(2),
                 Commands.either(
                         CalculatedShootFactory.get(),
                         Commands.none(),
