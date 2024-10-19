@@ -7,6 +7,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.dashboard.DashboardBoolean;
+import frc.robot.dashboard.DashboardSubsystem;
 import frc.robot.factories.CalculatedShootFactory;
 import frc.robot.factories.FourPieceWingAutoFactory;
 import frc.robot.factories.HandoffFactory;
@@ -199,37 +201,19 @@ public class RobotContainer {
     private void configureButtonBindings() {
         driverController.y().onTrue(robotState.resetRotation());
 
-        driverController.rightTrigger(0.25).whileTrue(
-                intake.intake()
-                // auto handoff after intake
-                //        .finallyDo(() -> Commands.sequence(
-                //                        shooter.pivotWaitForIntake(),
-                //                        intake.pivotHandoff(),
-                //                        shooter.pivotHandoff(),
-                //                        Commands.race(
-                //                                intake.feedHandoff(),
-                //                                shooter.feedHandoff()
-                //                        ),
-                //                        shooter.pivotWaitForIntake(),
-                //                        intake.hover(),
-                //                        shooter.hover()
-                //                )
-                //                .withTimeout(3)
-                //                .schedule())
-        );
-        /*
-        driverController.leftTrigger(0.25).toggleOnTrue(shooter.shoot());
-        */
+        driverController.rightTrigger(0.25).whileTrue(intake.intake());
 
-        driverController.leftTrigger(0.25).toggleOnTrue(CalculatedShootFactory.get(driverController::getLeftY, driverController::getLeftX));
+        var presetShooting = new DashboardBoolean(
+                DashboardSubsystem.SHOOTER, "Preset Shooting",
+                false
+        );
+        driverController.leftTrigger(0.25).toggleOnTrue(Commands.either(
+                CalculatedShootFactory.get(driverController::getLeftY, driverController::getLeftX),
+                shooter.shootSubwoofer(),
+                presetShooting::get
+        ));
 
         driverController.leftBumper().toggleOnTrue(shooter.amp());
-
-//        driverController.leftTrigger(0.25).whileTrue(Commands.sequence(
-//                        shooter.pivotShoot(),
-//                        shooter.shootPercentUntimed(0.5)
-//                ).finallyDo(() -> shooter.shootPercent(0.5, 0).schedule())
-//        );
 
         driverController.x().toggleOnTrue(Commands.parallel(
                 shooter.eject(),
