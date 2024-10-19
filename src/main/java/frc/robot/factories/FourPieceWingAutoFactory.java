@@ -22,10 +22,7 @@ public class FourPieceWingAutoFactory {
         loop.enabled().onTrue(
                 AutoInitFactory.get(loop, "4 Piece Wing", StoW1w::getInitialPose)
                         .finallyDo(shooter::shootCalculatedSpinupInBackground)
-                        .andThen(
-                                Commands.waitSeconds(3),
-                                StoW1w.cmd()
-                        )
+                        .andThen(StoW1w.cmd())
         );
 
         final var INTAKE_TIMEOUT = 0.4;
