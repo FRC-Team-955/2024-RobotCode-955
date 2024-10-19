@@ -4,9 +4,11 @@ import choreo.auto.AutoFactory;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.shooter.Shooter;
 
 public class ThreePieceMidlineAutoFactory {
     public static Command get(AutoFactory factory) {
+        final var shooter = Shooter.get();
         final var intake = Intake.get();
 
         final var loop = factory.newLoop("3 Piece Midline");
@@ -23,8 +25,12 @@ public class ThreePieceMidlineAutoFactory {
                 LPtoM4toTP.cmd()
         ));
         LPtoM4toTP.done().onTrue(Commands.sequence(
-                HandoffFactory.get(),
-                CalculatedShootFactory.get(),
+                HandoffFactory.get().withTimeout(3),
+                Commands.either(
+                        CalculatedShootFactory.get(),
+                        Commands.none(),
+                        shooter::hasNoteDebounced
+                ),
                 TPtoM3toTP.cmd().asProxy() // DO NOT REMOVE .asProxy() !!!!
         ));
         TPtoM3toTP.done().onTrue(Commands.sequence(
