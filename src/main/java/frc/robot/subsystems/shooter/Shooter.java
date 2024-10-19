@@ -284,9 +284,9 @@ public class Shooter extends SubsystemBase {
             DashboardSubsystem.SHOOTER, "Pivot Zero Up Voltage",
             5
     );
-    private static final TuningDashboardNumber pivotZeroDownDuration = new TuningDashboardNumber(
+    private static final TuningDashboardNumber pivotZeroDownVoltage = new TuningDashboardNumber(
             DashboardSubsystem.SHOOTER, "Pivot Zero Down Voltage",
-            -5
+            -3
     );
 
     ////////////////////// IO //////////////////////
@@ -596,7 +596,7 @@ public class Shooter extends SubsystemBase {
                                                 () -> io.pivotSetVoltage(0)
                                         ).withTimeout(0.25),
                                         Commands.startEnd(
-                                                () -> io.pivotSetVoltage(pivotZeroDownDuration.getRaw()),
+                                                () -> io.pivotSetVoltage(pivotZeroDownVoltage.getRaw()),
                                                 () -> io.pivotSetVoltage(0)
                                         ).withTimeout(0.75),
                                         Commands.waitSeconds(0.25)
