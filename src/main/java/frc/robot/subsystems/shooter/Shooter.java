@@ -106,7 +106,7 @@ public class Shooter extends SubsystemBase {
     );
     private static final TuningDashboardAnglularVelocityRPM handoffFeed = new TuningDashboardAnglularVelocityRPM(
             DashboardSubsystem.SHOOTER, "Handoff Feed",
-            RPM.of(700)
+            RPM.of(500)
     );
 
     // trick Java into letting us use an enum before it is defined
@@ -263,7 +263,7 @@ public class Shooter extends SubsystemBase {
     );
     private static final TuningDashboardAngle pivotSetpointToleranceShooting = new TuningDashboardAngle(
             DashboardSubsystem.SHOOTER, "Pivot Tolerance - Shooting",
-            Degrees.of(1.7)
+            Degrees.of(2)
     );
     private static final TuningDashboardAngle pivotSetpointToleranceNotShooting = new TuningDashboardAngle(
             DashboardSubsystem.SHOOTER, "Pivot Tolerance - Not Shooting",
@@ -410,7 +410,12 @@ public class Shooter extends SubsystemBase {
         var feedAtSetpoint = feedSetpoint == null || Math.abs(inputs.feedVelocityRadPerSec - feedSetpoint.in(RadiansPerSecond)) <= feedSetpointTolerance.get().in(RadiansPerSecond);
 
         var flywheelsTolerance = flywheelSetpointTolerance.get().in(RadiansPerSecond);
-        var flywheelsAtSetpoint = flywheelsSetpoint == null ||
+        var flywheelsAtSetpoint =
+                flywheelsSetpoint == null ||
+                switch (goal) {
+                    case SHOOT_CALCULATED_SPINUP, HANDOFF_FEED, HANDOFF_READY, HANDOFF_WAIT_FOR_INTAKE -> true;
+                    default -> false;
+                } ||
                 (Math.abs(inputs.flywheelTopVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= flywheelsTolerance &&
                         Math.abs(inputs.flywheelBottomVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= flywheelsTolerance);
 
@@ -593,7 +598,8 @@ public class Shooter extends SubsystemBase {
                                         Commands.startEnd(
                                                 () -> io.pivotSetVoltage(pivotZeroDownDuration.getRaw()),
                                                 () -> io.pivotSetVoltage(0)
-                                        ).withTimeout(0.75)
+                                        ).withTimeout(0.75),
+                                        Commands.waitSeconds(0.25)
                                 ),
                                 Commands.none(),
                                 DriverStation::isEnabled

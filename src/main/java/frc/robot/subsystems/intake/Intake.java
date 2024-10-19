@@ -58,7 +58,7 @@ public class Intake extends SubsystemBase {
             Degrees.of(-145));
     private static final TuningDashboardAnglularVelocityRPM handoffFeed = new TuningDashboardAnglularVelocityRPM(
             DashboardSubsystem.INTAKE, "Handoff Feed",
-            RPM.of(-700)
+            RPM.of(-500)
     );
 
     public enum Goal {
@@ -292,7 +292,8 @@ public class Intake extends SubsystemBase {
                                         Commands.startEnd(
                                                 () -> io.pivotSetVoltage(pivotZeroDownDuration.getRaw()),
                                                 () -> io.pivotSetVoltage(0)
-                                        ).withTimeout(0.75)
+                                        ).withTimeout(0.75),
+                                        Commands.waitSeconds(0.25)
                                 ),
                                 Commands.none(),
                                 DriverStation::isEnabled
