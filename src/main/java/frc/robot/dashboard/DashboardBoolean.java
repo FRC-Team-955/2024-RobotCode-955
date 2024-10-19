@@ -13,20 +13,18 @@ public class DashboardBoolean implements LoggedDashboardInput {
         }
 
         public void fromLog(LogTable table) {
-            value = table.get(key, defaultValue);
+            value = table.get(key, value);
         }
     };
 
     private final String key;
-    private final boolean defaultValue;
     private boolean value;
 
     public DashboardBoolean(DashboardSubsystem subsystem, String key, boolean defaultValue) {
         this.key = subsystem.prefix() + "/" + key;
-        this.defaultValue = defaultValue;
         this.value = defaultValue;
 
-        SmartDashboard.putBoolean(this.key, SmartDashboard.getBoolean(this.key, defaultValue));
+        SmartDashboard.putBoolean(this.key, SmartDashboard.getBoolean(this.key, value));
         periodic();
         Logger.registerDashboardInput(this);
     }
@@ -37,7 +35,7 @@ public class DashboardBoolean implements LoggedDashboardInput {
 
     public void periodic() {
         if (!Logger.hasReplaySource()) {
-            value = SmartDashboard.getBoolean(key, defaultValue);
+            value = SmartDashboard.getBoolean(key, value);
         }
         Logger.processInputs(prefix, inputs);
     }

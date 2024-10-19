@@ -26,7 +26,7 @@ public class DashboardNumber implements LoggedDashboardInput {
         this.defaultValue = defaultValue;
         this.value = defaultValue;
 
-        SmartDashboard.putNumber(this.key, SmartDashboard.getNumber(this.key, defaultValue));
+        SmartDashboard.putNumber(this.key, SmartDashboard.getNumber(this.key, value));
         periodic();
         Logger.registerDashboardInput(this);
     }
@@ -37,7 +37,7 @@ public class DashboardNumber implements LoggedDashboardInput {
 
     public void periodic() {
         if (!Logger.hasReplaySource()) {
-            value = SmartDashboard.getNumber(key, defaultValue);
+            value = SmartDashboard.getNumber(key, value);
         }
         Logger.processInputs(prefix, inputs);
     }

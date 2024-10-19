@@ -13,6 +13,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
@@ -26,13 +27,13 @@ import java.util.function.Supplier;
 import static edu.wpi.first.units.Units.*;
 
 public class Intake extends SubsystemBase {
-    ////////////////////// GOAL SETPOINTS //////////////////////
-
+    ////////////////////// GOAL SETPOINTS - HOVER //////////////////////
     private static final TuningDashboardAngle hoverPivot = new TuningDashboardAngle(
             DashboardSubsystem.INTAKE, "Hover Pivot",
             Degrees.of(-110)
     );
 
+    ////////////////////// GOAL SETPOINTS - INTAKE //////////////////////
     private static final TuningDashboardAngle intakePivot = new TuningDashboardAngle(
             DashboardSubsystem.INTAKE, "Intake Pivot",
             Degrees.of(0)
@@ -42,6 +43,7 @@ public class Intake extends SubsystemBase {
             RPM.of(1500)
     );
 
+    ////////////////////// GOAL SETPOINTS - EJECT //////////////////////
     private static final TuningDashboardAngle ejectPivot = new TuningDashboardAngle(
             DashboardSubsystem.INTAKE, "Eject Pivot",
             Degrees.of(-110));
@@ -50,6 +52,7 @@ public class Intake extends SubsystemBase {
             RPM.of(-1000)
     );
 
+    ////////////////////// GOAL SETPOINTS - HANDOFF //////////////////////
     private static final TuningDashboardAngle handoffPivot = new TuningDashboardAngle(
             DashboardSubsystem.INTAKE, "Handoff Pivot",
             Degrees.of(-145));
@@ -60,6 +63,7 @@ public class Intake extends SubsystemBase {
 
     public enum Goal {
         CHARACTERIZATION(() -> null, () -> null),
+        ZERO(() -> null, RPM::zero),
         HOVER(hoverPivot::get, RPM::zero),
         INTAKE(intakePivot::get, intakeFeed::get),
         EJECT(ejectPivot::get, ejectFeed::get),
@@ -78,9 +82,13 @@ public class Intake extends SubsystemBase {
         }
     }
 
+    ////////////////////// CONSTANTS //////////////////////
+
     protected static final double PIVOT_GEAR_RATIO = 45;
     protected static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-141);
     protected static final double FEED_GEAR_RATIO = 4;
+
+    ////////////////////// GENERAL DASHBOARD VALUES //////////////////////
 
     private static final TuningDashboardAngle pivotSetpointTolerance = new TuningDashboardAngle(
             DashboardSubsystem.INTAKE, "Pivot Tolerance",
@@ -91,9 +99,21 @@ public class Intake extends SubsystemBase {
             RPM.of(10)
     );
 
+    private static final DashboardButton pivotZero = new DashboardButton(DashboardSubsystem.INTAKE, "Pivot Zero");
+    private static final TuningDashboardNumber pivotZeroUpVoltage = new TuningDashboardNumber(
+            DashboardSubsystem.INTAKE, "Pivot Zero Up Voltage",
+            5
+    );
+    private static final TuningDashboardNumber pivotZeroDownDuration = new TuningDashboardNumber(
+            DashboardSubsystem.INTAKE, "Pivot Zero Down Voltage",
+            -5
+    );
+
+    ////////////////////// IO //////////////////////
     private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
     private final IntakeIO io;
 
+    ////////////////////// PIVOT //////////////////////
     private final TuningDashboardArmFeedforward pivotFeedforward = new TuningDashboardArmFeedforward(
             DashboardSubsystem.INTAKE, "Pivot FF",
             Constants.isReal
@@ -109,6 +129,7 @@ public class Intake extends SubsystemBase {
     private Measure<Angle> pivotSetpoint = null;
     public final SysIdRoutine pivotSysId;
 
+    ////////////////////// FEED //////////////////////
     private final TuningDashboardSimpleFeedforward feedFeedforward = new TuningDashboardSimpleFeedforward(
             DashboardSubsystem.INTAKE, "Feed FF",
             Constants.isReal
@@ -124,6 +145,7 @@ public class Intake extends SubsystemBase {
     private Measure<Velocity<Angle>> feedSetpoint = null;
     public final SysIdRoutine feedSysId;
 
+    ////////////////////// GOAL STUFF //////////////////////
     @Getter
     private Goal goal = Goal.DEFAULT;
 
@@ -140,6 +162,21 @@ public class Intake extends SubsystemBase {
         );
     }
 
+    private void processGoal() {
+        Logger.recordOutput("Intake/Goal", goal);
+        pivotSetpoint = goal.pivotSetpoint.get();
+        feedSetpoint = goal.feedSetpoint.get();
+    }
+
+    public boolean atGoal() {
+        boolean pivotAtSetpoint = pivotSetpoint == null ||
+                Math.abs(inputs.pivotPositionRad - pivotSetpoint.in(Radians)) <= pivotSetpointTolerance.get().in(Radians);
+        boolean feedAtSetpoint = feedSetpoint == null ||
+                Math.abs(inputs.feedVelocityRadPerSec - feedSetpoint.in(RadiansPerSecond)) <= feedSetpointTolerance.get().in(RadiansPerSecond);
+        return pivotAtSetpoint && feedAtSetpoint;
+    }
+
+    ////////////////////// INSTANCE STUFF //////////////////////
     private static Intake instance;
 
     public static Intake get() {
@@ -151,7 +188,9 @@ public class Intake extends SubsystemBase {
         return instance;
     }
 
+    ////////////////////// CONSTRUCTOR //////////////////////
     private Intake() {
+        ////////////////////// IO CREATION //////////////////////
         io = switch (Constants.mode) {
             case REAL -> new IntakeIOSparkMax(
                     3,
@@ -166,10 +205,18 @@ public class Intake extends SubsystemBase {
             case REPLAY -> new IntakeIO();
         };
 
+        ////////////////////// IO CONFIGURATION //////////////////////
+
         io.pivotConfigurePID(pivotPID.get());
         io.pivotSetPosition(PIVOT_INITIAL_POSITION.in(Radians));
 
         io.feedConfigurePID(feedPID.get());
+
+        ////////////////////// TRIGGERS //////////////////////
+
+        pivotZero.trigger().toggleOnTrue(zero());
+
+        ////////////////////// SYSID //////////////////////
 
         pivotSysId = Util.sysIdRoutine(
                 "Intake/Pivot",
@@ -188,12 +235,7 @@ public class Intake extends SubsystemBase {
         );
     }
 
-    private void processGoal() {
-        Logger.recordOutput("Intake/Goal", goal);
-        pivotSetpoint = goal.pivotSetpoint.get();
-        feedSetpoint = goal.feedSetpoint.get();
-    }
-
+    ////////////////////// PERIODIC //////////////////////
     @Override
     public void periodic() {
         io.updateInputs(inputs);
@@ -201,9 +243,11 @@ public class Intake extends SubsystemBase {
 
         processGoal();
 
+        ////////////////////// PID MANAGEMENT //////////////////////
         pivotPID.ifChanged(io::pivotConfigurePID);
         feedPID.ifChanged(io::feedConfigurePID);
 
+        ////////////////////// PIVOT //////////////////////
         Logger.recordOutput("Intake/Pivot/ClosedLoop", pivotSetpoint != null);
         if (pivotSetpoint != null) {
             Logger.recordOutput("Intake/Pivot/Setpoint", pivotSetpoint);
@@ -216,6 +260,7 @@ public class Intake extends SubsystemBase {
             }
         }
 
+        ////////////////////// FEED //////////////////////
         Logger.recordOutput("Intake/Feed/ClosedLoop", feedSetpoint != null);
         if (feedSetpoint != null) {
             Logger.recordOutput("Intake/Feed/Setpoint", feedSetpoint);
@@ -233,16 +278,29 @@ public class Intake extends SubsystemBase {
         }
     }
 
-    public boolean pivotClearOfShooter() {
-        return Radians.of(inputs.pivotPositionRad).gte(Degrees.of(-130));
-    }
+    ////////////////////// COMMANDS //////////////////////
 
-    public boolean atGoal() {
-        boolean pivotAtSetpoint = pivotSetpoint == null ||
-                Math.abs(inputs.pivotPositionRad - pivotSetpoint.in(Radians)) <= pivotSetpointTolerance.get().in(Radians);
-        boolean feedAtSetpoint = feedSetpoint == null ||
-                Math.abs(inputs.feedVelocityRadPerSec - feedSetpoint.in(RadiansPerSecond)) <= feedSetpointTolerance.get().in(RadiansPerSecond);
-        return pivotAtSetpoint && feedAtSetpoint;
+    public Command zero() {
+        return goal(Goal.ZERO)
+                .raceWith(Commands.sequence(
+                        Commands.either(
+                                Commands.sequence(
+                                        Commands.startEnd(
+                                                () -> io.pivotSetVoltage(pivotZeroUpVoltage.getRaw()),
+                                                () -> io.pivotSetVoltage(0)
+                                        ).withTimeout(0.25),
+                                        Commands.startEnd(
+                                                () -> io.pivotSetVoltage(pivotZeroDownDuration.getRaw()),
+                                                () -> io.pivotSetVoltage(0)
+                                        ).withTimeout(0.75)
+                                ),
+                                Commands.none(),
+                                DriverStation::isEnabled
+                        ),
+                        Commands.runOnce(() -> io.pivotSetPosition(PIVOT_INITIAL_POSITION.in(Radians)))
+                ))
+                .ignoringDisable(true)
+                .withName("Intake Zero");
     }
 
     public Command hover() {
@@ -263,5 +321,11 @@ public class Intake extends SubsystemBase {
 
     public Command eject() {
         return goal(Goal.EJECT).withName("Intake Eject");
+    }
+
+    ////////////////////// MISC FUNCTIONS //////////////////////
+
+    public boolean pivotClearOfShooter() {
+        return Radians.of(inputs.pivotPositionRad).gte(Degrees.of(-130));
     }
 }

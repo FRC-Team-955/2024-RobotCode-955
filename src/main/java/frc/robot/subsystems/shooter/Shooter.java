@@ -13,6 +13,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -34,23 +35,19 @@ import java.util.function.Supplier;
 import static edu.wpi.first.units.Units.*;
 
 public class Shooter extends SubsystemBase {
-    private static final DashboardAngle shootingSkew = new DashboardAngle(
-            DashboardSubsystem.SHOOTER, "Shooting Skew",
-            Degrees.of(3)
-    );
-
-    ////////////////////// GOAL SETPOINTS //////////////////////
-
+    ////////////////////// GOAL SETPOINTS - HOVER //////////////////////
     private static final TuningDashboardAngle hoverPivot = new TuningDashboardAngle(
             DashboardSubsystem.SHOOTER, "Hover Pivot",
             Degrees.of(-90)
     );
 
+    ////////////////////// GOAL SETPOINTS - WAIT FOR INTAKE //////////////////////
     private static final TuningDashboardAngle waitForIntakePivot = new TuningDashboardAngle(
             DashboardSubsystem.SHOOTER, "Wait For Intake Pivot",
             Degrees.of(-30)
     );
 
+    ////////////////////// GOAL SETPOINTS - EJECT //////////////////////
     private static final TuningDashboardAngle ejectPivot = new TuningDashboardAngle(
             DashboardSubsystem.SHOOTER, "Eject Pivot",
             Degrees.of(-60)
@@ -60,6 +57,7 @@ public class Shooter extends SubsystemBase {
             RPM.of(2000)
     );
 
+    ////////////////////// GOAL SETPOINTS - SHOOT CONFIGURABLE //////////////////////
     private static final TuningDashboardAngle shootConfigurablePivot = new TuningDashboardAngle(
             DashboardSubsystem.SHOOTER, "Shoot Configurable Pivot",
             Degrees.zero()
@@ -69,6 +67,7 @@ public class Shooter extends SubsystemBase {
             RPM.zero()
     );
 
+    ////////////////////// GOAL SETPOINTS - SHOOT SUBWOOFER //////////////////////
     private static final TuningDashboardAngle shootSubwooferPivot = new TuningDashboardAngle(
             DashboardSubsystem.SHOOTER, "Shoot Subwoofer Pivot",
             Degrees.of(-50)
@@ -78,6 +77,7 @@ public class Shooter extends SubsystemBase {
             RPM.of(3500)
     );
 
+    ////////////////////// GOAL SETPOINTS - AMP //////////////////////
     private static final TuningDashboardAngle ampPivot = new TuningDashboardAngle(
             DashboardSubsystem.SHOOTER, "Amp Pivot",
             Degrees.of(25)
@@ -87,6 +87,7 @@ public class Shooter extends SubsystemBase {
             RPM.of(2000)
     );
 
+    ////////////////////// GOAL SETPOINTS - HANDOFF //////////////////////
     private static final TuningDashboardAngle handoffPivot = new TuningDashboardAngle(
             DashboardSubsystem.SHOOTER, "Handoff Pivot",
             Degrees.of(-50)
@@ -101,6 +102,7 @@ public class Shooter extends SubsystemBase {
 
     public enum Goal {
         CHARACTERIZATION(() -> null, () -> null, () -> null),
+        ZERO(() -> null, RPM::zero, () -> FeedSetpoint.velocity(RPM.zero())),
         HOVER(
                 hoverPivot::get,
                 RPM::zero,
@@ -217,11 +219,20 @@ public class Shooter extends SubsystemBase {
         }
     }
 
+    ////////////////////// CONSTANTS //////////////////////
+
     protected static final double PIVOT_GEAR_RATIO = 40;
     protected static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-90);
     protected static final double FEED_GEAR_RATIO = 3;
-    private static final double FEED_BEAM_BRAKE_DEBOUNCE = 0.00;
     protected static final double FLYWHEEL_GEAR_RATIO = 1 / 2.0;
+    private final Debouncer hasNoteDebouncer = new Debouncer(0.0);
+
+    ////////////////////// GENERAL DASHBOARD VALUES //////////////////////
+
+    private static final DashboardAngle shootingSkew = new DashboardAngle(
+            DashboardSubsystem.SHOOTER, "Shooting Skew",
+            Degrees.of(3)
+    );
 
     private static final TuningDashboardAngle pivotFFOffset = new TuningDashboardAngle(
             DashboardSubsystem.SHOOTER, "Pivot FF Offset",
@@ -235,6 +246,7 @@ public class Shooter extends SubsystemBase {
             DashboardSubsystem.SHOOTER, "Pivot Tolerance - Not Shooting",
             Degrees.of(5)
     );
+
     private static final TuningDashboardAnglularVelocityRPM feedSetpointTolerance = new TuningDashboardAnglularVelocityRPM(
             DashboardSubsystem.SHOOTER, "Feed Tolerance",
             RPM.of(10)
@@ -244,11 +256,21 @@ public class Shooter extends SubsystemBase {
             RPM.of(100)
     );
 
+    private static final DashboardButton pivotZero = new DashboardButton(DashboardSubsystem.SHOOTER, "Pivot Zero");
+    private static final TuningDashboardNumber pivotZeroUpVoltage = new TuningDashboardNumber(
+            DashboardSubsystem.SHOOTER, "Pivot Zero Up Voltage",
+            5
+    );
+    private static final TuningDashboardNumber pivotZeroDownDuration = new TuningDashboardNumber(
+            DashboardSubsystem.SHOOTER, "Pivot Zero Down Voltage",
+            -5
+    );
+
+    ////////////////////// IO //////////////////////
     private final ShooterIO io;
     private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
 
-    private final Debouncer hasNoteDebouncer = new Debouncer(FEED_BEAM_BRAKE_DEBOUNCE);
-
+    ////////////////////// PIVOT //////////////////////
     private final TuningDashboardArmFeedforward pivotFeedforward = new TuningDashboardArmFeedforward(
             DashboardSubsystem.SHOOTER, "Pivot FF",
             Constants.isReal
@@ -269,7 +291,9 @@ public class Shooter extends SubsystemBase {
     );
     private Measure<Angle> pivotSetpoint = PIVOT_INITIAL_POSITION;
     public final SysIdRoutine pivotSysId;
+    private Goal pivotPIDGoalConfigured = Goal.DEFAULT;
 
+    ////////////////////// FEED //////////////////////
     private final TuningDashboardSimpleFeedforward feedFeedforward = new TuningDashboardSimpleFeedforward(
             DashboardSubsystem.SHOOTER, "Feed FF",
             Constants.isReal
@@ -285,6 +309,7 @@ public class Shooter extends SubsystemBase {
     private Measure<Velocity<Angle>> feedSetpoint = null;
     public final SysIdRoutine feedSysId;
 
+    ////////////////////// FLYWHEELS //////////////////////
     private final TuningDashboardSimpleFeedforward flywheelTopFeedforward = new TuningDashboardSimpleFeedforward(
             DashboardSubsystem.SHOOTER, "Flywheel Top FF",
             Constants.isReal
@@ -311,9 +336,9 @@ public class Shooter extends SubsystemBase {
     private Measure<Velocity<Angle>> flywheelsSetpoint = null;
     public final SysIdRoutine flywheelsSysId;
 
+    ////////////////////// GOAL STUFF //////////////////////
     @Getter
     private Goal goal = Goal.DEFAULT;
-    private Goal pivotPIDGoalConfigured = Goal.DEFAULT;
 
     private Command goal(Goal newGoal) {
         return new FunctionalCommand(
@@ -333,6 +358,40 @@ public class Shooter extends SubsystemBase {
         );
     }
 
+    private void processGoal() {
+        if (goal.goalChange != null)
+            goal.goalChange.get().ifPresent((newGoal) -> goal = newGoal);
+        Logger.recordOutput("Shooter/Goal", goal);
+        pivotSetpoint = goal.pivotSetpoint.get();
+        flywheelsSetpoint = goal.flywheelsSetpoint.get();
+        var feedSetpoint = goal.feedSetpoint.get();
+        if (feedSetpoint != null)
+            feedSetpoint.ifVelocity(
+                    (velocity) -> this.feedSetpoint = velocity,
+                    () -> this.feedSetpoint = null
+            );
+        else
+            this.feedSetpoint = null;
+    }
+
+    public boolean atGoal() {
+        var pivotTolerance = switch (goal) {
+            case SHOOT_CALCULATED, SHOOT_CONFIGURABLE -> pivotSetpointToleranceShooting.get();
+            default -> pivotSetpointToleranceNotShooting.get();
+        };
+        var pivotAtSetpoint = pivotSetpoint == null || Math.abs(inputs.pivotPositionRad - pivotSetpoint.in(Radians)) <= pivotTolerance.in(Radians);
+
+        var feedAtSetpoint = feedSetpoint == null || Math.abs(inputs.feedVelocityRadPerSec - feedSetpoint.in(RadiansPerSecond)) <= feedSetpointTolerance.get().in(RadiansPerSecond);
+
+        var flywheelsTolerance = flywheelSetpointTolerance.get().in(RadiansPerSecond);
+        var flywheelsAtSetpoint = flywheelsSetpoint == null ||
+                (Math.abs(inputs.flywheelTopVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= flywheelsTolerance &&
+                        Math.abs(inputs.flywheelBottomVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= flywheelsTolerance);
+
+        return pivotAtSetpoint && feedAtSetpoint && flywheelsAtSetpoint;
+    }
+
+    ////////////////////// INSTANCE STUFF //////////////////////
     private static Shooter instance;
 
     public static Shooter get() {
@@ -344,7 +403,9 @@ public class Shooter extends SubsystemBase {
         return instance;
     }
 
+    ////////////////////// CONSTRUCTOR //////////////////////
     private Shooter() {
+        ////////////////////// IO CREATION //////////////////////
         io = switch (Constants.mode) {
             case REAL -> new ShooterIOSparkMaxBeamBreak(
                     6,
@@ -364,12 +425,39 @@ public class Shooter extends SubsystemBase {
             case REPLAY -> new ShooterIO();
         };
 
+        ////////////////////// IO CONFIGURATION //////////////////////
+
         io.pivotConfigurePID(pivotPIDNotShooting.get());
         io.pivotSetPosition(PIVOT_INITIAL_POSITION.in(Radians));
 
         io.feedConfigurePID(feedPID.get());
         io.flywheelsTopConfigurePID(flywheelTopPID.get());
         io.flywheelsBottomConfigurePID(flywheelBottomPID.get());
+
+        ////////////////////// TRIGGERS //////////////////////
+
+        var feedCommandRunner = new GoalBasedCommandRunner<>("ShooterFeed", () -> goal);
+        new Trigger(() -> {
+            var feedSetpoint = goal.feedSetpoint.get();
+            if (feedSetpoint != null)
+                return feedSetpoint.isShoot() && atGoal();
+            return false;
+        }).onTrue(
+                feedCommandRunner
+                        .startEnd(
+                                () -> io.feedSetVoltage(12),
+                                () -> {
+                                    io.feedSetVoltage(0);
+                                    goal = Goal.DEFAULT;
+                                }
+                        )
+                        .withTimeout(0.8)
+                        .withName("Shooter Feed Shoot")
+        );
+
+        pivotZero.trigger().toggleOnTrue(zero());
+
+        ////////////////////// SYSID //////////////////////
 
         pivotSysId = Util.sysIdRoutine(
                 "Shooter/Pivot",
@@ -394,43 +482,9 @@ public class Shooter extends SubsystemBase {
                 () -> goal = Goal.DEFAULT,
                 this
         );
-
-        var feedCommandRunner = new GoalBasedCommandRunner<>("ShooterFeed", () -> goal);
-        new Trigger(() -> {
-            var feedSetpoint = goal.feedSetpoint.get();
-            if (feedSetpoint != null)
-                return feedSetpoint.isShoot() && atGoal();
-            return false;
-        }).onTrue(
-                feedCommandRunner
-                        .startEnd(
-                                () -> io.feedSetVoltage(12),
-                                () -> {
-                                    io.feedSetVoltage(0);
-                                    goal = Goal.DEFAULT;
-                                }
-                        )
-                        .withTimeout(0.8)
-                        .withName("Shooter Feed Shoot")
-        );
     }
 
-    private void processGoal() {
-        if (goal.goalChange != null)
-            goal.goalChange.get().ifPresent((newGoal) -> goal = newGoal);
-        Logger.recordOutput("Shooter/Goal", goal);
-        pivotSetpoint = goal.pivotSetpoint.get();
-        flywheelsSetpoint = goal.flywheelsSetpoint.get();
-        var feedSetpoint = goal.feedSetpoint.get();
-        if (feedSetpoint != null)
-            feedSetpoint.ifVelocity(
-                    (velocity) -> this.feedSetpoint = velocity,
-                    () -> this.feedSetpoint = null
-            );
-        else
-            this.feedSetpoint = null;
-    }
-
+    ////////////////////// PERIODIC //////////////////////
     @Override
     public void periodic() {
         io.updateInputs(inputs);
@@ -438,6 +492,7 @@ public class Shooter extends SubsystemBase {
 
         processGoal();
 
+        ////////////////////// PID MANAGEMENT //////////////////////
         var pivotPID = switch (goal) {
             case SHOOT_CALCULATED, SHOOT_CONFIGURABLE, SHOOT_SUBWOOFER, AMP -> pivotPIDShooting;
             default -> pivotPIDNotShooting;
@@ -452,6 +507,7 @@ public class Shooter extends SubsystemBase {
         flywheelTopPID.ifChanged(io::flywheelsTopConfigurePID);
         flywheelBottomPID.ifChanged(io::flywheelsBottomConfigurePID);
 
+        ////////////////////// PIVOT //////////////////////
         Logger.recordOutput("Shooter/Pivot/ClosedLoop", pivotSetpoint != null);
         if (pivotSetpoint != null) {
             Logger.recordOutput("Shooter/Pivot/Setpoint", pivotSetpoint);
@@ -464,6 +520,7 @@ public class Shooter extends SubsystemBase {
             }
         }
 
+        ////////////////////// FEED //////////////////////
         Logger.recordOutput("Shooter/Feed/ClosedLoop", feedSetpoint != null);
         if (feedSetpoint != null) {
             Logger.recordOutput("Shooter/Feed/Setpoint", feedSetpoint);
@@ -476,6 +533,7 @@ public class Shooter extends SubsystemBase {
             }
         }
 
+        ////////////////////// FLYWHEELS //////////////////////
         Logger.recordOutput("Shooter/Flywheels/ClosedLoop", flywheelsSetpoint != null);
         if (flywheelsSetpoint != null) {
             Logger.recordOutput("Shooter/Flywheels/Setpoint", flywheelsSetpoint);
@@ -495,26 +553,29 @@ public class Shooter extends SubsystemBase {
         }
     }
 
-    @AutoLogOutput
-    public boolean hasNoteDebounced() {
-        return hasNoteDebouncer.calculate(inputs.hasNote);
-    }
+    ////////////////////// COMMANDS //////////////////////
 
-    public boolean atGoal() {
-        var pivotTolerance = switch (goal) {
-            case SHOOT_CALCULATED, SHOOT_CONFIGURABLE -> pivotSetpointToleranceShooting.get();
-            default -> pivotSetpointToleranceNotShooting.get();
-        };
-        var pivotAtSetpoint = pivotSetpoint == null || Math.abs(inputs.pivotPositionRad - pivotSetpoint.in(Radians)) <= pivotTolerance.in(Radians);
-
-        var feedAtSetpoint = feedSetpoint == null || Math.abs(inputs.feedVelocityRadPerSec - feedSetpoint.in(RadiansPerSecond)) <= feedSetpointTolerance.get().in(RadiansPerSecond);
-
-        var flywheelsTolerance = flywheelSetpointTolerance.get().in(RadiansPerSecond);
-        var flywheelsAtSetpoint = flywheelsSetpoint == null ||
-                (Math.abs(inputs.flywheelTopVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= flywheelsTolerance &&
-                        Math.abs(inputs.flywheelBottomVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= flywheelsTolerance);
-
-        return pivotAtSetpoint && feedAtSetpoint && flywheelsAtSetpoint;
+    public Command zero() {
+        return goal(Goal.ZERO)
+                .raceWith(Commands.sequence(
+                        Commands.either(
+                                Commands.sequence(
+                                        Commands.startEnd(
+                                                () -> io.pivotSetVoltage(pivotZeroUpVoltage.getRaw()),
+                                                () -> io.pivotSetVoltage(0)
+                                        ).withTimeout(0.25),
+                                        Commands.startEnd(
+                                                () -> io.pivotSetVoltage(pivotZeroDownDuration.getRaw()),
+                                                () -> io.pivotSetVoltage(0)
+                                        ).withTimeout(0.75)
+                                ),
+                                Commands.none(),
+                                DriverStation::isEnabled
+                        ),
+                        Commands.runOnce(() -> io.pivotSetPosition(PIVOT_INITIAL_POSITION.in(Radians)))
+                ))
+                .ignoringDisable(true)
+                .withName("Shooter Zero");
     }
 
     public Command handoffWaitForIntake() {
@@ -551,5 +612,12 @@ public class Shooter extends SubsystemBase {
 
     public Command eject() {
         return goal(Goal.EJECT).withName("Shooter Eject");
+    }
+
+    ////////////////////// MISC FUNCTIONS //////////////////////
+
+    @AutoLogOutput
+    public boolean hasNoteDebounced() {
+        return hasNoteDebouncer.calculate(inputs.hasNote);
     }
 }

@@ -23,7 +23,7 @@ import java.util.function.DoubleSupplier;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 public class WheelRadiusCharacterization extends Command {
-    private static final TuningDashboardAnglularVelocity characterizationSpeed = new TuningDashboardAnglularVelocity(DashboardSubsystem.DRIVE, "Wheel Radius Characterization Rotation Speed (rad per sec)", RadiansPerSecond.of(0.1));
+    private static final TuningDashboardAnglularVelocity characterizationSpeed = new TuningDashboardAnglularVelocity(DashboardSubsystem.DRIVE, "Wheel Radius Characterization Rotation Speed", RadiansPerSecond.of(1.0));
     private static final DoubleSupplier gyroYawRadsSupplier = () -> RobotState.get().getRawGyroRotation().getRadians();
 
     @RequiredArgsConstructor
