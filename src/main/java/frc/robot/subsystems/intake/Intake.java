@@ -40,7 +40,7 @@ public class Intake extends SubsystemBase {
     );
     private static final TuningDashboardAnglularVelocityRPM intakeFeed = new TuningDashboardAnglularVelocityRPM(
             DashboardSubsystem.INTAKE, "Intake Feed",
-            RPM.of(1500)
+            RPM.of(1200)
     );
 
     ////////////////////// GOAL SETPOINTS - EJECT //////////////////////
