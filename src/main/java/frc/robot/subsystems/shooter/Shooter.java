@@ -412,12 +412,12 @@ public class Shooter extends SubsystemBase {
         var flywheelsTolerance = flywheelSetpointTolerance.get().in(RadiansPerSecond);
         var flywheelsAtSetpoint =
                 flywheelsSetpoint == null ||
-                switch (goal) {
-                    case SHOOT_CALCULATED_SPINUP, HANDOFF_FEED, HANDOFF_READY, HANDOFF_WAIT_FOR_INTAKE -> true;
-                    default -> false;
-                } ||
-                (Math.abs(inputs.flywheelTopVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= flywheelsTolerance &&
-                        Math.abs(inputs.flywheelBottomVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= flywheelsTolerance);
+                        switch (goal) {
+                            case SHOOT_CALCULATED_SPINUP, HANDOFF_FEED, HANDOFF_READY, HANDOFF_WAIT_FOR_INTAKE -> true;
+                            default -> false;
+                        } ||
+                        (Math.abs(inputs.flywheelTopVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= flywheelsTolerance &&
+                                Math.abs(inputs.flywheelBottomVelocityRadPerSec - flywheelsSetpoint.in(RadiansPerSecond)) <= flywheelsTolerance);
 
         return pivotAtSetpoint && feedAtSetpoint && flywheelsAtSetpoint;
     }

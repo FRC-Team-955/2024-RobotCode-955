@@ -43,6 +43,10 @@ public class Drive extends SubsystemBase {
             DashboardSubsystem.DRIVE, "Disable Vision",
             false
     );
+    private final TuningDashboardBoolean disableGyro = new TuningDashboardBoolean(
+            DashboardSubsystem.DRIVE, "Disable Gyro",
+            false
+    );
 
     private static final TuningDashboardVelocity maxLinearSpeed = new TuningDashboardVelocity(
             DashboardSubsystem.DRIVE, "Max Linear Speed",
@@ -95,11 +99,11 @@ public class Drive extends SubsystemBase {
 
     private final TuningDashboardPIDController choreoFeedbackX = new TuningDashboardPIDController(
             DashboardSubsystem.DRIVE, "Choreo X PID",
-            new PIDConstants(2, 0, 0)
+            new PIDConstants(1.5, 0, 0)
     );
     private final TuningDashboardPIDController choreoFeedbackY = new TuningDashboardPIDController(
             DashboardSubsystem.DRIVE, "Choreo Y PID",
-            new PIDConstants(2, 0, 0)
+            new PIDConstants(1.5, 0, 0)
     );
     private final TuningDashboardPIDController choreoFeedbackTheta = new TuningDashboardPIDController(
             DashboardSubsystem.DRIVE, "Choreo Theta PID",
@@ -191,7 +195,11 @@ public class Drive extends SubsystemBase {
             }
         }
 
-        robotState.applyOdometryUpdate(gyroInputs.isConnected ? new Rotation2d(gyroInputs.yawPositionRad) : null);
+        robotState.applyOdometryUpdate(
+                (!disableGyro.get() && gyroInputs.isConnected)
+                        ? new Rotation2d(gyroInputs.yawPositionRad)
+                        : null
+        );
 
         if (!disableVision.get() && visionInputs.hasEstimatedPose) {
             Translation2d estimatedPosition = robotState.getPose().getTranslation();
