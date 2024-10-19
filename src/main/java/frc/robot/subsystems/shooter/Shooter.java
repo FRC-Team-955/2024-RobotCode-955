@@ -74,7 +74,7 @@ public class Shooter extends SubsystemBase {
             Degrees.of(-45)
     );
 
-    private static final TuningDashboardAnglularVelocityRPM shootPassingFLywheels = new TuningDashboardAnglularVelocityRPM(
+    private static final TuningDashboardAnglularVelocityRPM shootPassingFlywheels = new TuningDashboardAnglularVelocityRPM(
             DashboardSubsystem.SHOOTER, "Shoot Passing Flywheels",
             RPM.of(4000)
     );
@@ -144,7 +144,7 @@ public class Shooter extends SubsystemBase {
         ),
         SHOOT_PASSING(
                 shootPassingPivot::get,
-                shootPassingFLywheels::get,
+                shootPassingFlywheels::get,
                 FeedSetpoint::shoot
         ),
         SHOOT_SUBWOOFER(
