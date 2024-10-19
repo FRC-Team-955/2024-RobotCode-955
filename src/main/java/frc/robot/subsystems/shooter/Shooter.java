@@ -263,7 +263,7 @@ public class Shooter extends SubsystemBase {
     );
     private static final TuningDashboardAngle pivotSetpointToleranceShooting = new TuningDashboardAngle(
             DashboardSubsystem.SHOOTER, "Pivot Tolerance - Shooting",
-            Degrees.of(2)
+            Degrees.of(2.5)
     );
     private static final TuningDashboardAngle pivotSetpointToleranceNotShooting = new TuningDashboardAngle(
             DashboardSubsystem.SHOOTER, "Pivot Tolerance - Not Shooting",

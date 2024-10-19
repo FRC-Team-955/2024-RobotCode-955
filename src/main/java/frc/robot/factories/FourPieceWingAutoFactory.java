@@ -25,7 +25,7 @@ public class FourPieceWingAutoFactory {
                         .andThen(StoW1w.cmd())
         );
 
-        final var INTAKE_TIMEOUT = 0.4;
+        final var INTAKE_TIMEOUT = 0.3;
 
         StoW1w.done().onTrue(Commands.sequence(
                 CalculatedShootFactory.get()
