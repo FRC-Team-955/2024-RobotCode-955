@@ -21,15 +21,13 @@ public class ThreePieceMidlineAutoFactory {
                         .andThen(BStoLP.cmd())
         );
         BStoLP.done().onTrue(Commands.sequence(
-                //CalculatedShootFactory.get(),
-                shooter.eject().withTimeout(3),
+                CalculatedShootFactory.get(),
                 LPtoM4toTP.cmd()
         ));
         LPtoM4toTP.done().onTrue(Commands.sequence(
                 HandoffFactory.get().withTimeout(3),
                 Commands.either(
-//                        CalculatedShootFactory.get(),
-                        shooter.eject().withTimeout(3),
+                        CalculatedShootFactory.get(),
                         Commands.none(),
                         shooter::hasNoteDebounced
                 ),
@@ -37,8 +35,7 @@ public class ThreePieceMidlineAutoFactory {
         ));
         TPtoM3toTP.done().onTrue(Commands.sequence(
                 HandoffFactory.get(),
-//                CalculatedShootFactory.get()
-                shooter.eject().withTimeout(3)
+                CalculatedShootFactory.get()
         ));
 
         LPtoM4toTP.atTime("intake").onTrue(intake.intake().withTimeout(1.0));
