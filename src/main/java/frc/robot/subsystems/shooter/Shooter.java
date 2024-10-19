@@ -225,7 +225,7 @@ public class Shooter extends SubsystemBase {
     protected static final Measure<Angle> PIVOT_INITIAL_POSITION = Degrees.of(-90);
     protected static final double FEED_GEAR_RATIO = 3;
     protected static final double FLYWHEEL_GEAR_RATIO = 1 / 2.0;
-    private final Debouncer hasNoteDebouncer = new Debouncer(0.0);
+    private final Debouncer hasNoteDebouncer = new Debouncer(0.01);
 
     ////////////////////// GENERAL DASHBOARD VALUES //////////////////////
 

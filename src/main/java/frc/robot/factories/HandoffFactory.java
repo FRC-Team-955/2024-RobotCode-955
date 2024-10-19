@@ -11,20 +11,26 @@ public class HandoffFactory {
         final var intake = Intake.get();
 
         return Commands.sequence(
-                Commands.race(
-                        intake.hover(),
-                        shooter.handoffWaitForIntake()
-                                .until(shooter::atGoal)
-                ),
-                Commands.race(
-                        intake.handoffReady()
-                                .until(intake::atGoal),
-                        shooter.handoffWaitForIntake()
-                ),
-                Commands.race(
-                        intake.handoffReady(),
-                        shooter.handoffReady()
-                                .until(shooter::atGoal)
+                Commands.either(
+                        Commands.none(),
+                        Commands.sequence(
+                                Commands.race(
+                                        intake.hover(),
+                                        shooter.handoffWaitForIntake()
+                                                .until(shooter::atGoal)
+                                ),
+                                Commands.race(
+                                        intake.handoffReady()
+                                                .until(intake::atGoal),
+                                        shooter.handoffWaitForIntake()
+                                ),
+                                Commands.race(
+                                        intake.handoffReady(),
+                                        shooter.handoffReady()
+                                                .until(shooter::atGoal)
+                                )
+                        ),
+                        shooter::hasNoteDebounced
                 ),
                 Commands.race(
                         intake.handoffFeed(),
