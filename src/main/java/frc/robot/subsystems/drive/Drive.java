@@ -95,11 +95,11 @@ public class Drive extends SubsystemBase {
 
     private final TuningDashboardPIDController choreoFeedbackX = new TuningDashboardPIDController(
             DashboardSubsystem.DRIVE, "Choreo X PID",
-            new PIDConstants(1.5, 0, 0)
+            new PIDConstants(2, 0, 0)
     );
     private final TuningDashboardPIDController choreoFeedbackY = new TuningDashboardPIDController(
             DashboardSubsystem.DRIVE, "Choreo Y PID",
-            new PIDConstants(1.5, 0, 0)
+            new PIDConstants(2, 0, 0)
     );
     private final TuningDashboardPIDController choreoFeedbackTheta = new TuningDashboardPIDController(
             DashboardSubsystem.DRIVE, "Choreo Theta PID",
