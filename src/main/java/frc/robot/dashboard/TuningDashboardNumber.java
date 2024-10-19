@@ -46,7 +46,8 @@ public class TuningDashboardNumber implements LoggedDashboardInput {
         } else if (!RobotState.tuningMode.get() && currentlyShown) {
             // Only hide if it was changed
             if (value == defaultValue) {
-                SmartDashboard.getEntry(key).unpublish();
+                // unpublishing does nothing
+                //SmartDashboard.getEntry(key).unpublish();
                 currentlyShown = false;
             }
         }

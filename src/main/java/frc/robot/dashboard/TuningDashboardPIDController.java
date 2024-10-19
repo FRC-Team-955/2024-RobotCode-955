@@ -59,10 +59,11 @@ public class TuningDashboardPIDController implements LoggedDashboardInput {
         } else if (!RobotState.tuningMode.get() && currentlyShown) {
             // Only hide if it was changed
             if (value.getP() == defaultValue.kP && value.getI() == defaultValue.kI && value.getD() == defaultValue.kD && value.getIZone() == defaultValue.iZone) {
-                SmartDashboard.getEntry(key + "/kP").unpublish();
-                SmartDashboard.getEntry(key + "/kI").unpublish();
-                SmartDashboard.getEntry(key + "/kD").unpublish();
-                SmartDashboard.getEntry(key + "/iZone").unpublish();
+                // unpublishing does nothing
+                //SmartDashboard.getEntry(key + "/kP").unpublish();
+                //SmartDashboard.getEntry(key + "/kI").unpublish();
+                //SmartDashboard.getEntry(key + "/kD").unpublish();
+                //SmartDashboard.getEntry(key + "/iZone").unpublish();
                 currentlyShown = false;
             }
         }

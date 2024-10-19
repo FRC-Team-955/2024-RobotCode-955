@@ -53,9 +53,10 @@ public class TuningDashboardSimpleFeedforward implements LoggedDashboardInput {
         } else if (!RobotState.tuningMode.get() && currentlyShown) {
             // Only hide if it was changed
             if (value == defaultValue) {
-                SmartDashboard.getEntry(key + "/ks").unpublish();
-                SmartDashboard.getEntry(key + "/kv").unpublish();
-                SmartDashboard.getEntry(key + "/ka").unpublish();
+                // unpublishing does nothing
+                //SmartDashboard.getEntry(key + "/ks").unpublish();
+                //SmartDashboard.getEntry(key + "/kv").unpublish();
+                //SmartDashboard.getEntry(key + "/ka").unpublish();
                 currentlyShown = false;
             }
         }
