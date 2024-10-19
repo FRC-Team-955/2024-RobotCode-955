@@ -150,6 +150,8 @@ gversion {
 tasks.register("deployEvent", Exec) {
     commandLine "git", "commit", "-am", "Deploy auto-commit " + LocalDateTime.now().format("yyyy-MM-dd HH:mm:ss")
 
+    ignoreExitValue = true
+
     finalizedBy tasks.named("deploy")
 }
 
