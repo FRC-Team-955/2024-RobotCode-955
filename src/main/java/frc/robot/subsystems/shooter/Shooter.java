@@ -67,6 +67,18 @@ public class Shooter extends SubsystemBase {
             RPM.zero()
     );
 
+    ////////////////////// GOAL SETPOINTS - SHOOT PASSING ////////////////////////
+
+    private static final TuningDashboardAngle shootPassingPivot = new TuningDashboardAngle(
+            DashboardSubsystem.SHOOTER, "Shoot Passing Pivot",
+            Degrees.of(-45)
+    );
+
+    private static final TuningDashboardAnglularVelocityRPM shootPassingFLywheels = new TuningDashboardAnglularVelocityRPM(
+            DashboardSubsystem.SHOOTER, "Shoot Passing Flywheels",
+            RPM.of(4000)
+    );
+
     ////////////////////// GOAL SETPOINTS - SHOOT SUBWOOFER //////////////////////
     private static final TuningDashboardAngle shootSubwooferPivot = new TuningDashboardAngle(
             DashboardSubsystem.SHOOTER, "Shoot Subwoofer Pivot",
@@ -128,6 +140,11 @@ public class Shooter extends SubsystemBase {
         SHOOT_CONFIGURABLE(
                 shootConfigurablePivot::get,
                 shootConfigurableFlywheels::get,
+                FeedSetpoint::shoot
+        ),
+        SHOOT_PASSING(
+                shootPassingPivot::get,
+                shootPassingFLywheels::get,
                 FeedSetpoint::shoot
         ),
         SHOOT_SUBWOOFER(
@@ -385,7 +402,7 @@ public class Shooter extends SubsystemBase {
 
     public boolean atGoal() {
         var pivotTolerance = switch (goal) {
-            case SHOOT_CALCULATED, SHOOT_CONFIGURABLE -> pivotSetpointToleranceShooting.get();
+            case SHOOT_CALCULATED, SHOOT_CONFIGURABLE, SHOOT_PASSING -> pivotSetpointToleranceShooting.get();
             default -> pivotSetpointToleranceNotShooting.get();
         };
         var pivotAtSetpoint = pivotSetpoint == null || Math.abs(inputs.pivotPositionRad - pivotSetpoint.in(Radians)) <= pivotTolerance.in(Radians);
@@ -503,7 +520,7 @@ public class Shooter extends SubsystemBase {
 
         ////////////////////// PID MANAGEMENT //////////////////////
         var pivotPID = switch (goal) {
-            case SHOOT_CALCULATED, SHOOT_CONFIGURABLE, SHOOT_SUBWOOFER, AMP -> pivotPIDShooting;
+            case SHOOT_CALCULATED, SHOOT_CONFIGURABLE, SHOOT_SUBWOOFER, AMP, SHOOT_PASSING -> pivotPIDShooting;
             default -> pivotPIDNotShooting;
         };
         if (pivotPIDGoalConfigured != goal) {
@@ -613,6 +630,10 @@ public class Shooter extends SubsystemBase {
 
     public Command shootConfigurable() {
         return goal(Goal.SHOOT_CONFIGURABLE).withName("Shooter Shoot Configurable");
+    }
+
+    public Command shootPassing() {
+        return goal(Goal.SHOOT_PASSING).withName("Shooter Shoot Passing");
     }
 
     public Command amp() {

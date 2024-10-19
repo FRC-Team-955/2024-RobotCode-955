@@ -217,6 +217,10 @@ public class RobotContainer {
 
         driverController.leftBumper().toggleOnTrue(shooter.amp());
 
+        driverController.b().toggleOnTrue(
+                shooter.shootPassing()
+        );
+
         driverController.x().toggleOnTrue(Commands.parallel(
                 shooter.eject(),
                 intake.eject().withTimeout(1)
