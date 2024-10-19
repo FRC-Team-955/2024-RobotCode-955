@@ -10,10 +10,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.dashboard.DashboardBoolean;
 import frc.robot.dashboard.DashboardSubsystem;
-import frc.robot.factories.CalculatedShootFactory;
-import frc.robot.factories.FourPieceWingAutoFactory;
-import frc.robot.factories.HandoffFactory;
-import frc.robot.factories.ThreePieceMidlineAutoFactory;
+import frc.robot.factories.*;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.WheelRadiusCharacterization;
 import frc.robot.subsystems.intake.Intake;
@@ -217,7 +214,7 @@ public class RobotContainer {
 
         driverController.leftBumper().toggleOnTrue(shooter.amp());
 
-        driverController.b().toggleOnTrue(shooter.shootPassing());
+        driverController.b().toggleOnTrue(PassFactory.get(driverController::getLeftY, driverController::getLeftX));
 
         driverController.x().toggleOnTrue(Commands.parallel(
                 shooter.eject(),

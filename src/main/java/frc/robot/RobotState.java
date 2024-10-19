@@ -110,7 +110,7 @@ public class RobotState {
     }
 
     public Command resetRotation() {
-        return setPose(() -> new Pose2d(getPose().getTranslation(), new Rotation2d()));
+        return setPose(() -> new Pose2d(getTranslation(), new Rotation2d()));
     }
 
     @AutoLogOutput(key = "RobotState/SpeakerDistance")
