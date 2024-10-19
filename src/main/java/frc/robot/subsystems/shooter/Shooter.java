@@ -140,17 +140,23 @@ public class Shooter extends SubsystemBase {
 
         HANDOFF_WAIT_FOR_INTAKE(
                 waitForIntakePivot::get,
-                RPM::zero,
+                () -> DriverStation.isAutonomous()
+                        ? ShooterRegression.getSpeed(RobotState.get().getDistanceToSpeaker())
+                        : RPM.zero(),
                 () -> FeedSetpoint.velocity(RPM.zero())
         ),
         HANDOFF_READY(
                 handoffPivot::get,
-                RPM::zero,
+                () -> DriverStation.isAutonomous()
+                        ? ShooterRegression.getSpeed(RobotState.get().getDistanceToSpeaker())
+                        : RPM.zero(),
                 () -> FeedSetpoint.velocity(RPM.zero())
         ),
         HANDOFF_FEED(
                 handoffPivot::get,
-                RPM::zero,
+                () -> DriverStation.isAutonomous()
+                        ? ShooterRegression.getSpeed(RobotState.get().getDistanceToSpeaker())
+                        : RPM.zero(),
                 () -> FeedSetpoint.velocity(handoffFeed.get())
         );
 
@@ -339,21 +345,24 @@ public class Shooter extends SubsystemBase {
     ////////////////////// GOAL STUFF //////////////////////
     @Getter
     private Goal goal = Goal.DEFAULT;
+    private boolean goalFinished = false;
 
     private Command goal(Goal newGoal) {
         return new FunctionalCommand(
                 () -> {
+                    goalFinished = false;
                     goal = newGoal;
                     processGoal();
                 },
                 () -> {
                 },
                 (interrupted) -> {
+                    goalFinished = false;
                     goal = Goal.DEFAULT;
                     processGoal();
                 },
-                // end if the goal changed
-                () -> goal != newGoal,
+                // end if the goal finished
+                () -> goalFinished,
                 this
         );
     }
@@ -448,7 +457,7 @@ public class Shooter extends SubsystemBase {
                                 () -> io.feedSetVoltage(12),
                                 () -> {
                                     io.feedSetVoltage(0);
-                                    goal = Goal.DEFAULT;
+                                    goalFinished = true;
                                 }
                         )
                         .withTimeout(0.8)
@@ -619,5 +628,10 @@ public class Shooter extends SubsystemBase {
     @AutoLogOutput
     public boolean hasNoteDebounced() {
         return hasNoteDebouncer.calculate(inputs.hasNote);
+    }
+
+    public void shootCalculatedSpinupInBackground() {
+        goal = Goal.SHOOT_CALCULATED_SPINUP;
+        processGoal();
     }
 }

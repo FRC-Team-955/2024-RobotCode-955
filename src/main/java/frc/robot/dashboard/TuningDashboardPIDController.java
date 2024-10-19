@@ -9,6 +9,8 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 import org.littletonrobotics.junction.networktables.LoggedDashboardInput;
 
+import java.util.function.Consumer;
+
 public class TuningDashboardPIDController implements LoggedDashboardInput {
     private final LoggableInputs inputs = new LoggableInputs() {
         public void toLog(LogTable table) {
@@ -26,20 +28,29 @@ public class TuningDashboardPIDController implements LoggedDashboardInput {
             if (kP != value.getP() || kI != value.getI() || kD != value.getD() || iZone != value.getIZone()) {
                 value = new PIDController(kP, kI, kD);
                 value.setIZone(iZone);
+                configurator.accept(value);
             }
         }
     };
 
     private final String key;
     private final PIDConstants defaultValue;
+    private final Consumer<PIDController> configurator;
     private PIDController value;
     private boolean currentlyShown = false;
 
     public TuningDashboardPIDController(DashboardSubsystem subsystem, String key, PIDConstants defaultValue) {
+        this(subsystem, key, defaultValue, (pid) -> {
+        });
+    }
+
+    public TuningDashboardPIDController(DashboardSubsystem subsystem, String key, PIDConstants defaultValue, Consumer<PIDController> configurator) {
         this.key = subsystem.prefix() + "/" + key;
         this.defaultValue = defaultValue;
         value = new PIDController(defaultValue.kP, defaultValue.kI, defaultValue.kD);
         value.setIZone(defaultValue.iZone);
+        configurator.accept(value);
+        this.configurator = configurator;
 
         periodic();
         Logger.registerDashboardInput(this);
@@ -77,6 +88,7 @@ public class TuningDashboardPIDController implements LoggedDashboardInput {
                 if (kP != value.getP() || kI != value.getI() || kD != value.getD() || iZone != value.getIZone()) {
                     value = new PIDController(kP, kI, kD);
                     value.setIZone(iZone);
+                    configurator.accept(value);
                 }
             }
             Logger.processInputs(prefix, inputs);

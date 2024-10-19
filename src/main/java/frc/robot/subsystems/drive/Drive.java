@@ -93,10 +93,24 @@ public class Drive extends SubsystemBase {
 
     public final SysIdRoutine sysId;
 
-    private final TuningDashboardPIDController choreoFeedbackX = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Choreo X PID", new PIDConstants(1.5, 0, 0));
-    private final TuningDashboardPIDController choreoFeedbackY = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Choreo Y PID", new PIDConstants(1.5, 0, 0));
-    private final TuningDashboardPIDController choreoFeedbackTheta = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Choreo Theta PID", new PIDConstants(1, 0, 0));
-    private final TuningDashboardPIDController pointTowardsController = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Point Towards PID", new PIDConstants(2.1, 0, 0.1));
+    private final TuningDashboardPIDController choreoFeedbackX = new TuningDashboardPIDController(
+            DashboardSubsystem.DRIVE, "Choreo X PID",
+            new PIDConstants(1.5, 0, 0)
+    );
+    private final TuningDashboardPIDController choreoFeedbackY = new TuningDashboardPIDController(
+            DashboardSubsystem.DRIVE, "Choreo Y PID",
+            new PIDConstants(1.5, 0, 0)
+    );
+    private final TuningDashboardPIDController choreoFeedbackTheta = new TuningDashboardPIDController(
+            DashboardSubsystem.DRIVE, "Choreo Theta PID",
+            new PIDConstants(1.5, 0, 0),
+            (pid) -> pid.enableContinuousInput(-Math.PI, Math.PI)
+    );
+    private final TuningDashboardPIDController pointTowardsController = new TuningDashboardPIDController(
+            DashboardSubsystem.DRIVE, "Point Towards PID",
+            new PIDConstants(2.1, 0, 0.1),
+            (pid) -> pid.enableContinuousInput(-Math.PI, Math.PI)
+    );
 
     private State state = State.DEFAULT;
 
@@ -144,9 +158,6 @@ public class Drive extends SubsystemBase {
             };
             modules[i] = new Module(moduleIO, i);
         }
-
-        choreoFeedbackTheta.get().enableContinuousInput(-Math.PI, Math.PI);
-        pointTowardsController.get().enableContinuousInput(-Math.PI, Math.PI);
 
         sysId = Util.sysIdRoutine(
                 "Drive",

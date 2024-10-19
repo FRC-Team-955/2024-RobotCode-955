@@ -21,46 +21,46 @@ public class FourPieceWingAutoFactory {
 
         loop.enabled().onTrue(
                 AutoInitFactory.get(loop, "4 Piece Wing", StoW1w::getInitialPose)
-                        .andThen(
-                                StoW1w.cmd().alongWith(shooter.shootCalculatedSpinup())
-                        )
+                        .finallyDo(shooter::shootCalculatedSpinupInBackground)
+                        .andThen(StoW1w.cmd())
         );
 
         final var INTAKE_TIMEOUT = 0.4;
 
         StoW1w.done().onTrue(Commands.sequence(
-                CalculatedShootFactory.get(),
-                W1wtoW1.cmd().alongWith(intake.intake())
+                CalculatedShootFactory.get()
+                        .finallyDo(shooter::shootCalculatedSpinupInBackground),
+                W1wtoW1.cmd()
+                        .alongWith(intake.intake())
         ));
         W1wtoW1.done().onTrue(Commands.sequence(
                 intake.intake().withTimeout(INTAKE_TIMEOUT),
                 Commands.parallel(
                         W1toW2w.cmd(),
-                        Commands.sequence(
-                                // TODO: needs to be parallel, then race..
-                                // TODO: spinup while handing off in auto
-                                HandoffFactory.get(),
-                                shooter.shootCalculatedSpinup()
-                        )
+                        HandoffFactory.get()
+                                .finallyDo(shooter::shootCalculatedSpinupInBackground)
                 ),
-                CalculatedShootFactory.get(),
-                W2wtoW2.cmd().alongWith(intake.intake())
+                CalculatedShootFactory.get()
+                        .finallyDo(shooter::shootCalculatedSpinupInBackground),
+                W2wtoW2.cmd()
+                        .alongWith(intake.intake())
         ));
         W2wtoW2.done().onTrue(Commands.sequence(
                 intake.intake().withTimeout(INTAKE_TIMEOUT),
                 Commands.parallel(
-                        W1toW2w.cmd(),
-                        Commands.sequence(
-                                HandoffFactory.get(),
-                                shooter.shootCalculatedSpinup()
-                        )
+                        W2toW3w.cmd(),
+                        HandoffFactory.get()
+                                .finallyDo(shooter::shootCalculatedSpinupInBackground)
                 ),
-                CalculatedShootFactory.get(),
-                W2toW3w.cmd().alongWith(intake.intake())
+                CalculatedShootFactory.get()
+                        .finallyDo(shooter::shootCalculatedSpinupInBackground),
+                W3wtoW3.cmd()
+                        .alongWith(intake.intake())
         ));
-        W2toW3w.done().onTrue(Commands.sequence(
+        W3wtoW3.done().onTrue(Commands.sequence(
                 intake.intake().withTimeout(INTAKE_TIMEOUT),
-                HandoffFactory.get(),
+                HandoffFactory.get()
+                        .finallyDo(shooter::shootCalculatedSpinupInBackground),
                 CalculatedShootFactory.get()
         ));
 

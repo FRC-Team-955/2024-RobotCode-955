@@ -32,19 +32,38 @@ public class Module {
 
         switch (Constants.mode) {
             case REAL, REPLAY -> {
-                driveFeedforward = new TuningDashboardSimpleFeedforward(DashboardSubsystem.DRIVE, "Module " + index + " Drive FF", new SimpleMotorFeedforward(0.0689045, 0.1370225, 0.009731425));
-                driveFeedback = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Module " + index + " Drive PID", new PIDConstants(0.05, 0.0, 0.0));
-                turnFeedback = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Module " + index + " Turn PID", new PIDConstants(5.0, 0.0, 0.0));
+                driveFeedforward = new TuningDashboardSimpleFeedforward(
+                        DashboardSubsystem.DRIVE, "Module " + index + " Drive FF",
+                        new SimpleMotorFeedforward(0.0689045, 0.1370225, 0.009731425)
+                );
+                driveFeedback = new TuningDashboardPIDController(
+                        DashboardSubsystem.DRIVE, "Module " + index + " Drive PID",
+                        new PIDConstants(0.05, 0.0, 0.0)
+                );
+                turnFeedback = new TuningDashboardPIDController(
+                        DashboardSubsystem.DRIVE, "Module " + index + " Turn PID",
+                        new PIDConstants(5.0, 0.0, 0.0),
+                        (pid) -> pid.enableContinuousInput(-Math.PI, Math.PI)
+                );
             }
             case SIM -> {
-                driveFeedforward = new TuningDashboardSimpleFeedforward(DashboardSubsystem.DRIVE, "Module " + index + " Drive FF", new SimpleMotorFeedforward(0.0, 0.13));
-                driveFeedback = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Module " + index + " Drive PID", new PIDConstants(0.1, 0.0, 0.0));
-                turnFeedback = new TuningDashboardPIDController(DashboardSubsystem.DRIVE, "Module " + index + " Turn PID", new PIDConstants(10.0, 0.0, 0.0));
+                driveFeedforward = new TuningDashboardSimpleFeedforward(
+                        DashboardSubsystem.DRIVE, "Module " + index + " Drive FF",
+                        new SimpleMotorFeedforward(0.0, 0.13)
+                );
+                driveFeedback = new TuningDashboardPIDController(
+                        DashboardSubsystem.DRIVE, "Module " + index + " Drive PID",
+                        new PIDConstants(0.1, 0.0, 0.0)
+                );
+                turnFeedback = new TuningDashboardPIDController(
+                        DashboardSubsystem.DRIVE, "Module " + index + " Turn PID",
+                        new PIDConstants(10.0, 0.0, 0.0),
+                        (pid) -> pid.enableContinuousInput(-Math.PI, Math.PI)
+                );
             }
             default -> throw new RuntimeException("unreachable");
         }
 
-        turnFeedback.get().enableContinuousInput(-Math.PI, Math.PI);
         setBrakeMode(true);
     }
 

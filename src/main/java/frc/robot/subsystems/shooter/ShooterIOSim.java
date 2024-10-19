@@ -3,6 +3,7 @@ package frc.robot.subsystems.shooter;
 import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
@@ -58,7 +59,9 @@ public class ShooterIOSim extends ShooterIO {
 
     @Override
     public void updateInputs(ShooterIOInputs inputs) {
-        inputs.hasNote = Timer.getFPGATimestamp() % 1 > 0.5;
+        inputs.hasNote = DriverStation.isAutonomous()
+                ? Shooter.get().getGoal() == Shooter.Goal.HANDOFF_FEED
+                : Timer.getFPGATimestamp() % 1 > 0.5;
 
         if (pivotClosedLoop) {
             pivotAppliedVolts = pivotPid.calculate(pivotSim.getAngleRads()) + pivotFfVolts;
