@@ -32,6 +32,17 @@
     }
   },
   "NetworkTables": {
+    "Persistent Values": {
+      "open": false
+    },
+    "retained": {
+      "SmartDashboard": {
+        "Auto Choices": {
+          "open": true
+        },
+        "open": true
+      }
+    },
     "transitory": {
       "AdvantageKit": {
         "RealOutputs": {
@@ -43,8 +54,5 @@
   },
   "NetworkTables Info": {
     "visible": true
-  },
-  "NetworkTables View": {
-    "visible": false
   }
 }

@@ -274,7 +274,7 @@ public class Intake extends SubsystemBase {
         }
 
 //        if (Constants.isSim) {
-            Logger.recordOutput("Intake/Component", new Pose3d(new Translation3d(0.27, 0, 0.22), new Rotation3d(0, inputs.pivotPositionRad + Units.degreesToRadians(-10), 0)));
+        Logger.recordOutput("Intake/Component", new Pose3d(new Translation3d(0.27, 0, 0.22), new Rotation3d(0, inputs.pivotPositionRad + Units.degreesToRadians(-10), 0)));
 //        }
     }
 

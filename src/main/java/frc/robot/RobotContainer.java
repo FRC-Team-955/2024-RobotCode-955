@@ -208,10 +208,11 @@ public class RobotContainer {
                 false
         );
         driverController.leftTrigger(0.25).toggleOnTrue(Commands.either(
-                CalculatedShootFactory.get(driverController::getLeftY, driverController::getLeftX),
-                shooter.shootSubwoofer(),
+                // Both need to be proxied to avoid Drive requirement when using preset shooting
+                shooter.shootSubwoofer().asProxy(),
+                CalculatedShootFactory.get(driverController::getLeftY, driverController::getLeftX).asProxy(),
                 presetShooting::get
-        ));
+        ).withName("Shooter Shoot"));
 
         driverController.leftBumper().toggleOnTrue(shooter.amp());
 
