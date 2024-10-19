@@ -311,13 +311,13 @@ public class Drive extends SubsystemBase {
         return withState(State.DRIVE_VELOCITY, cmd).withName("Drive Velocity");
     }
 
-    public AutoFactory createAutoFactory() {
+    public AutoFactory createAutoFactory(AutoFactory.AutoBindings bindings) {
         return Choreo.createAutoFactory(
                 this,
                 robotState::getPose,
                 this::choreoController,
                 Util::shouldFlip,
-                new AutoFactory.AutoBindings(),
+                bindings,
                 this::choreoTrajectoryLogger
         );
     }

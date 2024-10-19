@@ -23,20 +23,21 @@ public class ThreePieceMidlineAutoFactory {
                 LPtoM4toTP.cmd()
         ));
         LPtoM4toTP.done().onTrue(Commands.sequence(
+                HandoffFactory.get(),
                 CalculatedShootFactory.get(),
-                TPtoM3toTP.cmd()
+                TPtoM3toTP.cmd().asProxy() // DO NOT REMOVE .asProxy() !!!!
         ));
         TPtoM3toTP.done().onTrue(Commands.sequence(
+                HandoffFactory.get(),
                 CalculatedShootFactory.get()
         ));
 
-        final var INTAKE_TIMEOUT = 0.6;
-        LPtoM4toTP.atTime("intake").onTrue(intake.intake().withTimeout(INTAKE_TIMEOUT));
-        TPtoM3toTP.atTime("intake").onTrue(intake.intake().withTimeout(INTAKE_TIMEOUT));
+        LPtoM4toTP.atTime("intake").onTrue(intake.intake().withTimeout(1.0));
+        TPtoM3toTP.atTime("intake").onTrue(intake.intake().withTimeout(1.0));
 
-        final var HANDOFF_TIMEOUT = 0.5;
-        LPtoM4toTP.atTime("handoff").onTrue(HandoffFactory.get());
-        TPtoM3toTP.atTime("handoff").onTrue(HandoffFactory.get());
+//        final var HANDOFF_TIMEOUT = 0.5;
+//        LPtoM4toTP.atTime("handoff").onTrue(HandoffFactory.get());
+//        TPtoM3toTP.atTime("handoff").onTrue(HandoffFactory.get());
 
         return loop.cmd();
     }

@@ -1,5 +1,6 @@
 package frc.robot;
 
+import choreo.auto.AutoFactory;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -61,7 +62,7 @@ public class RobotContainer {
                 drive.driveVelocity(new ChassisSpeeds(2, 0, 0), 3)
         ));
 
-        var factory = drive.createAutoFactory();
+        var factory = drive.createAutoFactory(new AutoFactory.AutoBindings());
         autoChooser.addDefaultOption("4 Piece Wing", FourPieceWingAutoFactory.get(factory));
         autoChooser.addOption("3 Piece Midline", ThreePieceMidlineAutoFactory.get(factory));
 
