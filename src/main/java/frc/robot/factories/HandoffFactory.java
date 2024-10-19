@@ -33,7 +33,11 @@ public class HandoffFactory {
                         shooter::hasNoteDebounced
                 ),
                 Commands.race(
-                        intake.handoffFeed(),
+                        Commands.either(
+                                Commands.none(),
+                                intake.handoffFeed(),
+                                shooter::hasNoteDebounced
+                        ),
                         shooter.handoffFeed()
                                 .until(shooter::hasNoteDebounced)
                 )
